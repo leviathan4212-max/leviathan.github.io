@@ -1,0 +1,719 @@
+// 主HTML文件 (territory_dashboard.html)
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>领地状态仪表板</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gold: #C9A227;
+            --primary-dark: #2C1810;
+            --parchment-light: #F5E6C8;
+            --parchment-dark: #E8D4A8;
+            --success: #3A6B35;
+            --warning: #E8A317;
+            --danger: #8B3A3A;
+            --info: #3A4A6B;
+        }
+
+        .territory-dashboard {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 380px;
+            max-height: 90vh;
+            background: var(--parchment-light);
+            border: 3px solid var(--primary-gold);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            z-index: 10000;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-collapsed {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-dark), #3D2820);
+            color: var(--primary-gold);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--primary-gold);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(201, 162, 39, 0.2);
+        }
+
+        .dashboard-body {
+            padding: 15px;
+            overflow-y: auto;
+            max-height: calc(90vh - 60px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--parchment-dark);
+            border-radius: 8px;
+            padding: 10px;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: var(--primary-dark);
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--primary-dark);
+        }
+
+        .stat-trend {
+            font-size: 0.7em;
+            margin-top: 3px;
+        }
+
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+        .trend-neutral { color: var(--info); }
+
+        .section {
+            margin-bottom: 20px;
+            border-top: 2px dashed var(--parchment-dark);
+            padding-top: 15px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-gold), #E8C547);
+            transition: width 0.5s ease;
+        }
+
+        .alert-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.7em;
+            margin-left: 5px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .race-item, .tech-item, .building-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 5px;
+        }
+
+        .item-name {
+            font-size: 0.85em;
+        }
+
+        .item-status {
+            font-size: 0.75em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: #f0f0f0;
+        }
+
+        .status-dominant { background: var(--success); color: white; }
+        .status-equal { background: var(--info); color: white; }
+        .status-restricted { background: var(--warning); color: black; }
+        .status-slave { background: var(--danger); color: white; }
+
+        .refresh-time {
+            text-align: center;
+            font-size: 0.7em;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        /* 可折叠部分 */
+        .collapsible {
+            cursor: pointer;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="territory-dashboard" id="territoryDashboard">
+        <div class="dashboard-header" id="dashboardHeader">
+            <div class="header-title">
+                <i class="fas fa-chess-queen"></i>
+                <span id="territoryName">领地状态</span>
+            </div>
+            <div class="header-controls">
+                <button class="control-btn" id="refreshBtn" title="刷新">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="control-btn" id="collapseBtn" title="折叠/展开">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <button class="control-btn" id="closeBtn" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="dashboard-body" id="dashboardBody">
+            <!-- 实时统计数据 -->
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <!-- 详细信息区域 -->
+            <div class="section">
+                <div class="section-title collapsible" data-target="populationSection">
+                    <i class="fas fa-users"></i>
+                    人口与种族
+                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
+                </div>
+                <div class="collapsible-content" id="populationSection"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title collapsible" data-target="economySection">
+                    <i class="fas fa-coins"></i>
+                    经济状况
+                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
+                </div>
+                <div class="collapsible-content" id="economySection"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title collapsible" data-target="militarySection">
+                    <i class="fas fa-shield-alt"></i>
+                    军事防御
+                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
+                </div>
+                <div class="collapsible-content" id="militarySection"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title collapsible" data-target="techSection">
+                    <i class="fas fa-flask"></i>
+                    科技研发
+                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
+                </div>
+                <div class="collapsible-content" id="techSection"></div>
+            </div>
+            
+            <div class="refresh-time" id="refreshTime">
+                最后更新: 刚刚
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        class TerritoryDashboard {
+            constructor() {
+                this.mvuData = null;
+                this.updateInterval = null;
+                this.isCollapsed = false;
+                this.initialize();
+            }
+            
+            initialize() {
+                this.setupEventListeners();
+                this.makeDraggable();
+                this.loadMVUData();
+                this.startAutoRefresh();
+            }
+            
+            setupEventListeners() {
+                // 刷新按钮
+                $('#refreshBtn').click(() => this.loadMVUData());
+                
+                // 折叠/展开按钮
+                $('#collapseBtn').click(() => this.toggleCollapse());
+                
+                // 关闭按钮
+                $('#closeBtn').click(() => {
+                    $('#territoryDashboard').fadeOut(300, () => {
+                        // 可以添加重新打开的按钮
+                    });
+                });
+                
+                // 可折叠部分
+                $('.collapsible').click(function() {
+                    const target = $(this).data('target');
+                    const content = $('#' + target);
+                    const icon = $(this).find('.fa-chevron-right');
+                    
+                    content.toggleClass('expanded');
+                    icon.toggleClass('fa-chevron-right fa-chevron-down');
+                });
+            }
+            
+            makeDraggable() {
+                const dashboard = document.getElementById('territoryDashboard');
+                const header = document.getElementById('dashboardHeader');
+                
+                let isDragging = false;
+                let currentX, currentY, initialX, initialY;
+                let xOffset = 0, yOffset = 0;
+                
+                header.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', dragEnd);
+                
+                function dragStart(e) {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                    
+                    if (e.target === header || header.contains(e.target)) {
+                        isDragging = true;
+                    }
+                }
+                
+                function drag(e) {
+                    if (isDragging) {
+                        e.preventDefault();
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                        
+                        xOffset = currentX;
+                        yOffset = currentY;
+                        
+                        setTranslate(currentX, currentY, dashboard);
+                    }
+                }
+                
+                function dragEnd(e) {
+                    initialX = currentX;
+                    initialY = currentY;
+                    isDragging = false;
+                }
+                
+                function setTranslate(xPos, yPos, el) {
+                    el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+                }
+            }
+            
+            loadMVUData() {
+                // 尝试从不同的可能位置获取MVU数据
+                let mvuVariables = null;
+                
+                // 尝试从全局对象获取
+                if (window.MVU && window.MVU.variables) {
+                    mvuVariables = window.MVU.variables;
+                }
+                // 尝试从父窗口获取（如果是iframe）
+                else if (window.parent && window.parent.MVU && window.parent.MVU.variables) {
+                    mvuVariables = window.parent.MVU.variables;
+                }
+                // 尝试从localStorage获取
+                else {
+                    try {
+                        const stored = localStorage.getItem('MVU_Territory');
+                        if (stored) {
+                            mvuVariables = JSON.parse(stored);
+                        }
+                    } catch(e) {
+                        console.warn('无法从localStorage读取MVU数据:', e);
+                    }
+                }
+                
+                if (mvuVariables && mvuVariables.Territory) {
+                    this.mvuData = mvuVariables.Territory;
+                    this.updateDashboard();
+                    $('#refreshTime').text(`最后更新: ${new Date().toLocaleTimeString()}`);
+                } else {
+                    console.warn('MVU变量未找到，使用模拟数据');
+                    this.loadSampleData();
+                }
+            }
+            
+            loadSampleData() {
+                // 模拟数据，用于测试
+                this.mvuData = {
+                    基本信息: {
+                        名称: "北境边境领",
+                        面积: 85,
+                        地形: "丘陵与森林",
+                        发展阶段: "初建"
+                    },
+                    人口: {
+                        总人口: 1250,
+                        种族构成: {
+                            人类: { 数量: 900, 地位: "主导" },
+                            矮人: { 数量: 150, 地位: "平等" },
+                            半精灵: { 数量: 100, 地位: "平等" }
+                        },
+                        职业分布: {
+                            农民: { 人数: 700 },
+                            工匠: { 人数: 120 },
+                            商人: { 人数: 60 },
+                            士兵: { 人数: 80 }
+                        }
+                    },
+                    经济: {
+                        财政: {
+                            库存金币: 2500,
+                            月收入: 500,
+                            月支出: 450,
+                            月净收入: 50
+                        }
+                    },
+                    军事: {
+                        兵力: {
+                            常备军: 80,
+                            民兵: 200
+                        },
+                        战力评级: {
+                            总评级: "D"
+                        }
+                    },
+                    状态: {
+                        居民状态: {
+                            民心指数: 70,
+                            治安状况: 65,
+                            生活水平: "温饱"
+                        }
+                    }
+                };
+                
+                this.updateDashboard();
+            }
+            
+            updateDashboard() {
+                if (!this.mvuData) return;
+                
+                const data = this.mvuData;
+                
+                // 更新领地名称
+                $('#territoryName').text(data.基本信息?.名称 || "未知领地");
+                
+                // 更新统计数据网格
+                this.updateStatsGrid(data);
+                
+                // 更新各个详细部分
+                this.updatePopulationSection(data);
+                this.updateEconomySection(data);
+                this.updateMilitarySection(data);
+                this.updateTechSection(data);
+            }
+            
+            updateStatsGrid(data) {
+                const stats = [
+                    {
+                        icon: 'fas fa-users',
+                        label: '总人口',
+                        value: data.人口?.总人口 || 0,
+                        trend: '+2%'
+                    },
+                    {
+                        icon: 'fas fa-coins',
+                        label: '国库金币',
+                        value: data.经济?.财政?.库存金币 || 0,
+                        trend: data.经济?.财政?.月净收入 > 0 ? '盈余' : '赤字'
+                    },
+                    {
+                        icon: 'fas fa-heart',
+                        label: '民心',
+                        value: data.状态?.居民状态?.民心指数 || 0,
+                        trend: '稳定'
+                    },
+                    {
+                        icon: 'fas fa-shield-alt',
+                        label: '军事评级',
+                        value: data.军事?.战力评级?.总评级 || '?',
+                        trend: data.军事?.兵力?.常备军 || 0
+                    }
+                ];
+                
+                let html = '';
+                stats.forEach(stat => {
+                    const trendClass = stat.trend.includes('+') ? 'trend-up' : 
+                                      stat.trend.includes('赤字') ? 'trend-down' : 'trend-neutral';
+                    
+                    html += `
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="${stat.icon}"></i>
+                            </div>
+                            <div class="stat-label">${stat.label}</div>
+                            <div class="stat-value">${stat.value}</div>
+                            <div class="stat-trend ${trendClass}">${stat.trend}</div>
+                        </div>
+                    `;
+                });
+                
+                $('#statsGrid').html(html);
+            }
+            
+            updatePopulationSection(data) {
+                let html = '';
+                
+                // 种族构成
+                if (data.人口?.种族构成) {
+                    html += '<div style="margin-bottom: 10px;">';
+                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">种族构成:</div>';
+                    
+                    Object.entries(data.人口.种族构成).forEach(([race, info]) => {
+                        const statusClass = `status-${info.地位}`.toLowerCase();
+                        html += `
+                            <div class="race-item">
+                                <span class="item-name">${race}</span>
+                                <span class="item-status ${statusClass}">${info.数量}人 (${info.地位})</span>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                }
+                
+                // 职业分布
+                if (data.人口?.职业分布) {
+                    html += '<div style="margin-bottom: 10px;">';
+                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">职业分布:</div>';
+                    
+                    Object.entries(data.人口.职业分布).forEach(([job, info]) => {
+                        html += `
+                            <div class="race-item">
+                                <span class="item-name">${job}</span>
+                                <span class="item-status">${info.人数}人</span>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                }
+                
+                $('#populationSection').html(html);
+            }
+            
+            updateEconomySection(data) {
+                const economy = data.经济;
+                let html = '';
+                
+                if (economy?.财政) {
+                    const finance = economy.财政;
+                    const netIncome = finance.月净收入 || 0;
+                    
+                    html += `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>月收入:</span>
+                                <span style="color: #3A6B35; font-weight: bold;">${finance.月收入 || 0}金币</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>月支出:</span>
+                                <span style="color: #8B3A3A; font-weight: bold;">${finance.月支出 || 0}金币</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>净收入:</span>
+                                <span style="color: ${netIncome >= 0 ? '#3A6B35' : '#8B3A3A'}; font-weight: bold;">
+                                    ${netIncome >= 0 ? '+' : ''}${netIncome}金币
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // 仓库物资（如果有）
+                if (data.仓库) {
+                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">仓库物资:</div>';
+                    
+                    Object.entries(data.仓库).forEach(([resource, info]) => {
+                        if (info.当前储量 !== undefined) {
+                            html += `
+                                <div class="race-item" style="margin-bottom: 3px;">
+                                    <span class="item-name">${info.名称 || resource}</span>
+                                    <span class="item-status">${info.当前储量}${info.单位 || ''}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                $('#economySection').html(html);
+            }
+            
+            updateMilitarySection(data) {
+                const military = data.军事;
+                let html = '';
+                
+                if (military?.兵力) {
+                    html += `
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>常备军:</span>
+                                <span>${military.兵力.常备军 || 0}人</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>民兵:</span>
+                                <span>${military.兵力.民兵 || 0}人</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (military?.战力评级) {
+                    html += `
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">战力评级:</div>
+                        <div style="text-align: center; font-size: 1.5em; font-weight: bold; color: #C9A227;">
+                            ${military.战力评级.总评级 || '?'}
+                        </div>
+                    `;
+                }
+                
+                $('#militarySection').html(html);
+            }
+            
+            updateTechSection(data) {
+                // 这里可以根据实际的科技数据结构进行调整
+                let html = '';
+                
+                if (data.科技) {
+                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">研发进度:</div>';
+                    
+                    Object.entries(data.科技).forEach(([techId, tech]) => {
+                        if (tech.研发状态 === '研发中') {
+                            html += `
+                                <div style="margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                        <span>${tech.名称 || techId}</span>
+                                        <span>${tech.当前进度 || 0}%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${tech.当前进度 || 0}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    html = '<div style="color: #888; font-style: italic;">暂无研发中的科技</div>';
+                }
+                
+                $('#techSection').html(html);
+            }
+            
+            toggleCollapse() {
+                this.isCollapsed = !this.isCollapsed;
+                const dashboard = $('#territoryDashboard');
+                const icon = $('#collapseBtn i');
+                
+                if (this.isCollapsed) {
+                    dashboard.addClass('dashboard-collapsed');
+                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                } else {
+                    dashboard.removeClass('dashboard-collapsed');
+                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                }
+            }
+            
+            startAutoRefresh() {
+                // 每30秒自动刷新一次
+                this.updateInterval = setInterval(() => {
+                    this.loadMVUData();
+                }, 30000);
+            }
+            
+            destroy() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+            }
+        }
+        
+        // 初始化仪表板
+        $(document).ready(function() {
+            window.territoryDashboard = new TerritoryDashboard();
+        });
+    </script>
+</body>
+</html>
