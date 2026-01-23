@@ -742,13 +742,18 @@
         let autoRefreshInterval = null;
         let debugMode = false;
         
-        // 数据转换函数 - 简化版，只修复核心问题
+        // 改进的数据转换函数 - 修复年龄结构问题
         function convertMVUData(data) {
             if (!data || typeof data !== 'object') return data;
             
-            // 如果是数组，取第一个元素（值）
-            // 注意：有些数组可能包含[值, 描述]格式
+            // 如果是数组，检查是否包含值
             if (Array.isArray(data)) {
+                // 检查数组第一个元素是否是对象或数组
+                if (data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
+                    // 如果是对象数组，可能需要特殊处理
+                    return data;
+                }
+                // 否则返回第一个元素作为值
                 return data.length > 0 ? data[0] : null;
             }
             
@@ -760,10 +765,18 @@
                 if (key === '$meta') continue;
                 
                 if (Array.isArray(value)) {
-                    // 如果是数组，取第一个元素（值）
-                    result[key] = convertMVUData(value);
+                    // 处理数组：检查是否包含[值, 描述]格式
+                    if (value.length === 2 && typeof value[1] === 'string') {
+                        // [值, 描述]格式，只保留值
+                        result[key] = value[0];
+                    } else if (value.length > 0) {
+                        // 其他数组格式，取第一个元素
+                        result[key] = convertMVUData(value[0]);
+                    } else {
+                        result[key] = null;
+                    }
                 } else if (typeof value === 'object' && value !== null) {
-                    // 如果是对象，递归处理
+                    // 处理对象
                     // 跳过模板对象
                     if (value.$meta && value.$meta.extensible === true) {
                         // 对于可扩展对象，处理其内容但跳过模板本身
@@ -775,6 +788,7 @@
                         }
                         result[key] = processedObj;
                     } else {
+                        // 递归处理普通对象
                         result[key] = convertMVUData(value);
                     }
                 } else {
@@ -786,7 +800,33 @@
             return result;
         }
         
-        // 从MVU获取数据 - 恢复交互功能版
+        // 增强的数据转换函数 - 针对MVU数据结构
+        function extractValue(data) {
+            if (data === undefined || data === null) return null;
+            
+            // 如果是数组，取第一个元素
+            if (Array.isArray(data)) {
+                if (data.length === 0) return null;
+                return extractValue(data[0]);
+            }
+            
+            // 如果是对象，检查是否有value或值属性
+            if (typeof data === 'object') {
+                // 优先尝试获取数值属性
+                if (data.value !== undefined) return data.value;
+                if (data.值 !== undefined) return data.值;
+                if (data.数量 !== undefined) return data.数量;
+                if (data.count !== undefined) return data.count;
+                
+                // 如果没有找到标准属性，返回对象本身用于进一步处理
+                return data;
+            }
+            
+            // 否则直接返回
+            return data;
+        }
+        
+        // 从MVU获取数据
         async function fetchFromMVU() {
             try {
                 showLoading(true);
@@ -833,6 +873,19 @@
                         if (mvuData.stat_data.Territory) {
                             console.log('找到 Territory 数据');
                             territoryData = convertMVUData(mvuData.stat_data.Territory);
+                            
+                            // 特别处理人口数据
+                            if (territoryData.人口 && territoryData.人口.年龄结构) {
+                                console.log('年龄结构原始数据:', territoryData.人口.年龄结构);
+                                // 确保年龄结构是数字格式
+                                const ageStructure = territoryData.人口.年龄结构;
+                                for (const key in ageStructure) {
+                                    if (typeof ageStructure[key] === 'object') {
+                                        // 如果是对象，提取数值
+                                        ageStructure[key] = extractValue(ageStructure[key]);
+                                    }
+                                }
+                            }
                         } else {
                             console.warn('stat_data 中没有 Territory 数据');
                             // 尝试使用stat_data本身
@@ -865,6 +918,7 @@
                 }
                 
                 console.log('最终领地数据:', territoryData);
+                console.log('年龄结构数据:', territoryData.人口?.年龄结构);
                 
                 lastUpdate = new Date();
                 document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
@@ -1056,34 +1110,6 @@
                             当前人数: 4,
                             最大人数: 8,
                             月薪: 4
-                        },
-                        生产配方: {
-                            投入资源: {
-                                res_material_iron: 2,
-                                res_material_wood: 1
-                            },
-                            产出资源: {
-                                item_weapon_spear: 3,
-                                item_tool_hammer: 5
-                            },
-                            生产效率: 0.8,
-                            每月产量: 0
-                        },
-                        升级路径: {
-                            下一等级: 2,
-                            所需金币: 500,
-                            所需材料: {
-                                木材: 100,
-                                石材: 50,
-                                铁矿: 80
-                            },
-                            所需时间: 30,
-                            升级效果: {
-                                基础收入增加: 20,
-                                最大岗位增加: 2,
-                                生产效率提升: 0.15,
-                                新功能解锁: "可生产锁子甲"
-                            }
                         },
                         财务: {
                             计算_月收入: 120,
@@ -1342,12 +1368,34 @@
             container.innerHTML = html;
         }
         
-        // 安全获取数字
+        // 安全获取数字 - 增强版，处理更多数据类型
         function safeNumber(value, defaultValue = 0) {
-            if (value === undefined || value === null || isNaN(value)) {
+            if (value === undefined || value === null) {
                 return defaultValue;
             }
-            return Number(value);
+            
+            // 如果是对象，尝试提取数值
+            if (typeof value === 'object') {
+                // 尝试从对象中提取常见的数值属性
+                const extracted = extractValue(value);
+                value = extracted;
+            }
+            
+            // 如果是数组，取第一个元素
+            if (Array.isArray(value) && value.length > 0) {
+                value = value[0];
+            }
+            
+            // 转换为数字
+            const num = Number(value);
+            
+            // 检查是否为有效数字
+            if (isNaN(num)) {
+                console.warn('无法转换为数字的值:', value, '使用默认值:', defaultValue);
+                return defaultValue;
+            }
+            
+            return num;
         }
         
         // 安全获取字符串
@@ -1355,6 +1403,18 @@
             if (value === undefined || value === null) {
                 return defaultValue;
             }
+            
+            // 如果是对象，尝试提取字符串
+            if (typeof value === 'object') {
+                const extracted = extractValue(value);
+                value = extracted;
+            }
+            
+            // 如果是数组，取第一个元素
+            if (Array.isArray(value) && value.length > 0) {
+                value = value[0];
+            }
+            
             return String(value);
         }
         
@@ -1664,8 +1724,10 @@
             }
         }
         
-        // 加载人口详情
+        // 加载人口详情 - 修复年龄结构问题
         function loadPopulationDetails() {
+            console.log('加载人口详情，年龄结构数据:', territoryData.人口?.年龄结构);
+            
             // 年龄结构
             const ageContainer = document.getElementById('age-structure');
             if (ageContainer) {
@@ -1689,8 +1751,13 @@
                 ];
                 
                 ageGroups.forEach(group => {
-                    const count = safeNumber(ageStructure[group.key], 0);
+                    const rawValue = ageStructure[group.key];
+                    console.log(`年龄组 ${group.key}: 原始值 =`, rawValue);
+                    
+                    const count = safeNumber(rawValue, 0);
                     const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                    
+                    console.log(`年龄组 ${group.key}: 处理后值 =`, count);
                     
                     html += `
                         <tr>
@@ -2242,7 +2309,7 @@
             }
         }
 
-        // 加载建筑详情
+        // 加载建筑详情 - 已删除生产配方内容
         function loadBuildingsDetails() {
             const container = document.getElementById('buildings-list');
             if (!container) return;
@@ -2263,16 +2330,6 @@
                     const currentJobs = safeNumber(jobs.当前人数, 0);
                     const maxJobs = safeNumber(jobs.最大人数, 0);
                     const salary = safeNumber(jobs.月薪, 0);
-                    
-                    const production = building.生产配方 || {};
-                    const inputs = production.投入资源 || {};
-                    const outputs = production.产出资源 || {};
-                    const efficiency = safeNumber(production.生产效率, 0);
-                    
-                    const upgrade = building.升级路径 || {};
-                    const nextLevel = safeNumber(upgrade.下一等级, 0);
-                    const upgradeCost = safeNumber(upgrade.所需金币, 0);
-                    const upgradeMaterials = upgrade.所需材料 || {};
                     
                     const finance = building.财务 || {};
                     const income = safeNumber(finance.计算_月收入, 0);
@@ -2339,49 +2396,7 @@
                             </table>
                             
                             <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                                <div style="font-weight: bold; margin-bottom: 5px;">生产配方</div>
-                                <div style="display: flex; font-size: 11px;">
-                                    <div style="flex: 1; padding-right: 10px;">
-                                        <div style="font-weight: bold; color: #dc3545;">投入资源</div>
-                                        ${Object.keys(inputs).length > 0 ? 
-                                            Object.entries(inputs).map(([res, amount]) => 
-                                                `<div>${res}: ${amount}/人/月</div>`
-                                            ).join('') : 
-                                            '<div>无</div>'
-                                        }
-                                    </div>
-                                    <div style="flex: 1; padding-left: 10px; border-left: 1px solid #eee;">
-                                        <div style="font-weight: bold; color: #28a745;">产出资源</div>
-                                        ${Object.keys(outputs).length > 0 ? 
-                                            Object.entries(outputs).map(([res, amount]) => 
-                                                `<div>${res}: ${amount}/人/月</div>`
-                                            ).join('') : 
-                                            '<div>无</div>'
-                                        }
-                                    </div>
-                                </div>
-                                <div style="margin-top: 5px; font-size: 11px;">
-                                    生产效率: ${(efficiency * 100).toFixed(0)}%
-                                </div>
-                            </div>
-                            
-                            ${nextLevel > 0 ? `
-                                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                                    <div style="font-weight: bold; margin-bottom: 5px;">升级信息 (→等级${nextLevel})</div>
-                                    <div style="font-size: 11px;">
-                                        <div>所需金币: ${formatCurrency(upgradeCost)}</div>
-                                        ${Object.keys(upgradeMaterials).length > 0 ? 
-                                            '<div>所需材料: ' + Object.entries(upgradeMaterials).map(([mat, amount]) => 
-                                                `${mat}: ${amount}`
-                                            ).join(', ') + '</div>' : 
-                                            ''
-                                        }
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                                <div style="font-weight: bold; margin-bottom: 3px;">特殊效果</div>
+                                <div style="font-weight: bold; margin-bottom: 5px;">建筑效果</div>
                                 <div style="font-size: 11px; color: #4A3728;">${specialEffect}</div>
                             </div>
                         </div>
@@ -2743,7 +2758,7 @@
             }
         }
         
-        // 刷新数据 - 修复版
+        // 刷新数据
         async function refreshData() {
             try {
                 showLoading(true);
@@ -2898,7 +2913,17 @@
                     // 显示关键数据
                     debugHtml += '<div class="debug-item"><span class="debug-key">人口:</span> <span class="debug-value">' + (territoryData.人口?.总人口 || 'N/A') + '</span></div>';
                     debugHtml += '<div class="debug-item"><span class="debug-key">国库:</span> <span class="debug-value">' + (territoryData.经济?.财政?.库存金币 || 'N/A') + '</span></div>';
-                    debugHtml += '<div class="debug-item"><span class="debug-key">人类数量:</span> <span class="debug-value">' + (territoryData.人口?.种族构成?.人类?.数量 || 'N/A') + '</span></div>';
+                    
+                    // 特别显示年龄结构数据
+                    if (territoryData.人口?.年龄结构) {
+                        debugHtml += '<div class="debug-item"><span class="debug-key">年龄结构原始数据:</span> <span class="debug-value">' + JSON.stringify(territoryData.人口.年龄结构) + '</span></div>';
+                        
+                        // 显示每个年龄组的数据
+                        Object.entries(territoryData.人口.年龄结构).forEach(([key, value]) => {
+                            debugHtml += `<div class="debug-item"><span class="debug-key">${key}:</span> <span class="debug-value">${JSON.stringify(value)} (类型: ${typeof value})</span></div>`;
+                        });
+                    }
+                    
                     debugHtml += '<div class="debug-item"><span class="debug-key">最后更新:</span> <span class="debug-value">' + (lastUpdate ? lastUpdate.toLocaleTimeString() : 'N/A') + '</span></div>';
                     
                     // 显示数据来源
