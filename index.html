@@ -5,68 +5,635 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>领地经营状态面板</title>
     
-    <!-- 使用更稳定的CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+    <!-- 使用兼容性更好的CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
     <style>
-        /* 样式部分保持不变，从您的原代码复制即可 */
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --info-color: #9b59b6;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition-speed: 0.3s;
-        }
-        
+        /* 重置样式，确保适应 SillyTavern 容器 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
         }
         
+        /* 主容器 - 全屏显示 */
+        #app {
+            width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* 领地仪表板 - 固定高度容器 */
         .territory-dashboard {
-            max-width: 1800px;
-            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            border-radius: 12px;
+            margin: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            max-height: calc(100vh - 20px);
+        }
+        
+        /* 工具栏 */
+        .dashboard-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toolbar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .dashboard-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .update-time {
+            font-size: 12px;
+            opacity: 0.8;
+            color: #bdc3c7;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-refresh {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-refresh:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-settlement {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-settlement:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* 主要内容区域 - 可滚动 */
+        .dashboard-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        /* 移除原代码中可能冲突的 max-width 限制 */
+        .territory-dashboard {
+            max-width: none !important;
+        }
+        
+        /* 错误和加载状态 */
+        .error-alert {
+            margin: 15px;
+            padding: 12px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 100;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 指标卡片网格 */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .data-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .data-card.size-large {
+            grid-column: span 2;
+        }
+        
+        .data-card.size-medium {
+            grid-column: span 1;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .card-icon {
+            font-size: 20px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        
+        .card-value .unit {
+            font-size: 14px;
+            font-weight: normal;
+            color: #7f8c8d;
+        }
+        
+        .card-value .trend {
+            margin-left: 8px;
+            font-size: 16px;
+        }
+        
+        /* 面板布局 - 响应式 */
+        .panels-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .panels-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .panels-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-row {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+        
+        .panel-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* 可折叠面板 */
+        .collapsible-panel {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
+        }
+        
+        .panel-header:hover {
+            background: #e9ecef;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .panel-icon {
+            font-size: 16px;
+        }
+        
+        .panel-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+        
+        .toggle-arrow {
+            transition: transform 0.3s;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .toggle-arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .panel-content {
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* 信息网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        /* 底部状态栏 */
+        .dashboard-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #7f8c8d;
+            flex-shrink: 0;
+        }
+        
+        .footer-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .refresh-link {
+            color: #3498db;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .refresh-link:hover {
+            color: #2980b9;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 资源网格 */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .resource-item {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        
+        .resource-name {
+            display: block;
+            font-weight: 500;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #2c3e50;
+        }
+        
+        .resource-amount {
+            font-size: 16px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        /* 经济统计 */
+        .economy-stats {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .stat-label {
+            font-weight: 500;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .stat-value.income {
+            color: #27ae60;
+        }
+        
+        .stat-value.expense {
+            color: #e74c3c;
+        }
+        
+        .stat-value.treasury {
+            color: #f39c12;
+        }
+        
+        /* 建筑网格 */
+        .buildings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .building-item {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+        
+        .building-item.normal {
+            border-left: 3px solid #27ae60;
+        }
+        
+        .building-item.constructing {
+            border-left: 3px solid #f39c12;
+        }
+        
+        .building-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .building-name {
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .building-level {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        
+        /* 种族网格 */
+        .races-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .race-item {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #fafafa;
+        }
+        
+        .race-name {
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        .race-count {
+            font-size: 14px;
+            color: #3498db;
+        }
+        
+        .race-status {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .race-status.status-主导 {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .race-status.status-平等 {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .race-status.status-受限制 {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .race-status.status-奴隶 {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* 军事统计 */
+        .military-stats {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .military-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #e74c3c;
+        }
+        
+        .military-label {
+            font-weight: 500;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .military-value {
+            font-weight: bold;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            margin: 8px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
             overflow: hidden;
         }
         
-        /* ... 其余CSS样式（从您原代码复制完整的样式） ... */
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
     </style>
 </head>
 <body>
     <div id="app"></div>
     
-    <script type="module">
-        // 简化的主应用 - 不使用Pinia以简化
-        const { createApp, ref, computed, onMounted } = Vue;
+    <script>
+        // 简化版 Vue 应用
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
         
         const app = createApp({
             setup() {
-                // 状态管理
+                // 状态
                 const loading = ref(true);
                 const error = ref(null);
                 const lastUpdate = ref(null);
                 const territoryData = ref(null);
                 
-                // 模拟数据（实际使用时替换为真实数据）
+                // 模拟数据（用于测试）
                 const mockData = {
                     基本信息: {
                         名称: "北境边境领",
@@ -189,12 +756,7 @@
                             等级: 1,
                             状态: ["正常运营"],
                             岗位: { 当前人数: 4, 最大人数: 8 },
-                            产权: "private",
-                            生产配方: {
-                                投入资源: { res_material_iron: 2, res_material_wood: 1 },
-                                产出资源: { item_weapon_spear: 3, item_tool_hammer: 5 },
-                                生产效率: 0.8
-                            }
+                            产权: "private"
                         },
                         building_watchtower: {
                             名称: "北境瞭望塔",
@@ -203,64 +765,6 @@
                             岗位: { 当前人数: 0, 最大人数: 5 },
                             产权: "lord"
                         }
-                    },
-                    资源: {
-                        森林资源: { 再生速率: 100, 开采速率: 150 },
-                        矿脉资源: { 开采速率: 50 }
-                    },
-                    项目: {
-                        当前建设项目: "北境瞭望塔",
-                        项目进度: 30
-                    },
-                    法令: {
-                        decree_basic_tax: {
-                            名称: "基础税法",
-                            生效状态: [true]
-                        }
-                    }
-                };
-                
-                // 尝试从SillyTavern获取数据
-                async function fetchData() {
-                    try {
-                        loading.value = true;
-                        
-                        // 方法1: 检查全局变量（SillyTavern可能会将数据注入window）
-                        if (window.territoryData) {
-                            territoryData.value = window.territoryData;
-                        }
-                        // 方法2: 尝试从localStorage获取（如果MVU插件存储在那里）
-                        else if (localStorage.getItem('territoryData')) {
-                            territoryData.value = JSON.parse(localStorage.getItem('territoryData'));
-                        }
-                        // 方法3: 如果以上都不存在，使用模拟数据
-                        else {
-                            console.log('未找到真实数据，使用模拟数据');
-                            territoryData.value = mockData;
-                        }
-                        
-                        lastUpdate.value = new Date();
-                        error.value = null;
-                    } catch (err) {
-                        console.error('获取数据失败:', err);
-                        error.value = err.message;
-                        territoryData.value = mockData; // 出错时使用模拟数据
-                    } finally {
-                        loading.value = false;
-                    }
-                }
-                
-                // 刷新数据
-                const refreshData = () => {
-                    fetchData();
-                };
-                
-                // 月度结算（演示用）
-                const runMonthlySettlement = () => {
-                    alert('月度结算功能需要与SillyTavern MVU插件集成');
-                    // 这里可以添加与AI的交互逻辑
-                    if (window.sendMessageToAI) {
-                        window.sendMessageToAI('执行领地月度结算');
                     }
                 };
                 
@@ -283,26 +787,120 @@
                     const expense = economy.value?.财政?.月总支出 || 0;
                     const net = income - expense;
                     
-                    if (net > 0) return { text: '盈余', icon: '📈', color: '#4caf50' };
-                    if (net < 0) return { text: '亏损', icon: '📉', color: '#f44336' };
-                    return { text: '平衡', icon: '⚖️', color: '#ff9800' };
+                    if (net > 0) return { text: '盈余', icon: '📈', color: '#27ae60' };
+                    if (net < 0) return { text: '亏损', icon: '📉', color: '#e74c3c' };
+                    return { text: '平衡', icon: '⚖️', color: '#f39c12' };
                 });
                 
                 // 计算威胁等级颜色
                 const threatColor = computed(() => {
                     const threat = residents.value?.威胁等级;
                     switch(threat) {
-                        case '安全': return '#4caf50';
-                        case '警戒': return '#ff9800';
-                        case '危险': return '#f44336';
-                        case '极危险': return '#9c27b0';
-                        default: return '#757575';
+                        case '安全': return '#27ae60';
+                        case '警戒': return '#f39c12';
+                        case '危险': return '#e74c3c';
+                        case '极危险': return '#9b59b6';
+                        default: return '#7f8c8d';
                     }
                 });
+                
+                // 获取数据
+                async function fetchData() {
+                    try {
+                        loading.value = true;
+                        
+                        // 尝试从 SillyTavern 获取数据
+                        // 方法1: 检查全局变量
+                        if (window.territoryData) {
+                            territoryData.value = window.territoryData;
+                        }
+                        // 方法2: 检查 localStorage
+                        else if (localStorage.getItem('territoryData')) {
+                            territoryData.value = JSON.parse(localStorage.getItem('territoryData'));
+                        }
+                        // 方法3: 检查 URL 参数
+                        else if (window.location.search.includes('territoryData')) {
+                            const params = new URLSearchParams(window.location.search);
+                            const dataStr = params.get('territoryData');
+                            if (dataStr) {
+                                territoryData.value = JSON.parse(decodeURIComponent(dataStr));
+                            }
+                        }
+                        // 方法4: 使用模拟数据
+                        else {
+                            console.log('未找到真实数据，使用模拟数据');
+                            territoryData.value = mockData;
+                        }
+                        
+                        lastUpdate.value = new Date();
+                        error.value = null;
+                        
+                        // 更新后重新计算布局
+                        await nextTick();
+                        updateLayout();
+                        
+                    } catch (err) {
+                        console.error('获取数据失败:', err);
+                        error.value = err.message;
+                        territoryData.value = mockData;
+                    } finally {
+                        loading.value = false;
+                    }
+                }
+                
+                // 刷新数据
+                function refreshData() {
+                    fetchData();
+                }
+                
+                // 月度结算
+                function runMonthlySettlement() {
+                    if (window.parent && window.parent.postMessage) {
+                        // 发送消息给父窗口（SillyTavern）
+                        window.parent.postMessage({
+                            type: 'territory_action',
+                            action: 'monthly_settlement'
+                        }, '*');
+                    } else {
+                        alert('月度结算功能需要与SillyTavern集成');
+                    }
+                }
+                
+                // 更新布局以适应容器
+                function updateLayout() {
+                    // 确保内容区域正确显示
+                    const content = document.querySelector('.dashboard-content');
+                    if (content) {
+                        content.style.maxHeight = 'none';
+                    }
+                }
+                
+                // 面板切换
+                function togglePanel(panelId) {
+                    const panel = document.getElementById(panelId);
+                    if (panel) {
+                        panel.classList.toggle('open');
+                    }
+                }
                 
                 // 初始化
                 onMounted(() => {
                     fetchData();
+                    
+                    // 监听窗口大小变化
+                    window.addEventListener('resize', updateLayout);
+                    
+                    // 监听来自 SillyTavern 的消息
+                    window.addEventListener('message', (event) => {
+                        if (event.data && event.data.type === 'update_territory_data') {
+                            territoryData.value = event.data.data;
+                            lastUpdate.value = new Date();
+                            updateLayout();
+                        }
+                    });
+                    
+                    // 初始布局调整
+                    setTimeout(updateLayout, 100);
                 });
                 
                 return {
@@ -330,7 +928,8 @@
                     
                     // 方法
                     refreshData,
-                    runMonthlySettlement
+                    runMonthlySettlement,
+                    togglePanel
                 };
             },
             template: `
@@ -343,8 +942,8 @@
                         </div>
                         <div class="toolbar-right">
                             <button @click="refreshData" class="btn btn-refresh" :disabled="loading">
-                                <span v-if="loading">刷新中...</span>
-                                <span v-else>🔄 刷新数据</span>
+                                <span v-if="loading">🔄 刷新中...</span>
+                                <span v-else>🔄 刷新</span>
                             </button>
                             <button @click="runMonthlySettlement" class="btn btn-settlement">
                                 📅 月度结算
@@ -366,14 +965,14 @@
                     <!-- 主要内容 -->
                     <div v-if="territoryData" class="dashboard-content">
                         
-                        <!-- 第一行: 关键指标 -->
+                        <!-- 关键指标 -->
                         <div class="metrics-row">
                             <div class="data-card size-large">
                                 <div class="card-header">
                                     <span class="card-icon">👥</span>
                                     <span class="card-title">总人口</span>
                                 </div>
-                                <div class="card-value" style="color: #2196f3;">
+                                <div class="card-value" style="color: #3498db;">
                                     {{ totalPopulation.toLocaleString() }}<span class="unit">人</span>
                                 </div>
                             </div>
@@ -383,7 +982,7 @@
                                     <span class="card-icon">💰</span>
                                     <span class="card-title">国库资金</span>
                                 </div>
-                                <div class="card-value" style="color: #ffc107;">
+                                <div class="card-value" style="color: #f39c12;">
                                     {{ economy.财政?.库存金币?.toLocaleString() || 0 }}<span class="unit">金币</span>
                                 </div>
                             </div>
@@ -414,54 +1013,52 @@
                                     <span class="card-icon">❤️</span>
                                     <span class="card-title">民心指数</span>
                                 </div>
-                                <div class="card-value" :style="{ color: residents.民心指数 > 70 ? '#4caf50' : residents.民心指数 > 40 ? '#ff9800' : '#f44336' }">
+                                <div class="card-value" :style="{ color: residents.民心指数 > 70 ? '#27ae60' : residents.民心指数 > 40 ? '#f39c12' : '#e74c3c' }">
                                     {{ residents.民心指数 || 0 }}
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 第二行: 详细面板 -->
+                        <!-- 详细面板 -->
                         <div class="panels-row">
                             
                             <!-- 左侧列 -->
                             <div class="panel-column">
-                                <!-- 基础信息 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header" @click="togglePanel('basicInfo')">
+                                <div class="collapsible-panel" id="basic-info">
+                                    <div class="panel-header" @click="togglePanel('basic-info')">
                                         <div class="header-left">
                                             <span class="panel-icon">🏰</span>
-                                            <span class="panel-title">📋 领地基础信息</span>
+                                            <span class="panel-title">领地信息</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
                                     <div class="panel-content">
                                         <div class="info-grid">
                                             <div class="info-item">
-                                                <span class="info-label">领地名称:</span>
+                                                <span class="info-label">名称:</span>
                                                 <span class="info-value">{{ basicInfo.名称 }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">领地面积:</span>
+                                                <span class="info-label">面积:</span>
                                                 <span class="info-value">{{ basicInfo.面积 }} 平方里</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">地形特征:</span>
+                                                <span class="info-label">地形:</span>
                                                 <span class="info-value">{{ basicInfo.地形 }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">发展阶段:</span>
+                                                <span class="info-label">阶段:</span>
                                                 <span class="info-value">{{ basicInfo.发展阶段 }}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- 经济状况 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header">
+                                <div class="collapsible-panel" id="economy">
+                                    <div class="panel-header" @click="togglePanel('economy')">
                                         <div class="header-left">
                                             <span class="panel-icon">💰</span>
-                                            <span class="panel-title">💎 经济与财政</span>
+                                            <span class="panel-title">经济财政</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
@@ -477,7 +1074,7 @@
                                             </div>
                                             <div class="stat-item">
                                                 <span class="stat-label">净收入:</span>
-                                                <span class="stat-value" :class="balanceStatus.text">{{ economy.财政?.月净收入 || 0 }} 金币 {{ balanceStatus.icon }}</span>
+                                                <span class="stat-value" :style="{ color: balanceStatus.color }">{{ economy.财政?.月净收入 || 0 }} 金币</span>
                                             </div>
                                             <div class="stat-item">
                                                 <span class="stat-label">国库资金:</span>
@@ -490,20 +1087,19 @@
                             
                             <!-- 中间列 -->
                             <div class="panel-column">
-                                <!-- 人口与种族 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header">
+                                <div class="collapsible-panel" id="population">
+                                    <div class="panel-header" @click="togglePanel('population')">
                                         <div class="header-left">
                                             <span class="panel-icon">👥</span>
-                                            <span class="panel-title">🌍 人口与种族构成</span>
+                                            <span class="panel-title">人口种族</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
                                     <div class="panel-content">
                                         <div class="population-section">
-                                            <h4>总人口: {{ totalPopulation }} 人</h4>
+                                            <h4 style="margin-bottom: 10px; color: #2c3e50;">总人口: {{ totalPopulation }} 人</h4>
                                             <div v-if="races && Object.keys(races).length > 0" class="races-section">
-                                                <h4>种族构成</h4>
+                                                <h4 style="margin: 15px 0 8px 0; color: #2c3e50;">种族构成</h4>
                                                 <div class="races-grid">
                                                     <div v-for="(race, raceName) in races" :key="raceName" class="race-item">
                                                         <span class="race-name">{{ raceName }}</span>
@@ -516,30 +1112,31 @@
                                     </div>
                                 </div>
                                 
-                                <!-- 军事与防御 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header">
+                                <div class="collapsible-panel" id="military">
+                                    <div class="panel-header" @click="togglePanel('military')">
                                         <div class="header-left">
                                             <span class="panel-icon">⚔️</span>
-                                            <span class="panel-title">🛡️ 军事与防御</span>
+                                            <span class="panel-title">军事防御</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
                                     <div class="panel-content">
-                                        <div class="military-section">
-                                            <div class="military-stats">
-                                                <div class="military-item">
-                                                    <span class="military-label">常备军:</span>
-                                                    <span class="military-value">{{ military.兵力?.常备军 || 0 }} 人</span>
-                                                </div>
-                                                <div class="military-item">
-                                                    <span class="military-label">民兵:</span>
-                                                    <span class="military-value">{{ military.兵力?.民兵 || 0 }} 人</span>
-                                                </div>
-                                                <div class="military-item">
-                                                    <span class="military-label">总战力评级:</span>
-                                                    <span class="military-value rating">{{ military.战力评级?.总评级 || '未知' }}</span>
-                                                </div>
+                                        <div class="military-stats">
+                                            <div class="military-item">
+                                                <span class="military-label">常备军:</span>
+                                                <span class="military-value">{{ military.兵力?.常备军 || 0 }} 人</span>
+                                            </div>
+                                            <div class="military-item">
+                                                <span class="military-label">民兵:</span>
+                                                <span class="military-value">{{ military.兵力?.民兵 || 0 }} 人</span>
+                                            </div>
+                                            <div class="military-item">
+                                                <span class="military-label">精锐部队:</span>
+                                                <span class="military-value">{{ military.兵力?.精锐部队 || 0 }} 人</span>
+                                            </div>
+                                            <div class="military-item">
+                                                <span class="military-label">总战力评级:</span>
+                                                <span class="military-value">{{ military.战力评级?.总评级 || '未知' }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -548,12 +1145,11 @@
                             
                             <!-- 右侧列 -->
                             <div class="panel-column">
-                                <!-- 仓库物资储备 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header">
+                                <div class="collapsible-panel" id="warehouse">
+                                    <div class="panel-header" @click="togglePanel('warehouse')">
                                         <div class="header-left">
                                             <span class="panel-icon">🏪</span>
-                                            <span class="panel-title">📦 仓库物资储备</span>
+                                            <span class="panel-title">仓库物资</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
@@ -569,12 +1165,11 @@
                                     </div>
                                 </div>
                                 
-                                <!-- 建筑设施 -->
-                                <div class="collapsible-panel panel-default">
-                                    <div class="panel-header">
+                                <div class="collapsible-panel" id="buildings">
+                                    <div class="panel-header" @click="togglePanel('buildings')">
                                         <div class="header-left">
                                             <span class="panel-icon">🏛️</span>
-                                            <span class="panel-title">🏗️ 建筑设施</span>
+                                            <span class="panel-title">建筑设施</span>
                                         </div>
                                         <span class="toggle-arrow">▼</span>
                                     </div>
@@ -587,7 +1182,7 @@
                                                         <span class="building-level">Lv.{{ building.等级 }}</span>
                                                     </div>
                                                     <div class="building-info">
-                                                        <span>状态: {{ building.状态?.[0] }}</span>
+                                                        <span style="font-size: 12px; color: #666;">{{ building.状态?.[0] }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -601,11 +1196,11 @@
                     <!-- 底部状态栏 -->
                     <div class="dashboard-footer">
                         <div class="footer-left">
-                            <span>领地经营系统 v1.0 | 简化版</span>
+                            <span>领地经营系统 v1.1 | 适配SillyTavern</span>
                         </div>
                         <div class="footer-right">
                             <span>数据: {{ territoryData ? '已加载' : '未加载' }}</span>
-                            <span class="footer-separator">|</span>
+                            <span style="margin: 0 5px;">|</span>
                             <span @click="refreshData" class="refresh-link">点击刷新</span>
                         </div>
                     </div>
@@ -613,64 +1208,79 @@
             `
         });
         
-        // 添加一些简单的交互逻辑
-        app.directive('click-outside', {
-            mounted(el, binding) {
-                el.clickOutsideEvent = function(event) {
-                    if (!(el === event.target || el.contains(event.target))) {
-                        binding.value(event, el);
-                    }
-                };
-                document.body.addEventListener('click', el.clickOutsideEvent);
-            },
-            unmounted(el) {
-                document.body.removeEventListener('click', el.clickOutsideEvent);
-            }
-        });
-        
         // 挂载应用
         app.mount('#app');
         
-        // 简单的面板切换功能
+        // 手动处理面板切换
         document.addEventListener('click', function(e) {
             if (e.target.closest('.panel-header')) {
-                const panel = e.target.closest('.collapsible-panel');
+                const header = e.target.closest('.panel-header');
+                const panel = header.parentElement;
                 const content = panel.querySelector('.panel-content');
                 const arrow = panel.querySelector('.toggle-arrow');
                 
-                if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                if (panel.classList.contains('open')) {
                     content.style.maxHeight = '0px';
                     arrow.style.transform = 'rotate(0deg)';
+                    panel.classList.remove('open');
                 } else {
                     content.style.maxHeight = content.scrollHeight + 'px';
                     arrow.style.transform = 'rotate(180deg)';
+                    panel.classList.add('open');
                 }
             }
         });
         
-        // 初始化面板状态
+        // 初始化所有面板为打开状态
         setTimeout(() => {
             document.querySelectorAll('.collapsible-panel').forEach(panel => {
                 const content = panel.querySelector('.panel-content');
                 const arrow = panel.querySelector('.toggle-arrow');
-                content.style.maxHeight = content.scrollHeight + 'px';
-                arrow.style.transform = 'rotate(180deg)';
+                if (content) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    arrow.style.transform = 'rotate(180deg)';
+                    panel.classList.add('open');
+                }
             });
         }, 100);
         
         // 提供全局API供SillyTavern调用
-        window.updateTerritoryData = function(data) {
-            const appElement = document.querySelector('#app');
-            if (appElement && appElement.__vue_app__) {
-                const instance = appElement.__vue_app__._instance;
-                if (instance && instance.setupState) {
-                    instance.setupState.territoryData = data;
-                    instance.setupState.lastUpdate = new Date();
+        window.TerritoryPanel = {
+            updateData: function(data) {
+                const appElement = document.querySelector('#app');
+                if (appElement && appElement.__vue_app__) {
+                    const instance = appElement.__vue_app__._instance;
+                    if (instance && instance.setupState) {
+                        instance.setupState.territoryData = data;
+                        instance.setupState.lastUpdate = new Date();
+                        instance.setupState.error = null;
+                        
+                        // 触发UI更新
+                        setTimeout(() => {
+                            document.querySelectorAll('.collapsible-panel.open').forEach(panel => {
+                                const content = panel.querySelector('.panel-content');
+                                if (content) {
+                                    content.style.maxHeight = content.scrollHeight + 'px';
+                                }
+                            });
+                        }, 50);
+                    }
+                }
+            },
+            
+            clearData: function() {
+                const appElement = document.querySelector('#app');
+                if (appElement && appElement.__vue_app__) {
+                    const instance = appElement.__vue_app__._instance;
+                    if (instance && instance.setupState) {
+                        instance.setupState.territoryData = null;
+                        instance.setupState.lastUpdate = null;
+                    }
                 }
             }
         };
         
-        console.log('领地管理面板已加载完成');
+        console.log('领地管理面板已加载完成 - 适配SillyTavern版本');
     </script>
 </body>
 </html>
