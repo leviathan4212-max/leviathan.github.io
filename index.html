@@ -695,7 +695,48 @@
         let autoRefreshInterval = null;
         let debugMode = false;
         
-        // 从MVU获取数据 - 简化修复版
+        // 增强的数据访问函数 - 支持点分隔路径
+        function getDataValue(path, defaultValue = null) {
+            if (!territoryData) return defaultValue;
+            
+            const keys = path.split('.');
+            let current = territoryData;
+            
+            for (const key of keys) {
+                if (current === null || current === undefined || typeof current !== 'object') {
+                    return defaultValue;
+                }
+                current = current[key];
+                if (current === undefined) {
+                    return defaultValue;
+                }
+            }
+            
+            // 如果结果是数组，取第一个元素
+            if (Array.isArray(current)) {
+                return current[0] || defaultValue;
+            }
+            
+            return current !== undefined ? current : defaultValue;
+        }
+        
+        // 安全获取数字
+        function safeNumber(value, defaultValue = 0) {
+            if (value === undefined || value === null || isNaN(value)) {
+                return defaultValue;
+            }
+            return Number(value);
+        }
+        
+        // 安全获取字符串
+        function safeString(value, defaultValue = '') {
+            if (value === undefined || value === null) {
+                return defaultValue;
+            }
+            return String(value);
+        }
+        
+        // 从MVU获取数据 - 增强版，修复嵌套数据处理
         async function fetchFromMVU() {
             try {
                 showLoading(true);
@@ -703,7 +744,7 @@
                 
                 let mvuData = null;
                 
-                // 方法1：使用getVariables（参考可用的角色卡前端）
+                // 方法1：使用getVariables
                 if (typeof getVariables === 'function') {
                     console.log('使用 getVariables()');
                     try {
@@ -711,7 +752,7 @@
                             type: 'message',
                             message_id: getCurrentMessageId?.() || 'current'
                         });
-                        console.log('getVariables 返回:', mvuData);
+                        console.log('getVariables 返回的键:', Object.keys(mvuData || {}));
                     } catch (e) {
                         console.error('getVariables 错误:', e);
                     }
@@ -730,6 +771,15 @@
                     }
                 }
                 
+                // 方法3：尝试直接访问全局变量
+                if (!mvuData && window.stat_data) {
+                    console.log('直接使用 window.stat_data');
+                    mvuData = { stat_data: window.stat_data };
+                }
+                
+                // 保存原始数据用于调试
+                window.rawMVUData = mvuData;
+                
                 // 从stat_data中提取Territory数据
                 if (mvuData) {
                     console.log('原始MVU数据键:', Object.keys(mvuData));
@@ -741,14 +791,19 @@
                         // 检查Territory是否存在
                         if (mvuData.stat_data.Territory) {
                             console.log('找到 Territory 数据');
+                            console.log('Territory 原始结构:', JSON.stringify(mvuData.stat_data.Territory).substring(0, 500));
+                            
+                            // 使用增强的转换函数
                             territoryData = convertMVUData(mvuData.stat_data.Territory);
+                            
+                            // 调试：显示转换后的种族构成
+                            console.log('转换后的人口数据:', territoryData.人口);
+                            console.log('转换后的种族构成:', territoryData.人口?.种族构成);
                         } else {
                             console.warn('stat_data 中没有 Territory 数据');
-                            // 尝试使用stat_data本身
                             territoryData = convertMVUData(mvuData.stat_data);
                         }
                     } else if (mvuData.Territory) {
-                        // 如果没有stat_data，直接尝试Territory
                         console.log('直接找到 Territory 数据');
                         territoryData = convertMVUData(mvuData.Territory);
                     } else {
@@ -767,15 +822,24 @@
                     }
                 }
                 
-                // 验证数据
-                if (!territoryData || !territoryData.人口) {
-                    console.warn('领地数据不完整，使用默认数据');
-                    territoryData = getDefaultData();
+                // 验证数据完整性
+                console.log('最终领地数据结构:', {
+                    总人口: getDataValue('人口.总人口'),
+                    金钱: getDataValue('经济.财政.库存金币'),
+                    种族构成: getDataValue('人口.种族构成'),
+                    人类数量: getDataValue('人口.种族构成.人类.数量')
+                });
+                
+                // 确保必要的数据存在
+                if (!territoryData.人口) {
+                    console.warn('领地数据中缺少人口数据，使用默认结构');
+                    territoryData.人口 = territoryData.人口 || getDefaultData().人口;
                 }
                 
-                console.log('最终领地数据:', territoryData);
-                console.log('人口:', territoryData.人口?.总人口);
-                console.log('经济:', territoryData.经济?.财政?.库存金币);
+                if (!territoryData.人口.种族构成) {
+                    console.warn('领地数据中缺少种族构成数据，使用默认结构');
+                    territoryData.人口.种族构成 = territoryData.人口.种族构成 || getDefaultData().人口.种族构成;
+                }
                 
                 lastUpdate = new Date();
                 document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
@@ -793,25 +857,36 @@
             }
         }
         
-        // 转换MVU数据格式（从数组格式转换为简单值）
+        // 增强的convertMVUData函数 - 修复嵌套结构处理
         function convertMVUData(data) {
-            if (!data || typeof data !== 'object') return {};
+            if (!data || typeof data !== 'object') {
+                return data;
+            }
             
+            // 如果是数组，取第一个元素
+            if (Array.isArray(data)) {
+                // 如果数组元素是对象，递归处理
+                if (data.length > 0 && typeof data[0] === 'object') {
+                    return convertMVUData(data[0]);
+                }
+                return data[0] || null;
+            }
+            
+            // 如果是对象，递归处理所有属性
             const result = {};
             
             for (const [key, value] of Object.entries(data)) {
-                // 跳过$meta属性
-                if (key === '$meta') continue;
+                // 跳过$meta和特殊属性
+                if (key === '$meta' || key === '$type' || key === '$extensible') {
+                    continue;
+                }
                 
-                if (Array.isArray(value)) {
-                    // 如果是数组，取第一个元素（值）
-                    // 注意：有些数组可能包含[值, 描述]格式
-                    result[key] = value[0];
-                } else if (typeof value === 'object' && value !== null) {
-                    // 如果是对象，递归处理
-                    // 跳过模板对象
+                if (value === null || value === undefined) {
+                    result[key] = value;
+                } else if (typeof value === 'object') {
+                    // 处理模板对象
                     if (value.$meta && value.$meta.extensible === true) {
-                        // 对于可扩展对象，处理其内容但跳过模板本身
+                        // 对于可扩展模板对象，遍历其属性（跳过$meta）
                         const processedObj = {};
                         for (const [subKey, subValue] of Object.entries(value)) {
                             if (subKey !== '$meta') {
@@ -819,11 +894,51 @@
                             }
                         }
                         result[key] = processedObj;
+                    } else if (Array.isArray(value)) {
+                        // 如果是数组，检查是否是[值, 描述]格式
+                        if (value.length === 2 && typeof value[1] === 'string') {
+                            // 取第一个元素作为值
+                            result[key] = convertMVUData(value[0]);
+                        } else if (value.length > 0 && typeof value[0] === 'object') {
+                            // 如果数组包含对象，可能是[对象, ...]格式
+                            // 检查是否是键值对数组
+                            const isKeyValueArray = value.some(item => 
+                                item && typeof item === 'object' && 
+                                ('key' in item || 'name' in item || '种族' in item)
+                            );
+                            
+                            if (isKeyValueArray) {
+                                // 转换为对象格式
+                                const objResult = {};
+                                value.forEach(item => {
+                                    if (item && typeof item === 'object') {
+                                        const itemKey = item.种族 || item.name || item.key;
+                                        if (itemKey) {
+                                            const processedItem = {};
+                                            for (const [k, v] of Object.entries(item)) {
+                                                if (k !== '种族' && k !== 'name' && k !== 'key') {
+                                                    processedItem[k] = convertMVUData(v);
+                                                }
+                                            }
+                                            objResult[itemKey] = processedItem;
+                                        }
+                                    }
+                                });
+                                result[key] = objResult;
+                            } else {
+                                // 简单数组，取第一个元素
+                                result[key] = convertMVUData(value[0]);
+                            }
+                        } else {
+                            // 简单数组，取第一个元素
+                            result[key] = convertMVUData(value[0]);
+                        }
                     } else {
+                        // 普通对象，递归处理
                         result[key] = convertMVUData(value);
                     }
                 } else {
-                    // 其他情况直接赋值
+                    // 基本类型，直接赋值
                     result[key] = value;
                 }
             }
@@ -1126,19 +1241,13 @@
             const container = document.getElementById('quick-stats');
             if (!container) return;
             
-            const basic = territoryData.基本信息 || {};
-            const population = territoryData.人口 || {};
-            const finance = territoryData.经济?.财政 || {};
-            const residents = territoryData.状态?.居民状态 || {};
-            const threat = territoryData.状态?.威胁状态 || {};
-            
-            // 安全获取数据，防止NaN
-            const totalPopulation = safeNumber(population.总人口, 1250);
-            const treasury = safeNumber(finance.库存金币, 2500);
-            const netIncome = safeNumber(finance.月净收入, 180);
-            const threatLevel = safeString(threat.威胁等级, '警戒');
-            const morale = safeNumber(residents.民心指数, 70);
-            const area = safeNumber(basic.面积, 85);
+            // 使用getDataValue函数获取数据
+            const totalPopulation = getDataValue('人口.总人口', 1250);
+            const treasury = getDataValue('经济.财政.库存金币', 2500);
+            const netIncome = getDataValue('经济.财政.月净收入', 180);
+            const threatLevel = getDataValue('状态.威胁状态.威胁等级', '警戒');
+            const morale = getDataValue('状态.居民状态.民心指数', 70);
+            const area = getDataValue('基本信息.面积', 85);
             
             const stats = [
                 { 
@@ -1190,37 +1299,19 @@
             container.innerHTML = html;
         }
         
-        // 安全获取数字
-        function safeNumber(value, defaultValue = 0) {
-            if (value === undefined || value === null || isNaN(value)) {
-                return defaultValue;
-            }
-            return Number(value);
-        }
-        
-        // 安全获取字符串
-        function safeString(value, defaultValue = '') {
-            if (value === undefined || value === null) {
-                return defaultValue;
-            }
-            return String(value);
-        }
-        
         // 更新基础信息
         function updateBasicInfo() {
             const container = document.getElementById('basic-info');
             if (!container) return;
             
-            const basic = territoryData.基本信息 || {};
-            const system = territoryData.System || {};
-            
+            // 使用getDataValue函数获取数据
             const rows = [
-                ['领地名称', safeString(basic.名称, '北境边境领')],
-                ['领地面积', `${safeNumber(basic.面积, 85)} 平方里`],
-                ['地形特征', safeString(basic.地形, '丘陵与森林')],
-                ['发展阶段', safeString(basic.发展阶段, '初建')],
-                ['游戏时间', safeString(system.当前游戏时间, '第1年 1月')],
-                ['当前季节', safeString(system.当前季节, '春季')]
+                ['领地名称', getDataValue('基本信息.名称', '北境边境领')],
+                ['领地面积', `${getDataValue('基本信息.面积', 85)} 平方里`],
+                ['地形特征', getDataValue('基本信息.地形', '丘陵与森林')],
+                ['发展阶段', getDataValue('基本信息.发展阶段', '初建')],
+                ['游戏时间', getDataValue('System.当前游戏时间', '第1年 1月')],
+                ['当前季节', getDataValue('System.当前季节', '春季')]
             ];
             
             let html = '';
@@ -1241,13 +1332,11 @@
             const container = document.getElementById('economy-overview');
             if (!container) return;
             
-            const finance = territoryData.经济?.财政 || {};
-            const taxes = territoryData.经济?.公共税率 || {};
-            
-            const income = safeNumber(finance.月总收入, 1850);
-            const expense = safeNumber(finance.月总支出, 1670);
-            const net = safeNumber(finance.月净收入, 180);
-            const balanceStatus = safeString(finance.收支状态, '📈盈余');
+            // 使用getDataValue函数获取数据
+            const income = getDataValue('经济.财政.月总收入', 1850);
+            const expense = getDataValue('经济.财政.月总支出', 1670);
+            const net = getDataValue('经济.财政.月净收入', 180);
+            const balanceStatus = getDataValue('经济.财政.收支状态', '📈盈余');
             
             const incomeColor = income >= expense ? '#28a745' : '#dc3545';
             const netColor = net >= 0 ? '#28a745' : '#dc3545';
@@ -1270,40 +1359,58 @@
                         <td>收支状态</td>
                         <td>${balanceStatus}</td>
                     </tr>
-                    <tr>
-                        <td>税率体系</td>
-                        <td>
-                            农业: ${(safeNumber(taxes.农业税, 0.10) * 100).toFixed(1)}% | 
-                            商业: ${(safeNumber(taxes.商业税, 0.15) * 100).toFixed(1)}% | 
-                            工业: ${(safeNumber(taxes.工业税, 0.12) * 100).toFixed(1)}%
-                        </td>
-                    </tr>
                 </table>
             `;
             
             container.innerHTML = html;
         }
         
-        // 更新人口概况
+        // 更新人口概况 - 修复版，正确显示人类数量等
         function updatePopulationOverview() {
             const container = document.getElementById('population-overview');
             if (!container) return;
             
-            const population = territoryData.人口 || {};
-            const total = safeNumber(population.总人口, 1250);
-            const races = population.种族构成 || {};
+            // 使用getDataValue函数获取数据
+            const total = getDataValue('人口.总人口', 1250);
+            const growth = getDataValue('人口.人口增长率', 0.008);
+            const migration = getDataValue('人口.移民率', 0.002);
+            
+            // 获取种族数据
+            let races = getDataValue('人口.种族构成', {});
+            
+            // 如果races是数组，转换为对象格式
+            if (Array.isArray(races)) {
+                const raceObj = {};
+                races.forEach(race => {
+                    if (race && race.种族) {
+                        raceObj[race.种族] = {
+                            数量: race.数量 || 0,
+                            地位: race.地位 || '',
+                            特殊能力: race.特殊能力 || ''
+                        };
+                    }
+                });
+                races = raceObj;
+            }
             
             // 计算种族分布
             let raceHtml = '<div style="margin-top: 10px;">';
-            Object.entries(races).forEach(([name, data]) => {
-                const count = safeNumber(data.数量, 0);
+            Object.entries(races).forEach(([raceName, raceData]) => {
+                // 确保raceData是对象
+                if (typeof raceData !== 'object' || raceData === null) {
+                    console.warn(`种族 ${raceName} 的数据格式异常:`, raceData);
+                    return;
+                }
+                
+                // 使用getDataValue获取具体数据
+                const count = getDataValue(`人口.种族构成.${raceName}.数量`, raceData.数量 || 0);
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                const status = safeString(data.地位, '');
+                const status = getDataValue(`人口.种族构成.${raceName}.地位`, raceData.地位 || '');
                 
                 raceHtml += `
                     <div style="margin-bottom: 5px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                            <span>${name}</span>
+                            <span>${raceName}</span>
                             <span>${count}人 (${percentage}%)</span>
                         </div>
                         <div class="progress">
@@ -1319,8 +1426,8 @@
                 <div style="margin-bottom: 15px;">
                     <div style="font-weight: bold; margin-bottom: 5px;">总人口: ${formatNumber(total)} 人</div>
                     <div style="font-size: 12px; color: #4A3728;">
-                        增长率: ${(safeNumber(population.人口增长率, 0.008) * 100).toFixed(2)}% | 
-                        移民率: ${(safeNumber(population.移民率, 0.002) * 100).toFixed(2)}%
+                        增长率: ${(growth * 100).toFixed(2)}% | 
+                        移民率: ${(migration * 100).toFixed(2)}%
                     </div>
                 </div>
                 ${raceHtml}
@@ -1334,12 +1441,10 @@
             const container = document.getElementById('threat-overview');
             if (!container) return;
             
-            const threat = territoryData.状态?.威胁状态 || {};
-            const residents = territoryData.状态?.居民状态 || {};
-            
-            const threatLevel = safeString(threat.威胁等级, '警戒');
+            // 使用getDataValue函数获取数据
+            const threatLevel = getDataValue('状态.威胁状态.威胁等级', '警戒');
             const threatColor = getThreatColor(threatLevel);
-            const morale = safeNumber(residents.民心指数, 70);
+            const morale = getDataValue('状态.居民状态.民心指数', 70);
             const moraleColor = getMoraleColor(morale);
             
             let html = `
@@ -1350,19 +1455,19 @@
                     </tr>
                     <tr>
                         <td>主要威胁</td>
-                        <td>${safeString(threat.主要魔物, '哥布林团伙')}</td>
+                        <td>${getDataValue('状态.威胁状态.主要魔物', '哥布林团伙')}</td>
                     </tr>
                     <tr>
                         <td>预估下次袭击</td>
-                        <td>${safeString(threat.预计下次袭击, '1-3个月内')}</td>
+                        <td>${getDataValue('状态.威胁状态.预计下次袭击', '1-3个月内')}</td>
                     </tr>
                     <tr>
                         <td>生活水平</td>
-                        <td>${safeString(residents.生活水平, '温饱')}</td>
+                        <td>${getDataValue('状态.居民状态.生活水平', '温饱')}</td>
                     </tr>
                     <tr>
                         <td>治安状况</td>
-                        <td>${safeNumber(residents.治安状况, 65)}/100</td>
+                        <td>${getDataValue('状态.居民状态.治安状况', 65)}/100</td>
                     </tr>
                     <tr>
                         <td>民心指数</td>
@@ -1386,19 +1491,21 @@
             const container = document.getElementById('resource-warnings');
             if (!container) return;
             
-            const warehouse = territoryData.仓库 || {};
+            const warehouse = getDataValue('仓库', {});
             let warnings = [];
             
             Object.values(warehouse).forEach(item => {
-                const current = safeNumber(item.当前储量, 0);
-                const safe = safeNumber(item.安全储量, 0);
-                if (current < safe) {
-                    warnings.push({
-                        name: safeString(item.名称, '未知'),
-                        current: current,
-                        safe: safe,
-                        unit: safeString(item.单位, '')
-                    });
+                if (typeof item === 'object' && item !== null) {
+                    const current = getDataValue('当前储量', item.当前储量 || 0, item);
+                    const safe = getDataValue('安全储量', item.安全储量 || 0, item);
+                    if (current < safe) {
+                        warnings.push({
+                            name: getDataValue('名称', item.名称 || '未知', item),
+                            current: current,
+                            safe: safe,
+                            unit: getDataValue('单位', item.单位 || '', item)
+                        });
+                    }
                 }
             });
             
@@ -1498,14 +1605,13 @@
             const container = document.getElementById('population-details');
             if (!container) return;
             
-            const population = territoryData.人口 || {};
-            const total = safeNumber(population.总人口, 1250);
-            const growth = safeNumber(population.人口增长率, 0.008);
-            const migration = safeNumber(population.移民率, 0.002);
-            const jobs = population.职业分布 || {};
+            // 使用getDataValue函数获取数据
+            const total = getDataValue('人口.总人口', 1250);
+            const growth = getDataValue('人口.人口增长率', 0.008);
+            const migration = getDataValue('人口.移民率', 0.002);
             
             // 计算失业率
-            const jobless = safeNumber(jobs.无业?.人数, 265);
+            const jobless = getDataValue('人口.职业分布.无业.人数', 265);
             const unemploymentRate = total > 0 ? (jobless / total * 100).toFixed(1) : 0;
             
             let html = `
@@ -1549,8 +1655,24 @@
             const container = document.getElementById('race-details');
             if (!container) return;
             
-            const races = territoryData.人口?.种族构成 || {};
-            const total = safeNumber(territoryData.人口?.总人口, 1250);
+            // 使用getDataValue函数获取数据
+            const total = getDataValue('人口.总人口', 1250);
+            let races = getDataValue('人口.种族构成', {});
+            
+            // 如果races是数组，转换为对象格式
+            if (Array.isArray(races)) {
+                const raceObj = {};
+                races.forEach(race => {
+                    if (race && race.种族) {
+                        raceObj[race.种族] = {
+                            数量: race.数量 || 0,
+                            地位: race.地位 || '',
+                            特殊能力: race.特殊能力 || ''
+                        };
+                    }
+                });
+                races = raceObj;
+            }
             
             let html = `
                 <tr>
@@ -1562,11 +1684,16 @@
                 </tr>
             `;
             
-            Object.entries(races).forEach(([name, data]) => {
-                const count = safeNumber(data.数量, 0);
+            Object.entries(races).forEach(([raceName, raceData]) => {
+                if (typeof raceData !== 'object' || raceData === null) {
+                    console.warn(`种族 ${raceName} 的数据格式异常:`, raceData);
+                    return;
+                }
+                
+                const count = getDataValue(`人口.种族构成.${raceName}.数量`, raceData.数量 || 0);
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                const status = safeString(data.地位, '');
-                const ability = safeString(data.特殊能力, '');
+                const status = getDataValue(`人口.种族构成.${raceName}.地位`, raceData.地位 || '');
+                const ability = getDataValue(`人口.种族构成.${raceName}.特殊能力`, raceData.特殊能力 || '');
                 
                 let statusClass = 'tag';
                 switch(status) {
@@ -1578,7 +1705,7 @@
                 
                 html += `
                     <tr>
-                        <td>${name}</td>
+                        <td>${raceName}</td>
                         <td>${formatNumber(count)}人</td>
                         <td>${percentage}%</td>
                         <td><span class="${statusClass}">${status}</span></td>
@@ -1595,8 +1722,8 @@
             const container = document.getElementById('occupation-details');
             if (!container) return;
             
-            const jobs = territoryData.人口?.职业分布 || {};
-            const total = safeNumber(territoryData.人口?.总人口, 1250);
+            const jobs = getDataValue('人口.职业分布', {});
+            const total = getDataValue('人口.总人口', 1250);
             
             let html = `
                 <tr>
@@ -1609,10 +1736,15 @@
             `;
             
             Object.entries(jobs).forEach(([name, data]) => {
-                const count = safeNumber(data.人数, 0);
+                if (typeof data !== 'object' || data === null) {
+                    console.warn(`职业 ${name} 的数据格式异常:`, data);
+                    return;
+                }
+                
+                const count = getDataValue(`人口.职业分布.${name}.人数`, data.人数 || 0);
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                const contribution = safeNumber(data.月贡献, 0);
-                const satisfaction = safeNumber(data.满意度, 0);
+                const contribution = getDataValue(`人口.职业分布.${name}.月贡献`, data.月贡献 || 0);
+                const satisfaction = getDataValue(`人口.职业分布.${name}.满意度`, data.满意度 || 0);
                 
                 const contributionColor = contribution >= 0 ? '#28a745' : '#dc3545';
                 const satisfactionColor = getMoraleColor(satisfaction);
@@ -1645,13 +1777,11 @@
             // 财政详情
             const financeContainer = document.getElementById('finance-details');
             if (financeContainer) {
-                const finance = territoryData.经济?.财政 || {};
-                
-                const income = safeNumber(finance.月总收入, 1850);
-                const expense = safeNumber(finance.月总支出, 1670);
-                const net = safeNumber(finance.月净收入, 180);
-                const treasury = safeNumber(finance.库存金币, 2500);
-                const balanceStatus = safeString(finance.收支状态, '📈盈余');
+                const income = getDataValue('经济.财政.月总收入', 1850);
+                const expense = getDataValue('经济.财政.月总支出', 1670);
+                const net = getDataValue('经济.财政.月净收入', 180);
+                const treasury = getDataValue('经济.财政.库存金币', 2500);
+                const balanceStatus = getDataValue('经济.财政.收支状态', '📈盈余');
                 
                 const netColor = net >= 0 ? '#28a745' : '#dc3545';
                 const balanceColor = balanceStatus.includes('盈余') ? '#28a745' : 
@@ -1686,7 +1816,7 @@
             // 税收详情
             const taxContainer = document.getElementById('tax-details');
             if (taxContainer) {
-                const taxes = territoryData.经济?.公共税率 || {};
+                const taxes = getDataValue('经济.公共税率', {});
                 
                 let html = '';
                 Object.entries(taxes).forEach(([name, value]) => {
@@ -1705,14 +1835,14 @@
             // 经济指标
             const indicatorsContainer = document.getElementById('economy-indicators');
             if (indicatorsContainer) {
-                const indicators = territoryData.经济?.经济指标 || {};
+                const indicators = getDataValue('经济.经济指标', {});
                 
                 const rows = [
-                    ['GDP(年)', formatCurrency(safeNumber(indicators.GDP, 25000))],
-                    ['人均GDP', `${safeNumber(indicators.人均GDP, 20)} 金币/人/年`],
-                    ['通货膨胀率', `${(safeNumber(indicators.通货膨胀率, 0.02) * 100).toFixed(2)}%`],
-                    ['失业率', `${(safeNumber(indicators.失业率, 0.212) * 100).toFixed(1)}%`],
-                    ['贸易顺差', formatCurrency(safeNumber(indicators.贸易顺差, 300))]
+                    ['GDP(年)', formatCurrency(getDataValue('经济.经济指标.GDP', 25000))],
+                    ['人均GDP', `${getDataValue('经济.经济指标.人均GDP', 20)} 金币/人/年`],
+                    ['通货膨胀率', `${(getDataValue('经济.经济指标.通货膨胀率', 0.02) * 100).toFixed(2)}%`],
+                    ['失业率', `${(getDataValue('经济.经济指标.失业率', 0.212) * 100).toFixed(1)}%`],
+                    ['贸易顺差', formatCurrency(getDataValue('经济.经济指标.贸易顺差', 300))]
                 ];
                 
                 let html = '';
@@ -1734,7 +1864,7 @@
             // 仓库物资
             const warehouseContainer = document.getElementById('warehouse-details');
             if (warehouseContainer) {
-                const warehouse = territoryData.仓库 || {};
+                const warehouse = getDataValue('仓库', {});
                 
                 let html = `
                     <tr>
@@ -1747,38 +1877,40 @@
                 `;
                 
                 Object.values(warehouse).forEach(item => {
-                    const name = safeString(item.名称, '');
-                    const current = safeNumber(item.当前储量, 0);
-                    const safe = safeNumber(item.安全储量, 0);
-                    const unit = safeString(item.单位, '');
-                    const price = safeNumber(item.市场价格, 0);
-                    
-                    let status = '';
-                    let statusColor = '';
-                    if (current >= safe * 1.5) {
-                        status = '充足';
-                        statusColor = '#28a745';
-                    } else if (current >= safe) {
-                        status = '正常';
-                        statusColor = '#ffc107';
-                    } else {
-                        status = '短缺';
-                        statusColor = '#dc3545';
+                    if (typeof item === 'object' && item !== null) {
+                        const name = getDataValue('名称', item.名称 || '', item);
+                        const current = getDataValue('当前储量', item.当前储量 || 0, item);
+                        const safe = getDataValue('安全储量', item.安全储量 || 0, item);
+                        const unit = getDataValue('单位', item.单位 || '', item);
+                        const price = getDataValue('市场价格', item.市场价格 || 0, item);
+                        
+                        let status = '';
+                        let statusColor = '';
+                        if (current >= safe * 1.5) {
+                            status = '充足';
+                            statusColor = '#28a745';
+                        } else if (current >= safe) {
+                            status = '正常';
+                            statusColor = '#ffc107';
+                        } else {
+                            status = '短缺';
+                            statusColor = '#dc3545';
+                        }
+                        
+                        const currentColor = current < safe ? '#dc3545' : '#28a745';
+                        
+                        html += `
+                            <tr>
+                                <td>${name}</td>
+                                <td style="color: ${currentColor}; font-weight: ${current < safe ? 'bold' : 'normal'}">
+                                    ${current}${unit}
+                                </td>
+                                <td>${safe}${unit}</td>
+                                <td style="color: ${statusColor}">${status}</td>
+                                <td>${price} 金币/${unit}</td>
+                            </tr>
+                        `;
                     }
-                    
-                    const currentColor = current < safe ? '#dc3545' : '#28a745';
-                    
-                    html += `
-                        <tr>
-                            <td>${name}</td>
-                            <td style="color: ${currentColor}; font-weight: ${current < safe ? 'bold' : 'normal'}">
-                                ${current}${unit}
-                            </td>
-                            <td>${safe}${unit}</td>
-                            <td style="color: ${statusColor}">${status}</td>
-                            <td>${price} 金币/${unit}</td>
-                        </tr>
-                    `;
                 });
                 
                 warehouseContainer.innerHTML = html;
@@ -1787,7 +1919,7 @@
             // 自然资源
             const naturalContainer = document.getElementById('natural-resources');
             if (naturalContainer) {
-                const resources = territoryData.资源动态 || {};
+                const resources = getDataValue('资源动态', {});
                 
                 let html = `
                     <tr>
@@ -1820,11 +1952,11 @@
                 
                 resourceData.forEach(res => {
                     const data = res.data || {};
-                    const total = safeNumber(data.当前储量, 0);
-                    const extraction = safeNumber(data.每月开采量, 0);
-                    const regeneration = safeNumber(data.每月再生量, 0);
-                    const sustainable = safeNumber(data.可持续开采量, 0);
-                    const depletion = safeNumber(data.预估枯竭时间, 0);
+                    const total = getDataValue('当前储量', data.当前储量 || 0, data);
+                    const extraction = getDataValue('每月开采量', data.每月开采量 || 0, data);
+                    const regeneration = getDataValue('每月再生量', data.每月再生量 || 0, data);
+                    const sustainable = getDataValue('可持续开采量', data.可持续开采量 || 0, data);
+                    const depletion = getDataValue('预估枯竭时间', data.预估枯竭时间 || 0, data);
                     
                     html += `
                         <tr>
@@ -1844,16 +1976,16 @@
             // 环境状况
             const envContainer = document.getElementById('environment-details');
             if (envContainer) {
-                const env = territoryData.环境 || {};
-                const effects = env.季节影响 || {};
+                const env = getDataValue('环境', {});
+                const effects = getDataValue('环境.季节影响', {}, env);
                 
                 let html = '';
                 const rows = [
-                    ['季节', safeString(territoryData.System?.当前季节, '春季')],
-                    ['天气', safeString(env.天气状况, '晴朗')],
-                    ['温度', `${safeNumber(env.温度, 15)}°C`],
-                    ['降水', safeString(env.降水, '适中')],
-                    ['灾害风险', `${(safeNumber(env.自然灾害风险, 0.1) * 100).toFixed(1)}%`]
+                    ['季节', getDataValue('System.当前季节', '春季')],
+                    ['天气', getDataValue('环境.天气状况', '晴朗', env)],
+                    ['温度', `${getDataValue('环境.温度', 15, env)}°C`],
+                    ['降水', getDataValue('环境.降水', '适中', env)],
+                    ['灾害风险', `${(getDataValue('环境.自然灾害风险', 0.1, env) * 100).toFixed(1)}%`]
                 ];
                 
                 rows.forEach(row => {
@@ -1871,9 +2003,9 @@
                         <td colspan="2" style="padding-top: 15px; border-top: 2px solid #8B6914;">
                             <div style="font-weight: bold; margin-bottom: 5px;">季节影响:</div>
                             <div style="font-size: 12px;">
-                                <div>农业产出: ${((safeNumber(effects.农业产出修正, 1.2) - 1) * 100).toFixed(0)}%</div>
-                                <div>商业活动: ${((safeNumber(effects.商业活动修正, 1.0) - 1) * 100).toFixed(0)}%</div>
-                                <div>资源采集: ${((safeNumber(effects.资源采集修正, 1.1) - 1) * 100).toFixed(0)}%</div>
+                                <div>农业产出: ${((getDataValue('环境.季节影响.农业产出修正', 1.2, effects) - 1) * 100).toFixed(0)}%</div>
+                                <div>商业活动: ${((getDataValue('环境.季节影响.商业活动修正', 1.0, effects) - 1) * 100).toFixed(0)}%</div>
+                                <div>资源采集: ${((getDataValue('环境.季节影响.资源采集修正', 1.1, effects) - 1) * 100).toFixed(0)}%</div>
                             </div>
                         </td>
                     </tr>
@@ -1888,11 +2020,11 @@
             // 兵力详情
             const militaryContainer = document.getElementById('military-details');
             if (militaryContainer) {
-                const military = territoryData.军事?.兵力 || {};
+                const military = getDataValue('军事.兵力', {});
                 
-                const regular = safeNumber(military.常备军, 80);
-                const militia = safeNumber(military.民兵, 200);
-                const elite = safeNumber(military.精锐部队, 0);
+                const regular = getDataValue('军事.兵力.常备军', 80, military);
+                const militia = getDataValue('军事.兵力.民兵', 200, military);
+                const elite = getDataValue('军事.兵力.精锐部队', 0, military);
                 const total = regular + militia + elite;
                 
                 let html = `
@@ -1920,11 +2052,11 @@
             // 装备状态
             const equipmentContainer = document.getElementById('equipment-details');
             if (equipmentContainer) {
-                const equipment = territoryData.军事?.装备状态 || {};
+                const equipment = getDataValue('军事.装备状态', {});
                 
-                const completeness = safeNumber(equipment.装备完整率, 0.65);
-                const training = safeNumber(equipment.训练水平, 0.5);
-                const morale = safeNumber(equipment.士气, 70);
+                const completeness = getDataValue('军事.装备状态.装备完整率', 0.65, equipment);
+                const training = getDataValue('军事.装备状态.训练水平', 0.5, equipment);
+                const morale = getDataValue('军事.装备状态.士气', 70, equipment);
                 
                 let html = '';
                 const items = [
@@ -1955,12 +2087,12 @@
             // 防御设施
             const defenseContainer = document.getElementById('defense-details');
             if (defenseContainer) {
-                const defense = territoryData.军事?.防御设施 || {};
+                const defense = getDataValue('军事.防御设施', {});
                 
-                const wall = safeNumber(defense.城墙完整度, 0.7);
-                const towers = safeNumber(defense.瞭望塔数量, 2);
-                const gate = safeString(defense.城门状态, '完好');
-                const moat = safeString(defense.护城河, '无');
+                const wall = getDataValue('军事.防御设施.城墙完整度', 0.7, defense);
+                const towers = getDataValue('军事.防御设施.瞭望塔数量', 2, defense);
+                const gate = getDataValue('军事.防御设施.城门状态', '完好', defense);
+                const moat = getDataValue('军事.防御设施.护城河', '无', defense);
                 
                 let html = `
                     <tr>
@@ -1997,69 +2129,71 @@
             const container = document.getElementById('buildings-list');
             if (!container) return;
             
-            const buildings = territoryData.建筑 || {};
+            const buildings = getDataValue('建筑', {});
             
             let html = '';
             Object.values(buildings).forEach(building => {
-                const name = safeString(building.名称, '');
-                const type = safeString(building.类型, '');
-                const ownership = safeString(building.产权, '');
-                const level = safeNumber(building.等级, 1);
-                const status = safeString(building.状态, '');
-                const workers = safeNumber(building.岗位?.当前人数, 0);
-                const maxWorkers = safeNumber(building.岗位?.最大人数, 0);
-                const income = safeNumber(building.财务?.计算_月收入, 0);
-                const expense = safeNumber(building.财务?.计算_月支出, 0);
-                const net = safeNumber(building.财务?.计算_净收益, 0);
-                
-                const statusColor = status === '正常运营' ? '#28a745' : 
-                                   status === '建设中' ? '#ffc107' : '#dc3545';
-                const netColor = net >= 0 ? '#28a745' : '#dc3545';
-                
-                html += `
-                    <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255,255,255,0.8);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <div style="font-weight: bold;">${name}</div>
-                            <div style="font-size: 12px; color: #4A3728;">Lv.${level}</div>
+                if (typeof building === 'object' && building !== null) {
+                    const name = getDataValue('名称', building.名称 || '', building);
+                    const type = getDataValue('类型', building.类型 || '', building);
+                    const ownership = getDataValue('产权', building.产权 || '', building);
+                    const level = getDataValue('等级', building.等级 || 1, building);
+                    const status = getDataValue('状态', building.状态 || '', building);
+                    const workers = getDataValue('岗位.当前人数', building.岗位?.当前人数 || 0, building);
+                    const maxWorkers = getDataValue('岗位.最大人数', building.岗位?.最大人数 || 0, building);
+                    const income = getDataValue('财务.计算_月收入', building.财务?.计算_月收入 || 0, building);
+                    const expense = getDataValue('财务.计算_月支出', building.财务?.计算_月支出 || 0, building);
+                    const net = getDataValue('财务.计算_净收益', building.财务?.计算_净收益 || 0, building);
+                    
+                    const statusColor = status === '正常运营' ? '#28a745' : 
+                                       status === '建设中' ? '#ffc107' : '#dc3545';
+                    const netColor = net >= 0 ? '#28a745' : '#dc3545';
+                    
+                    html += `
+                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255,255,255,0.8);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-weight: bold;">${name}</div>
+                                <div style="font-size: 12px; color: #4A3728;">Lv.${level}</div>
+                            </div>
+                            <table style="width: 100%; font-size: 12px;">
+                                <tr>
+                                    <td style="width: 80px; color: #4A3728;">类型:</td>
+                                    <td>${type}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #4A3728;">产权:</td>
+                                    <td>${ownership === 'lord' ? '领主所有' : '私有'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #4A3728;">状态:</td>
+                                    <td style="color: ${statusColor}">${status}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #4A3728;">岗位:</td>
+                                    <td>${workers}/${maxWorkers} 人</td>
+                                </tr>
+                                ${income > 0 ? `
+                                    <tr>
+                                        <td style="color: #4A3728;">月收入:</td>
+                                        <td style="color: #28a745;">+${income} 金币</td>
+                                    </tr>
+                                ` : ''}
+                                ${expense > 0 ? `
+                                    <tr>
+                                        <td style="color: #4A3728;">月支出:</td>
+                                        <td style="color: #dc3545;">-${expense} 金币</td>
+                                    </tr>
+                                ` : ''}
+                                <tr>
+                                    <td style="color: #4A3728;">净收益:</td>
+                                    <td style="color: ${netColor}; font-weight: bold;">
+                                        ${net >= 0 ? '+' : ''}${net} 金币
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
-                        <table style="width: 100%; font-size: 12px;">
-                            <tr>
-                                <td style="width: 80px; color: #4A3728;">类型:</td>
-                                <td>${type}</td>
-                            </tr>
-                            <tr>
-                                <td style="color: #4A3728;">产权:</td>
-                                <td>${ownership === 'lord' ? '领主所有' : '私有'}</td>
-                            </tr>
-                            <tr>
-                                <td style="color: #4A3728;">状态:</td>
-                                <td style="color: ${statusColor}">${status}</td>
-                            </tr>
-                            <tr>
-                                <td style="color: #4A3728;">岗位:</td>
-                                <td>${workers}/${maxWorkers} 人</td>
-                            </tr>
-                            ${income > 0 ? `
-                                <tr>
-                                    <td style="color: #4A3728;">月收入:</td>
-                                    <td style="color: #28a745;">+${income} 金币</td>
-                                </tr>
-                            ` : ''}
-                            ${expense > 0 ? `
-                                <tr>
-                                    <td style="color: #4A3728;">月支出:</td>
-                                    <td style="color: #dc3545;">-${expense} 金币</td>
-                                </tr>
-                            ` : ''}
-                            <tr>
-                                <td style="color: #4A3728;">净收益:</td>
-                                <td style="color: ${netColor}; font-weight: bold;">
-                                    ${net >= 0 ? '+' : ''}${net} 金币
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                `;
+                    `;
+                }
             });
             
             if (html === '') {
@@ -2074,31 +2208,33 @@
             const container = document.getElementById('technology-list');
             if (!container) return;
             
-            const techs = territoryData.科技 || {};
+            const techs = getDataValue('科技', {});
             
             let html = '';
             Object.values(techs).forEach(tech => {
-                const name = safeString(tech.名称, '');
-                const status = safeString(tech.研发状态, '');
-                const progress = safeNumber(tech.当前进度, 0);
-                
-                const statusColor = status === '已研发' ? '#28a745' : 
-                                   status === '研发中' ? '#ffc107' : '#6c757d';
-                
-                html += `
-                    <div style="margin-bottom: 10px; padding: 8px; border: 1px solid #8B6914; border-radius: 4px; background: rgba(255,255,255,0.8);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <div style="font-weight: bold;">${name}</div>
-                            <div style="font-size: 11px; color: ${statusColor}">${status}</div>
-                        </div>
-                        ${status === '研发中' ? `
-                            <div style="font-size: 11px; color: #4A3728;">进度: ${progress}%</div>
-                            <div class="progress" style="margin-top: 4px;">
-                                <div class="progress-bar" style="width: ${progress}%"></div>
+                if (typeof tech === 'object' && tech !== null) {
+                    const name = getDataValue('名称', tech.名称 || '', tech);
+                    const status = getDataValue('研发状态', tech.研发状态 || '', tech);
+                    const progress = getDataValue('当前进度', tech.当前进度 || 0, tech);
+                    
+                    const statusColor = status === '已研发' ? '#28a745' : 
+                                       status === '研发中' ? '#ffc107' : '#6c757d';
+                    
+                    html += `
+                        <div style="margin-bottom: 10px; padding: 8px; border: 1px solid #8B6914; border-radius: 4px; background: rgba(255,255,255,0.8);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <div style="font-weight: bold;">${name}</div>
+                                <div style="font-size: 11px; color: ${statusColor}">${status}</div>
                             </div>
-                        ` : ''}
-                    </div>
-                `;
+                            ${status === '研发中' ? `
+                                <div style="font-size: 11px; color: #4A3728;">进度: ${progress}%</div>
+                                <div class="progress" style="margin-top: 4px;">
+                                    <div class="progress-bar" style="width: ${progress}%"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
             });
             
             if (html === '') {
@@ -2113,12 +2249,10 @@
             // 系统设置
             const systemContainer = document.getElementById('system-details');
             if (systemContainer) {
-                const system = territoryData.System || {};
-                
-                const gameTime = safeString(system.当前游戏时间, '第1年 1月');
-                const season = safeString(system.当前季节, '春季');
-                const lastSettlement = safeString(system.上次结算时间, '第1年 1月');
-                const autoSettlement = Boolean(system.自动结算开关);
+                const gameTime = getDataValue('System.当前游戏时间', '第1年 1月');
+                const season = getDataValue('System.当前季节', '春季');
+                const lastSettlement = getDataValue('System.上次结算时间', '第1年 1月');
+                const autoSettlement = Boolean(getDataValue('System.自动结算开关', false));
                 
                 let html = `
                     <tr>
@@ -2147,16 +2281,16 @@
             // 领主信息
             const lordContainer = document.getElementById('lord-details');
             if (lordContainer) {
-                const lord = territoryData.Character?.领主 || {};
+                const lord = getDataValue('Character.领主', {});
                 
                 const rows = [
-                    ['姓名', safeString(lord.姓名, '艾丹')],
-                    ['称号', safeString(lord.称号, '边境守护者')],
-                    ['个人战力', safeString(lord.个人战力, 'B')],
-                    ['管理能力', safeNumber(lord.管理能力, 65)],
-                    ['军事能力', safeNumber(lord.军事能力, 70)],
-                    ['外交能力', safeNumber(lord.外交能力, 55)],
-                    ['知识水平', safeNumber(lord.知识水平, 60)]
+                    ['姓名', getDataValue('Character.领主.姓名', '艾丹', lord)],
+                    ['称号', getDataValue('Character.领主.称号', '边境守护者', lord)],
+                    ['个人战力', getDataValue('Character.领主.个人战力', 'B', lord)],
+                    ['管理能力', getDataValue('Character.领主.管理能力', 65, lord)],
+                    ['军事能力', getDataValue('Character.领主.军事能力', 70, lord)],
+                    ['外交能力', getDataValue('Character.领主.外交能力', 55, lord)],
+                    ['知识水平', getDataValue('Character.领主.知识水平', 60, lord)]
                 ];
                 
                 let html = '';
@@ -2196,12 +2330,14 @@
                         // 模拟数据变化
                         if (territoryData) {
                             // 更新国库
-                            const netIncome = safeNumber(territoryData.经济?.财政?.月净收入, 0);
-                            territoryData.经济.财政.库存金币 = safeNumber(territoryData.经济.财政.库存金币, 0) + netIncome;
+                            const netIncome = getDataValue('经济.财政.月净收入', 0);
+                            const currentTreasury = getDataValue('经济.财政.库存金币', 0);
+                            territoryData.经济.财政.库存金币 = currentTreasury + netIncome;
                             
                             // 更新人口
-                            const growthRate = safeNumber(territoryData.人口?.人口增长率, 0);
-                            territoryData.人口.总人口 = Math.floor(safeNumber(territoryData.人口.总人口, 0) * (1 + growthRate));
+                            const growthRate = getDataValue('人口.人口增长率', 0);
+                            const currentPopulation = getDataValue('人口.总人口', 0);
+                            territoryData.人口.总人口 = Math.floor(currentPopulation * (1 + growthRate));
                             
                             // 更新游戏时间
                             const system = territoryData.System || {};
@@ -2306,8 +2442,9 @@
                 
                 if (territoryData) {
                     // 显示关键数据
-                    debugHtml += '<div class="debug-item"><span class="debug-key">人口:</span> <span class="debug-value">' + (territoryData.人口?.总人口 || 'N/A') + '</span></div>';
-                    debugHtml += '<div class="debug-item"><span class="debug-key">国库:</span> <span class="debug-value">' + (territoryData.经济?.财政?.库存金币 || 'N/A') + '</span></div>';
+                    debugHtml += '<div class="debug-item"><span class="debug-key">人口:</span> <span class="debug-value">' + getDataValue('人口.总人口', 'N/A') + '</span></div>';
+                    debugHtml += '<div class="debug-item"><span class="debug-key">国库:</span> <span class="debug-value">' + getDataValue('经济.财政.库存金币', 'N/A') + '</span></div>';
+                    debugHtml += '<div class="debug-item"><span class="debug-key">人类数量:</span> <span class="debug-value">' + getDataValue('人口.种族构成.人类.数量', 'N/A') + '</span></div>';
                     debugHtml += '<div class="debug-item"><span class="debug-key">最后更新:</span> <span class="debug-value">' + (lastUpdate ? lastUpdate.toLocaleTimeString() : 'N/A') + '</span></div>';
                     
                     // 显示数据来源
@@ -2317,7 +2454,6 @@
                 // 显示API可用性
                 debugHtml += '<div class="debug-item"><span class="debug-key">getVariables:</span> <span class="debug-value">' + (typeof getVariables) + '</span></div>';
                 debugHtml += '<div class="debug-item"><span class="debug-key">window.getVariables:</span> <span class="debug-value">' + (typeof window.getVariables) + '</span></div>';
-                debugHtml += '<div class="debug-item"><span class="debug-key">getCurrentMessageId:</span> <span class="debug-value">' + (typeof getCurrentMessageId) + '</span></div>';
                 debugHtml += '<div class="debug-item"><span class="debug-key">lodash (_):</span> <span class="debug-value">' + (typeof _) + '</span></div>';
                 
                 debugHtml += '</div>';
