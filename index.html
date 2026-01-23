@@ -2,717 +2,678 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>领地状态仪表板</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>领地状态</title>
     <style>
-        :root {
-            --primary-gold: #C9A227;
-            --primary-dark: #2C1810;
-            --parchment-light: #F5E6C8;
-            --parchment-dark: #E8D4A8;
-            --success: #3A6B35;
-            --warning: #E8A317;
-            --danger: #8B3A3A;
-            --info: #3A4A6B;
+        /* 重置SillyTavern可能影响我们的样式 */
+        .territory-panel * {
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: inherit !important;
+            line-height: normal !important;
         }
-
-        .territory-dashboard {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 380px;
-            max-height: 90vh;
-            background: var(--parchment-light);
-            border: 3px solid var(--primary-gold);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            z-index: 10000;
-            overflow: hidden;
-            transition: all 0.3s ease;
+        
+        .territory-panel {
+            width: 100% !important;
+            max-width: none !important;
+            min-height: 500px !important;
+            height: auto !important;
+            overflow: visible !important;
+            margin: 10px auto 20px auto !important;
+            padding: 15px !important;
+            background: #F5E6C8 !important;
+            border: 3px solid #8B6914 !important;
+            border-radius: 10px !important;
+            position: relative !important;
+            display: block !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif !important;
         }
-
-        .dashboard-collapsed {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            overflow: hidden;
+        
+        /* 确保面板展开时高度自适应 */
+        .territory-panel[open] {
+            min-height: 800px !important;
+            height: auto !important;
         }
-
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-dark), #3D2820);
-            color: var(--primary-gold);
-            padding: 12px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
-            user-select: none;
+        
+        .panel-header {
+            width: 100% !important;
+            padding: 12px 15px !important;
+            background: linear-gradient(to right, #3D2820, #2C1810) !important;
+            color: #C9A227 !important;
+            font-weight: bold !important;
+            font-size: 1.1em !important;
+            text-align: center !important;
+            border-bottom: 2px solid #8B7314 !important;
+            cursor: pointer !important;
+            user-select: none !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
         }
-
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 1.1em;
+        
+        .panel-title {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
         }
-
-        .header-controls {
-            display: flex;
-            gap: 8px;
+        
+        .panel-icon {
+            font-size: 1.2em !important;
         }
-
-        .control-btn {
-            background: none;
-            border: none;
-            color: var(--primary-gold);
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 4px;
-            transition: background 0.2s;
+        
+        .territory-name {
+            color: #E8C547 !important;
+            font-weight: 700 !important;
         }
-
-        .control-btn:hover {
-            background: rgba(201, 162, 39, 0.2);
+        
+        .toggle-arrow {
+            transition: transform 0.3s !important;
+            font-size: 0.9em !important;
         }
-
-        .dashboard-body {
-            padding: 15px;
-            overflow-y: auto;
-            max-height: calc(90vh - 60px);
+        
+        .panel-body {
+            width: 100% !important;
+            padding: 15px 10px !important;
+            display: block !important;
+            min-height: 400px !important;
+            height: auto !important;
+            overflow: visible !important;
         }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
+        
+        /* 折叠区块样式 */
+        .collapse-section {
+            margin-bottom: 12px !important;
+            border: 2px solid #8B6914 !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            background: rgba(255, 255, 255, 0.9) !important;
         }
-
-        .stat-card {
-            background: rgba(255,255,255,0.9);
-            border: 1px solid var(--parchment-dark);
-            border-radius: 8px;
-            padding: 10px;
-            transition: transform 0.2s;
+        
+        .section-header {
+            padding: 10px 12px !important;
+            background: linear-gradient(135deg, #E8D4A8, #D4C4A0) !important;
+            color: #4A3728 !important;
+            font-weight: 600 !important;
+            font-size: 0.95em !important;
+            cursor: pointer !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-bottom: 1px solid transparent !important;
         }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .stat-icon {
-            font-size: 1.5em;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.8em;
-            color: var(--primary-dark);
-            opacity: 0.8;
-            margin-bottom: 3px;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: var(--primary-dark);
-        }
-
-        .stat-trend {
-            font-size: 0.7em;
-            margin-top: 3px;
-        }
-
-        .trend-up { color: var(--success); }
-        .trend-down { color: var(--danger); }
-        .trend-neutral { color: var(--info); }
-
-        .section {
-            margin-bottom: 20px;
-            border-top: 2px dashed var(--parchment-dark);
-            padding-top: 15px;
-        }
-
+        
         .section-title {
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
         }
-
-        .progress-bar {
-            height: 6px;
-            background: #ddd;
-            border-radius: 3px;
-            margin: 8px 0;
-            overflow: hidden;
+        
+        .section-icon {
+            font-size: 1.1em !important;
         }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-gold), #E8C547);
-            transition: width 0.5s ease;
+        
+        .section-arrow {
+            font-size: 0.8em !important;
+            transition: transform 0.3s !important;
         }
-
-        .alert-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            background: var(--danger);
-            color: white;
-            border-radius: 10px;
-            font-size: 0.7em;
-            margin-left: 5px;
-            animation: pulse 1s infinite;
+        
+        .section-content {
+            padding: 12px !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: none !important;
         }
-
+        
+        .section-content.expanded {
+            display: block !important;
+            animation: fadeIn 0.3s !important;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* 数据行样式 */
+        .data-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 6px 0 !important;
+            border-bottom: 1px dashed rgba(139, 105, 20, 0.3) !important;
+            min-height: 24px !important;
+        }
+        
+        .data-row:last-child {
+            border-bottom: none !important;
+        }
+        
+        .data-label {
+            font-weight: 600 !important;
+            color: #4A3728 !important;
+            font-size: 0.9em !important;
+            min-width: 120px !important;
+            flex-shrink: 0 !important;
+        }
+        
+        .data-value {
+            color: #2C1810 !important;
+            font-weight: 500 !important;
+            text-align: right !important;
+            word-break: break-word !important;
+            flex: 1 !important;
+            margin-left: 10px !important;
+        }
+        
+        .value-positive { color: #3A6B35 !important; font-weight: 700 !important; }
+        .value-negative { color: #8B3A3A !important; font-weight: 700 !important; }
+        .value-gold { color: #8B7314 !important; font-weight: 700 !important; }
+        .value-blue { color: #3A4A6B !important; }
+        .value-purple { color: #5A3A6B !important; }
+        
+        /* 网格布局 */
+        .grid-2 {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            margin: 10px 0 !important;
+        }
+        
+        .grid-3 {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+            margin: 10px 0 !important;
+        }
+        
+        .grid-item {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            text-align: center !important;
+        }
+        
+        /* 种族卡片 */
+        .race-card {
+            background: linear-gradient(135deg, rgba(232, 212, 168, 0.3), rgba(212, 196, 160, 0.2)) !important;
+            border: 1px solid #8B6914 !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .race-name {
+            font-weight: 700 !important;
+            color: #2C1810 !important;
+            font-size: 0.95em !important;
+        }
+        
+        .race-details {
+            display: flex !important;
+            justify-content: space-between !important;
+            margin-top: 4px !important;
+            font-size: 0.85em !important;
+        }
+        
+        .race-count {
+            color: #8B7314 !important;
+            font-weight: 600 !important;
+        }
+        
+        .race-status {
+            color: #4A3728 !important;
+            font-style: italic !important;
+        }
+        
+        /* 科技卡片 */
+        .tech-card {
+            background: rgba(90, 58, 107, 0.1) !important;
+            border: 1px solid #5A3A6B !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .tech-name {
+            font-weight: 700 !important;
+            color: #5A3A6B !important;
+            font-size: 0.9em !important;
+        }
+        
+        .tech-progress {
+            margin: 5px 0 !important;
+            background: #ddd !important;
+            border-radius: 3px !important;
+            height: 6px !important;
+            overflow: hidden !important;
+        }
+        
+        .tech-progress-bar {
+            height: 100% !important;
+            background: linear-gradient(90deg, #8A2BE2, #5A3A6B) !important;
+            transition: width 0.5s !important;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            .territory-panel {
+                padding: 10px !important;
+                min-height: 400px !important;
+            }
+            
+            .territory-panel[open] {
+                min-height: 600px !important;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .data-row {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            
+            .data-value {
+                text-align: left !important;
+                margin-left: 0 !important;
+                margin-top: 2px !important;
+            }
+        }
+        
+        /* 强制显示重要内容 */
+        .important-alert {
+            background: linear-gradient(135deg, rgba(139, 58, 58, 0.2), rgba(255, 0, 0, 0.1)) !important;
+            border: 2px solid #8B3A3A !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            margin: 10px 0 !important;
+            font-weight: 700 !important;
+            color: #8B3A3A !important;
+            text-align: center !important;
+            animation: pulse 2s infinite !important;
+        }
+        
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .race-item, .tech-item, .building-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 8px;
-            margin-bottom: 5px;
-            background: rgba(255,255,255,0.7);
-            border-radius: 5px;
-        }
-
-        .item-name {
-            font-size: 0.85em;
-        }
-
-        .item-status {
-            font-size: 0.75em;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: #f0f0f0;
-        }
-
-        .status-dominant { background: var(--success); color: white; }
-        .status-equal { background: var(--info); color: white; }
-        .status-restricted { background: var(--warning); color: black; }
-        .status-slave { background: var(--danger); color: white; }
-
-        .refresh-time {
-            text-align: center;
-            font-size: 0.7em;
-            color: #888;
-            margin-top: 10px;
-        }
-
-        /* 可折叠部分 */
-        .collapsible {
-            cursor: pointer;
-        }
-
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .collapsible-content.expanded {
-            max-height: 500px;
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
         }
     </style>
 </head>
 <body>
-    <div class="territory-dashboard" id="territoryDashboard">
-        <div class="dashboard-header" id="dashboardHeader">
-            <div class="header-title">
-                <i class="fas fa-chess-queen"></i>
-                <span id="territoryName">领地状态</span>
+    <div class="territory-panel" id="territoryPanel">
+        <div class="panel-header" onclick="togglePanel()">
+            <div class="panel-title">
+                <span class="panel-icon">🏰</span>
+                <span>领地状态面板</span>
+                <span class="territory-name" id="territoryName">加载中...</span>
             </div>
-            <div class="header-controls">
-                <button class="control-btn" id="refreshBtn" title="刷新">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="control-btn" id="collapseBtn" title="折叠/展开">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <button class="control-btn" id="closeBtn" title="关闭">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+            <span class="toggle-arrow" id="panelArrow">▼</span>
         </div>
         
-        <div class="dashboard-body" id="dashboardBody">
-            <!-- 实时统计数据 -->
-            <div class="stats-grid" id="statsGrid"></div>
-            
-            <!-- 详细信息区域 -->
-            <div class="section">
-                <div class="section-title collapsible" data-target="populationSection">
-                    <i class="fas fa-users"></i>
-                    人口与种族
-                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
-                </div>
-                <div class="collapsible-content" id="populationSection"></div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title collapsible" data-target="economySection">
-                    <i class="fas fa-coins"></i>
-                    经济状况
-                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
-                </div>
-                <div class="collapsible-content" id="economySection"></div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title collapsible" data-target="militarySection">
-                    <i class="fas fa-shield-alt"></i>
-                    军事防御
-                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
-                </div>
-                <div class="collapsible-content" id="militarySection"></div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title collapsible" data-target="techSection">
-                    <i class="fas fa-flask"></i>
-                    科技研发
-                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8em;"></i>
-                </div>
-                <div class="collapsible-content" id="techSection"></div>
-            </div>
-            
-            <div class="refresh-time" id="refreshTime">
-                最后更新: 刚刚
+        <div class="panel-body" id="panelBody">
+            <!-- 状态信息将在这里动态生成 -->
+            <div id="statusContent">
+                正在加载领地数据...
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        class TerritoryDashboard {
-            constructor() {
-                this.mvuData = null;
-                this.updateInterval = null;
-                this.isCollapsed = false;
-                this.initialize();
-            }
+        // 等待SillyTavern环境完全加载
+        setTimeout(() => {
+            initializeTerritoryPanel();
+            // 强制设置面板高度
+            adjustPanelHeight();
+        }, 1000);
+        
+        // 监听内容变化
+        const observer = new MutationObserver(() => {
+            setTimeout(adjustPanelHeight, 100);
+        });
+        
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        function togglePanel() {
+            const panel = document.getElementById('territoryPanel');
+            const arrow = document.getElementById('panelArrow');
+            const body = document.getElementById('panelBody');
             
-            initialize() {
-                this.setupEventListeners();
-                this.makeDraggable();
-                this.loadMVUData();
-                this.startAutoRefresh();
-            }
-            
-            setupEventListeners() {
-                // 刷新按钮
-                $('#refreshBtn').click(() => this.loadMVUData());
-                
-                // 折叠/展开按钮
-                $('#collapseBtn').click(() => this.toggleCollapse());
-                
-                // 关闭按钮
-                $('#closeBtn').click(() => {
-                    $('#territoryDashboard').fadeOut(300, () => {
-                        // 可以添加重新打开的按钮
-                    });
-                });
-                
-                // 可折叠部分
-                $('.collapsible').click(function() {
-                    const target = $(this).data('target');
-                    const content = $('#' + target);
-                    const icon = $(this).find('.fa-chevron-right');
-                    
-                    content.toggleClass('expanded');
-                    icon.toggleClass('fa-chevron-right fa-chevron-down');
-                });
-            }
-            
-            makeDraggable() {
-                const dashboard = document.getElementById('territoryDashboard');
-                const header = document.getElementById('dashboardHeader');
-                
-                let isDragging = false;
-                let currentX, currentY, initialX, initialY;
-                let xOffset = 0, yOffset = 0;
-                
-                header.addEventListener('mousedown', dragStart);
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('mouseup', dragEnd);
-                
-                function dragStart(e) {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
-                    
-                    if (e.target === header || header.contains(e.target)) {
-                        isDragging = true;
-                    }
-                }
-                
-                function drag(e) {
-                    if (isDragging) {
-                        e.preventDefault();
-                        currentX = e.clientX - initialX;
-                        currentY = e.clientY - initialY;
-                        
-                        xOffset = currentX;
-                        yOffset = currentY;
-                        
-                        setTranslate(currentX, currentY, dashboard);
-                    }
-                }
-                
-                function dragEnd(e) {
-                    initialX = currentX;
-                    initialY = currentY;
-                    isDragging = false;
-                }
-                
-                function setTranslate(xPos, yPos, el) {
-                    el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-                }
-            }
-            
-            loadMVUData() {
-                // 尝试从不同的可能位置获取MVU数据
-                let mvuVariables = null;
-                
-                // 尝试从全局对象获取
-                if (window.MVU && window.MVU.variables) {
-                    mvuVariables = window.MVU.variables;
-                }
-                // 尝试从父窗口获取（如果是iframe）
-                else if (window.parent && window.parent.MVU && window.parent.MVU.variables) {
-                    mvuVariables = window.parent.MVU.variables;
-                }
-                // 尝试从localStorage获取
-                else {
-                    try {
-                        const stored = localStorage.getItem('MVU_Territory');
-                        if (stored) {
-                            mvuVariables = JSON.parse(stored);
-                        }
-                    } catch(e) {
-                        console.warn('无法从localStorage读取MVU数据:', e);
-                    }
-                }
-                
-                if (mvuVariables && mvuVariables.Territory) {
-                    this.mvuData = mvuVariables.Territory;
-                    this.updateDashboard();
-                    $('#refreshTime').text(`最后更新: ${new Date().toLocaleTimeString()}`);
-                } else {
-                    console.warn('MVU变量未找到，使用模拟数据');
-                    this.loadSampleData();
-                }
-            }
-            
-            loadSampleData() {
-                // 模拟数据，用于测试
-                this.mvuData = {
-                    基本信息: {
-                        名称: "北境边境领",
-                        面积: 85,
-                        地形: "丘陵与森林",
-                        发展阶段: "初建"
-                    },
-                    人口: {
-                        总人口: 1250,
-                        种族构成: {
-                            人类: { 数量: 900, 地位: "主导" },
-                            矮人: { 数量: 150, 地位: "平等" },
-                            半精灵: { 数量: 100, 地位: "平等" }
-                        },
-                        职业分布: {
-                            农民: { 人数: 700 },
-                            工匠: { 人数: 120 },
-                            商人: { 人数: 60 },
-                            士兵: { 人数: 80 }
-                        }
-                    },
-                    经济: {
-                        财政: {
-                            库存金币: 2500,
-                            月收入: 500,
-                            月支出: 450,
-                            月净收入: 50
-                        }
-                    },
-                    军事: {
-                        兵力: {
-                            常备军: 80,
-                            民兵: 200
-                        },
-                        战力评级: {
-                            总评级: "D"
-                        }
-                    },
-                    状态: {
-                        居民状态: {
-                            民心指数: 70,
-                            治安状况: 65,
-                            生活水平: "温饱"
-                        }
-                    }
-                };
-                
-                this.updateDashboard();
-            }
-            
-            updateDashboard() {
-                if (!this.mvuData) return;
-                
-                const data = this.mvuData;
-                
-                // 更新领地名称
-                $('#territoryName').text(data.基本信息?.名称 || "未知领地");
-                
-                // 更新统计数据网格
-                this.updateStatsGrid(data);
-                
-                // 更新各个详细部分
-                this.updatePopulationSection(data);
-                this.updateEconomySection(data);
-                this.updateMilitarySection(data);
-                this.updateTechSection(data);
-            }
-            
-            updateStatsGrid(data) {
-                const stats = [
-                    {
-                        icon: 'fas fa-users',
-                        label: '总人口',
-                        value: data.人口?.总人口 || 0,
-                        trend: '+2%'
-                    },
-                    {
-                        icon: 'fas fa-coins',
-                        label: '国库金币',
-                        value: data.经济?.财政?.库存金币 || 0,
-                        trend: data.经济?.财政?.月净收入 > 0 ? '盈余' : '赤字'
-                    },
-                    {
-                        icon: 'fas fa-heart',
-                        label: '民心',
-                        value: data.状态?.居民状态?.民心指数 || 0,
-                        trend: '稳定'
-                    },
-                    {
-                        icon: 'fas fa-shield-alt',
-                        label: '军事评级',
-                        value: data.军事?.战力评级?.总评级 || '?',
-                        trend: data.军事?.兵力?.常备军 || 0
-                    }
-                ];
-                
-                let html = '';
-                stats.forEach(stat => {
-                    const trendClass = stat.trend.includes('+') ? 'trend-up' : 
-                                      stat.trend.includes('赤字') ? 'trend-down' : 'trend-neutral';
-                    
-                    html += `
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="${stat.icon}"></i>
-                            </div>
-                            <div class="stat-label">${stat.label}</div>
-                            <div class="stat-value">${stat.value}</div>
-                            <div class="stat-trend ${trendClass}">${stat.trend}</div>
-                        </div>
-                    `;
-                });
-                
-                $('#statsGrid').html(html);
-            }
-            
-            updatePopulationSection(data) {
-                let html = '';
-                
-                // 种族构成
-                if (data.人口?.种族构成) {
-                    html += '<div style="margin-bottom: 10px;">';
-                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">种族构成:</div>';
-                    
-                    Object.entries(data.人口.种族构成).forEach(([race, info]) => {
-                        const statusClass = `status-${info.地位}`.toLowerCase();
-                        html += `
-                            <div class="race-item">
-                                <span class="item-name">${race}</span>
-                                <span class="item-status ${statusClass}">${info.数量}人 (${info.地位})</span>
-                            </div>
-                        `;
-                    });
-                    
-                    html += '</div>';
-                }
-                
-                // 职业分布
-                if (data.人口?.职业分布) {
-                    html += '<div style="margin-bottom: 10px;">';
-                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">职业分布:</div>';
-                    
-                    Object.entries(data.人口.职业分布).forEach(([job, info]) => {
-                        html += `
-                            <div class="race-item">
-                                <span class="item-name">${job}</span>
-                                <span class="item-status">${info.人数}人</span>
-                            </div>
-                        `;
-                    });
-                    
-                    html += '</div>';
-                }
-                
-                $('#populationSection').html(html);
-            }
-            
-            updateEconomySection(data) {
-                const economy = data.经济;
-                let html = '';
-                
-                if (economy?.财政) {
-                    const finance = economy.财政;
-                    const netIncome = finance.月净收入 || 0;
-                    
-                    html += `
-                        <div style="margin-bottom: 15px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>月收入:</span>
-                                <span style="color: #3A6B35; font-weight: bold;">${finance.月收入 || 0}金币</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>月支出:</span>
-                                <span style="color: #8B3A3A; font-weight: bold;">${finance.月支出 || 0}金币</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <span>净收入:</span>
-                                <span style="color: ${netIncome >= 0 ? '#3A6B35' : '#8B3A3A'}; font-weight: bold;">
-                                    ${netIncome >= 0 ? '+' : ''}${netIncome}金币
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                // 仓库物资（如果有）
-                if (data.仓库) {
-                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">仓库物资:</div>';
-                    
-                    Object.entries(data.仓库).forEach(([resource, info]) => {
-                        if (info.当前储量 !== undefined) {
-                            html += `
-                                <div class="race-item" style="margin-bottom: 3px;">
-                                    <span class="item-name">${info.名称 || resource}</span>
-                                    <span class="item-status">${info.当前储量}${info.单位 || ''}</span>
-                                </div>
-                            `;
-                        }
-                    });
-                }
-                
-                $('#economySection').html(html);
-            }
-            
-            updateMilitarySection(data) {
-                const military = data.军事;
-                let html = '';
-                
-                if (military?.兵力) {
-                    html += `
-                        <div style="margin-bottom: 10px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>常备军:</span>
-                                <span>${military.兵力.常备军 || 0}人</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <span>民兵:</span>
-                                <span>${military.兵力.民兵 || 0}人</span>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                if (military?.战力评级) {
-                    html += `
-                        <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">战力评级:</div>
-                        <div style="text-align: center; font-size: 1.5em; font-weight: bold; color: #C9A227;">
-                            ${military.战力评级.总评级 || '?'}
-                        </div>
-                    `;
-                }
-                
-                $('#militarySection').html(html);
-            }
-            
-            updateTechSection(data) {
-                // 这里可以根据实际的科技数据结构进行调整
-                let html = '';
-                
-                if (data.科技) {
-                    html += '<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">研发进度:</div>';
-                    
-                    Object.entries(data.科技).forEach(([techId, tech]) => {
-                        if (tech.研发状态 === '研发中') {
-                            html += `
-                                <div style="margin-bottom: 10px;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-                                        <span>${tech.名称 || techId}</span>
-                                        <span>${tech.当前进度 || 0}%</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${tech.当前进度 || 0}%"></div>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                } else {
-                    html = '<div style="color: #888; font-style: italic;">暂无研发中的科技</div>';
-                }
-                
-                $('#techSection').html(html);
-            }
-            
-            toggleCollapse() {
-                this.isCollapsed = !this.isCollapsed;
-                const dashboard = $('#territoryDashboard');
-                const icon = $('#collapseBtn i');
-                
-                if (this.isCollapsed) {
-                    dashboard.addClass('dashboard-collapsed');
-                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-                } else {
-                    dashboard.removeClass('dashboard-collapsed');
-                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-                }
-            }
-            
-            startAutoRefresh() {
-                // 每30秒自动刷新一次
-                this.updateInterval = setInterval(() => {
-                    this.loadMVUData();
-                }, 30000);
-            }
-            
-            destroy() {
-                if (this.updateInterval) {
-                    clearInterval(this.updateInterval);
-                }
+            if (panel.getAttribute('open') === 'true') {
+                panel.removeAttribute('open');
+                arrow.textContent = '▼';
+                body.style.display = 'none';
+                panel.style.minHeight = '60px';
+            } else {
+                panel.setAttribute('open', 'true');
+                arrow.textContent = '▲';
+                body.style.display = 'block';
+                adjustPanelHeight();
             }
         }
         
-        // 初始化仪表板
-        $(document).ready(function() {
-            window.territoryDashboard = new TerritoryDashboard();
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const arrow = document.querySelector(`[data-section="${sectionId}"] .section-arrow`);
+            
+            if (section.classList.contains('expanded')) {
+                section.classList.remove('expanded');
+                arrow.textContent = '▶';
+            } else {
+                section.classList.add('expanded');
+                arrow.textContent = '▼';
+                // 确保内容高度正确
+                setTimeout(adjustPanelHeight, 10);
+            }
+        }
+        
+        function initializeTerritoryPanel() {
+            // 查找最新的领地状态消息
+            const messages = document.querySelectorAll('.mes_text, .message, [class*="message"]');
+            let latestStatus = null;
+            
+            for (let i = messages.length - 1; i >= 0; i--) {
+                const text = messages[i].textContent || messages[i].innerText;
+                if (text.includes('<territory_status>')) {
+                    latestStatus = text;
+                    break;
+                }
+            }
+            
+            if (latestStatus) {
+                parseTerritoryStatus(latestStatus);
+            } else {
+                document.getElementById('statusContent').innerHTML = 
+                    '<div class="important-alert">未找到领地状态数据</div>';
+            }
+            
+            adjustPanelHeight();
+        }
+        
+        function parseTerritoryStatus(statusText) {
+            try {
+                // 提取状态面板内容
+                const start = statusText.indexOf('<territory_status>');
+                const end = statusText.indexOf('</territory_status>');
+                
+                if (start === -1 || end === -1) {
+                    throw new Error('无效的状态格式');
+                }
+                
+                const content = statusText.substring(start + 18, end).trim();
+                const lines = content.split('\n').filter(line => line.trim());
+                
+                // 分组解析
+                let currentSection = '';
+                let sections = {};
+                
+                for (const line of lines) {
+                    if (line.startsWith('===')) {
+                        currentSection = line.replace(/=/g, '').trim();
+                        sections[currentSection] = [];
+                    } else if (line.startsWith('[') && line.includes('|')) {
+                        if (currentSection) {
+                            const match = line.match(/\[([^\]]+)\|([^\]]*)\]/);
+                            if (match) {
+                                sections[currentSection].push({
+                                    label: match[1].trim(),
+                                    value: match[2].trim()
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                // 生成HTML
+                generateStatusHTML(sections);
+                
+            } catch (error) {
+                console.error('解析领地状态失败:', error);
+                document.getElementById('statusContent').innerHTML = 
+                    `<div class="important-alert">解析错误: ${error.message}</div>`;
+            }
+        }
+        
+        function generateStatusHTML(sections) {
+            let html = '';
+            const sectionOrder = [
+                '领地基础信息',
+                '人口与种族构成', 
+                '经济与财政',
+                '仓库物资储备',
+                '资源与环境',
+                '军事与防御',
+                '居民与社会状态',
+                '威胁与安全',
+                '科技研发进展',
+                '建筑设施',
+                '生产与供应链',
+                '法令与政策',
+                '领主信息'
+            ];
+            
+            sectionOrder.forEach(sectionName => {
+                if (sections[sectionName]) {
+                    const sectionId = sectionName.replace(/\s+/g, '-');
+                    const icon = getSectionIcon(sectionName);
+                    
+                    html += `
+                        <div class="collapse-section">
+                            <div class="section-header" onclick="toggleSection('${sectionId}')" data-section="${sectionId}">
+                                <div class="section-title">
+                                    <span class="section-icon">${icon}</span>
+                                    <span>${sectionName}</span>
+                                </div>
+                                <span class="section-arrow">▶</span>
+                            </div>
+                            <div class="section-content" id="${sectionId}">
+                                ${generateSectionContent(sectionName, sections[sectionName])}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('statusContent').innerHTML = html;
+            
+            // 更新领地名称
+            if (sections['领地基础信息']) {
+                const nameInfo = sections['领地基础信息'].find(item => item.label.includes('名称'));
+                if (nameInfo) {
+                    document.getElementById('territoryName').textContent = nameInfo.value;
+                }
+            }
+            
+            // 自动展开重要部分
+            setTimeout(() => {
+                ['领地基础信息', '经济与财政', '军事与防御'].forEach(sectionName => {
+                    const sectionId = sectionName.replace(/\s+/g, '-');
+                    toggleSection(sectionId);
+                });
+            }, 100);
+        }
+        
+        function generateSectionContent(sectionName, items) {
+            let content = '';
+            
+            if (sectionName === '人口与种族构成') {
+                // 特殊处理种族显示
+                const raceItem = items.find(item => item.label.includes('种族构成'));
+                if (raceItem) {
+                    content += '<div style="margin-bottom: 15px;">';
+                    const races = raceItem.value.split('|').filter(r => r.trim());
+                    races.forEach(race => {
+                        const [name, details] = race.split(':');
+                        if (name && details) {
+                            content += `
+                                <div class="race-card">
+                                    <div class="race-name">${name}</div>
+                                    <div class="race-details">
+                                        <span class="race-count">${details}</span>
+                                        <span class="race-status">${getRaceStatus(details)}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    content += '</div>';
+                }
+                
+                // 其他人口信息
+                items.filter(item => !item.label.includes('种族构成')).forEach(item => {
+                    content += `
+                        <div class="data-row">
+                            <span class="data-label">${item.label}</span>
+                            <span class="data-value ${getValueClass(item.value)}">${item.value}</span>
+                        </div>
+                    `;
+                });
+                
+            } else if (sectionName === '科技研发进展') {
+                // 特殊处理科技显示
+                items.forEach(item => {
+                    if (item.label.includes('研发中')) {
+                        const techs = item.value.split('|').filter(t => t.trim());
+                        techs.forEach(tech => {
+                            const match = tech.match(/(.+?)\((\d+)%\)/);
+                            if (match) {
+                                content += `
+                                    <div class="tech-card">
+                                        <div class="tech-name">${match[1].trim()}</div>
+                                        <div class="tech-progress">
+                                            <div class="tech-progress-bar" style="width: ${match[2]}%"></div>
+                                        </div>
+                                        <div style="text-align: right; font-size: 0.8em; color: #5A3A6B;">
+                                            进度: ${match[2]}%
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    } else {
+                        content += `
+                            <div class="data-row">
+                                <span class="data-label">${item.label}</span>
+                                <span class="data-value ${getValueClass(item.value)}">${item.value}</span>
+                            </div>
+                        `;
+                    }
+                });
+                
+            } else {
+                // 默认显示方式
+                items.forEach(item => {
+                    content += `
+                        <div class="data-row">
+                            <span class="data-label">${item.label}</span>
+                            <span class="data-value ${getValueClass(item.value)}">${item.value}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            return content;
+        }
+        
+        function getSectionIcon(sectionName) {
+            const icons = {
+                '领地基础信息': '🏰',
+                '人口与种族构成': '👥',
+                '经济与财政': '💰',
+                '仓库物资储备': '🏪',
+                '资源与环境': '🌳',
+                '军事与防御': '⚔️',
+                '居民与社会状态': '🏠',
+                '威胁与安全': '⚠️',
+                '科技研发进展': '🔬',
+                '建筑设施': '🏛️',
+                '生产与供应链': '⚙️',
+                '法令与政策': '📜',
+                '领主信息': '👑'
+            };
+            return icons[sectionName] || '📋';
+        }
+        
+        function getValueClass(value) {
+            if (!value) return '';
+            
+            if (value.includes('📈') || value.includes('盈余') || value.includes('充足') || 
+                value.includes('良好') || value.includes('安全')) {
+                return 'value-positive';
+            }
+            
+            if (value.includes('📉') || value.includes('亏损') || value.includes('不足') ||
+                value.includes('危险') || value.includes('极危')) {
+                return 'value-negative';
+            }
+            
+            if (value.includes('金币') || value.includes('金') || /\d+金/.test(value)) {
+                return 'value-gold';
+            }
+            
+            if (value.includes('研发') || value.includes('科技')) {
+                return 'value-purple';
+            }
+            
+            return '';
+        }
+        
+        function getRaceStatus(details) {
+            if (details.includes('主导')) return '统治阶层';
+            if (details.includes('平等')) return '公民';
+            if (details.includes('受限制')) return '限制居住';
+            if (details.includes('奴隶')) return '奴役状态';
+            return '';
+        }
+        
+        function adjustPanelHeight() {
+            const panel = document.getElementById('territoryPanel');
+            const body = document.getElementById('panelBody');
+            const content = document.getElementById('statusContent');
+            
+            if (!panel || !body || !content) return;
+            
+            // 计算内容高度
+            const contentHeight = content.scrollHeight;
+            
+            if (panel.getAttribute('open') === 'true') {
+                // 展开状态：内容高度 + 头部高度 + 内边距
+                const totalHeight = contentHeight + 100;
+                panel.style.height = Math.min(totalHeight, window.innerHeight * 0.8) + 'px';
+                body.style.maxHeight = (totalHeight - 60) + 'px';
+                body.style.overflowY = 'auto';
+            } else {
+                // 折叠状态：仅头部高度
+                panel.style.height = '60px';
+                panel.style.minHeight = '60px';
+            }
+            
+            // 强制重绘
+            panel.style.display = 'none';
+            panel.offsetHeight;
+            panel.style.display = 'block';
+        }
+        
+        // 初始化和定期调整
+        window.addEventListener('load', () => {
+            setTimeout(initializeTerritoryPanel, 500);
+            setTimeout(adjustPanelHeight, 1000);
         });
+        
+        // 每5秒检查一次高度
+        setInterval(adjustPanelHeight, 5000);
+        
+        // 导出函数供SillyTavern调用
+        window.updateTerritoryStatus = function(statusText) {
+            parseTerritoryStatus(statusText);
+            adjustPanelHeight();
+        };
     </script>
 </body>
 </html>
