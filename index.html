@@ -1098,10 +1098,14 @@
             updateThreatOverview();
             updateResourceWarnings();
             
-            // 如果当前在某个选项卡，更新该选项卡内容
+            // 强制刷新当前打开的选项卡内容
+            refreshCurrentTab();
+            
+            // 如果需要，可以根据当前激活的选项卡更新内容（保持原有逻辑）
             const activeTab = document.querySelector('.tab-btn.active');
             if (activeTab) {
                 const tabName = activeTab.textContent.trim();
+                // 确保选项卡内容已加载
                 switch(tabName) {
                     case '人口':
                         loadTabData('population');
@@ -1123,6 +1127,42 @@
                         break;
                 }
             }
+        }
+        
+        // 刷新当前打开的选项卡
+        function refreshCurrentTab() {
+            // 检查所有可见的选项卡内容，并重新加载它们
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                if (tab.style.display !== 'none' && tab.id !== 'tab-overview') {
+                    // 根据选项卡ID确定要加载的内容
+                    const tabId = tab.id;
+                    
+                    switch(tabId) {
+                        case 'tab-population':
+                            loadPopulationDetails();
+                            // 这些函数在loadPopulationDetails中已经调用
+                            // loadRaceDetails();
+                            // loadOccupationDetails();
+                            break;
+                        case 'tab-economy':
+                            loadEconomyDetails();
+                            break;
+                        case 'tab-resources':
+                            loadResourcesDetails();
+                            break;
+                        case 'tab-military':
+                            loadMilitaryDetails();
+                            break;
+                        case 'tab-buildings':
+                            loadBuildingsDetails();
+                            loadTechnologyDetails();
+                            break;
+                        case 'tab-system':
+                            loadSystemDetails();
+                            break;
+                    }
+                }
+            });
         }
         
         // 更新快速状态
@@ -1464,7 +1504,7 @@
                 targetBtn.classList.add('active');
             }
             
-            // 根据需要加载选项卡数据
+            // 根据需要加载选项卡数据 - 强制刷新
             loadTabData(tabName);
             
             adjustIframeHeight();
@@ -1474,27 +1514,65 @@
         function loadTabData(tabName) {
             if (!territoryData) return;
             
+            console.log(`加载选项卡数据: ${tabName}`);
+            
             switch(tabName) {
                 case 'overview':
                     // 概览选项卡已经在updateUI中更新
                     break;
                 case 'population':
+                    // 清空现有表格内容，强制重新渲染
+                    const popTables = ['population-details', 'race-details', 'occupation-details'];
+                    popTables.forEach(tableId => {
+                        const table = document.getElementById(tableId);
+                        if (table) table.innerHTML = '';
+                    });
                     loadPopulationDetails();
                     break;
                 case 'economy':
+                    // 清空现有表格内容
+                    const economyTables = ['finance-details', 'tax-details', 'economy-indicators'];
+                    economyTables.forEach(tableId => {
+                        const table = document.getElementById(tableId);
+                        if (table) table.innerHTML = '';
+                    });
                     loadEconomyDetails();
                     break;
                 case 'resources':
+                    // 清空现有表格内容
+                    const resourceTables = ['warehouse-details', 'natural-resources', 'environment-details'];
+                    resourceTables.forEach(tableId => {
+                        const table = document.getElementById(tableId);
+                        if (table) table.innerHTML = '';
+                    });
                     loadResourcesDetails();
                     break;
                 case 'military':
+                    // 清空现有表格内容
+                    const militaryTables = ['military-details', 'equipment-details', 'defense-details'];
+                    militaryTables.forEach(tableId => {
+                        const table = document.getElementById(tableId);
+                        if (table) table.innerHTML = '';
+                    });
                     loadMilitaryDetails();
                     break;
                 case 'buildings':
+                    // 清空现有内容
+                    const buildingsContainers = ['buildings-list', 'technology-list'];
+                    buildingsContainers.forEach(containerId => {
+                        const container = document.getElementById(containerId);
+                        if (container) container.innerHTML = '';
+                    });
                     loadBuildingsDetails();
                     loadTechnologyDetails();
                     break;
                 case 'system':
+                    // 清空现有表格内容
+                    const systemTables = ['system-details', 'lord-details'];
+                    systemTables.forEach(tableId => {
+                        const table = document.getElementById(tableId);
+                        if (table) table.innerHTML = '';
+                    });
                     loadSystemDetails();
                     break;
             }
@@ -2336,9 +2414,29 @@
             }
         }
         
-        // 刷新数据
+        // 刷新数据 - 修复版
         async function refreshData() {
-            await fetchFromMVU();
+            try {
+                showLoading(true);
+                console.log('开始强制刷新数据...');
+                
+                // 清除现有数据，强制重新获取
+                territoryData = null;
+                localStorage.removeItem('territoryData');
+                
+                await fetchFromMVU();
+                
+                // 显示成功消息
+                const now = new Date();
+                document.getElementById('last-update').textContent = now.toLocaleTimeString();
+                
+                console.log('数据刷新完成');
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+                alert('刷新数据失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
         }
         
         // 月度结算
