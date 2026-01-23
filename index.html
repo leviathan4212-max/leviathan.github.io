@@ -5,414 +5,288 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>领地经营状态面板</title>
     
-    <!-- Vue 3 和 Pinia -->
+    <!-- 使用更稳定的CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+    
+    <style>
+        /* 样式部分保持不变，从您的原代码复制即可 */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #9b59b6;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .territory-dashboard {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        /* ... 其余CSS样式（从您原代码复制完整的样式） ... */
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
     <script type="module">
-        import { createApp, ref, computed, watch, onMounted, defineComponent } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-        import { createPinia, defineStore, storeToRefs } from 'https://unpkg.com/pinia@2/dist/pinia.esm-browser.js';
+        // 简化的主应用 - 不使用Pinia以简化
+        const { createApp, ref, computed, onMounted } = Vue;
         
-        // ========== Pinia 存储定义 ==========
-        const pinia = createPinia();
-        
-        // 领地数据存储
-        const useTerritoryStore = defineStore('territory', () => {
-            const data = ref(null);
-            const loading = ref(true);
-            const error = ref(null);
-            const lastUpdate = ref(null);
-            
-            // 从MVU获取领地数据
-            async function fetchData() {
-                try {
-                    loading.value = true;
-                    
-                    // 假设MVU插件提供全局的getVariables函数
-                    const mvuData = await getVariables({ type: 'message', message_id: getCurrentMessageId() });
-                    
-                    // 从MVU数据中提取领地信息
-                    // 根据您的变量结构3.0，数据路径为 root.Territory
-                    const territoryData = mvuData?.Territory || null;
-                    
-                    if (!territoryData) {
-                        throw new Error('无法获取领地数据：MVU变量中未找到Territory对象');
-                    }
-                    
-                    data.value = territoryData;
-                    error.value = null;
-                    lastUpdate.value = new Date();
-                    
-                    console.log('[领地存储] 数据已更新:', territoryData);
-                } catch (err) {
-                    console.error('[领地存储] 获取数据失败:', err);
-                    error.value = err.message || '未知错误';
-                } finally {
-                    loading.value = false;
-                }
-            }
-            
-            // 更新特定变量
-            async function updateVariable(path, value) {
-                try {
-                    // 通过MVU API修改变量
-                    const mvuData = await getVariables({ type: 'message', message_id: getCurrentMessageId() });
-                    
-                    // 使用lodash的set方法或自定义实现
-                    _.set(mvuData, `Territory.${path}`, value);
-                    
-                    // 保存回MVU
-                    await replaceMvuData(mvuData, { type: 'message', message_id: getCurrentMessageId() });
-                    
-                    // 重新获取数据
-                    await fetchData();
-                    
-                    return true;
-                } catch (err) {
-                    console.error('[领地存储] 更新变量失败:', err);
-                    return false;
-                }
-            }
-            
-            // 触发月度结算
-            async function triggerMonthlySettlement() {
-                try {
-                    // 调用MVU中的结算函数
-                    await executeMvuCode('Territory.monthlySettlement()');
-                    await fetchData();
-                    return true;
-                } catch (err) {
-                    console.error('[领地存储] 月度结算失败:', err);
-                    return false;
-                }
-            }
-            
-            // 计算属性：快速访问常用数据
-            const basicInfo = computed(() => data.value?.基本信息 || {});
-            const population = computed(() => data.value?.人口 || {});
-            const economy = computed(() => data.value?.经济 || {});
-            const warehouse = computed(() => data.value?.仓库 || {});
-            const military = computed(() => data.value?.军事 || {});
-            const residents = computed(() => data.value?.状态?.居民状态 || {});
-            const resources = computed(() => data.value?.资源 || {});
-            const buildings = computed(() => data.value?.建筑 || {});
-            const tech = computed(() => data.value?.科技 || {});
-            const races = computed(() => data.value?.人口?.种族构成 || {});
-            const projects = computed(() => data.value?.项目 || {});
-            const decrees = computed(() => data.value?.法令 || {});
-            
-            // 计算总人口
-            const totalPopulation = computed(() => population.value?.总人口 || 0);
-            
-            // 计算财政健康度
-            const financialHealth = computed(() => {
-                const income = economy.value?.财政?.月总收入 || 0;
-                const expense = economy.value?.财政?.月总支出 || 0;
-                if (income > expense * 1.2) return 'excellent';
-                if (income > expense) return 'good';
-                if (income === expense) return 'balanced';
-                if (income < expense * 0.8) return 'critical';
-                return 'warning';
-            });
-            
-            // 计算物资预警
-            const resourceWarnings = computed(() => {
-                const warnings = [];
-                const warehouseData = warehouse.value;
-                
-                // 检查每种物资是否低于安全储量
-                for (const [key, item] of Object.entries(warehouseData)) {
-                    if (item.当前储量 < item.安全储量) {
-                        warnings.push({
-                            name: item.名称,
-                            current: item.当前储量,
-                            safe: item.安全储量,
-                            unit: item.单位
-                        });
-                    }
-                }
-                
-                return warnings;
-            });
-            
-            // 计算科技进展
-            const techProgress = computed(() => {
-                const techData = tech.value || {};
-                const categories = {
-                    completed: [],
-                    inProgress: [],
-                    available: []
-                };
-                
-                Object.values(techData).forEach(item => {
-                    if (!item.研发状态) return;
-                    
-                    switch(item.研发状态[0]) {
-                        case '已研发':
-                            categories.completed.push(item);
-                            break;
-                        case '研发中':
-                            categories.inProgress.push(item);
-                            break;
-                        case '未研发':
-                            categories.available.push(item);
-                            break;
-                    }
-                });
-                
-                return categories;
-            });
-            
-            // 计算建筑状态
-            const buildingStatus = computed(() => {
-                const buildingData = buildings.value || {};
-                const status = {
-                    normal: [],
-                    constructing: [],
-                    upgrading: [],
-                    damaged: [],
-                    abandoned: []
-                };
-                
-                Object.values(buildingData).forEach(building => {
-                    if (!building.状态) return;
-                    
-                    switch(building.状态[0]) {
-                        case '正常运营':
-                            status.normal.push(building);
-                            break;
-                        case '建设中':
-                            status.constructing.push(building);
-                            break;
-                        case '升级中':
-                            status.upgrading.push(building);
-                            break;
-                        case '损坏':
-                            status.damaged.push(building);
-                            break;
-                        case '废弃':
-                            status.abandoned.push(building);
-                            break;
-                    }
-                });
-                
-                return status;
-            });
-            
-            // 初始化
-            onMounted(() => {
-                fetchData();
-                // 每30秒自动刷新一次
-                setInterval(fetchData, 30000);
-            });
-            
-            return {
-                // 状态
-                data,
-                loading,
-                error,
-                lastUpdate,
-                
-                // 计算属性
-                basicInfo,
-                population,
-                economy,
-                warehouse,
-                military,
-                residents,
-                resources,
-                buildings,
-                tech,
-                races,
-                projects,
-                decrees,
-                totalPopulation,
-                financialHealth,
-                resourceWarnings,
-                techProgress,
-                buildingStatus,
-                
-                // 方法
-                fetchData,
-                updateVariable,
-                triggerMonthlySettlement
-            };
-        });
-        
-        // ========== 可折叠面板组件 ==========
-        const CollapsiblePanel = defineComponent({
-            props: {
-                title: String,
-                icon: String,
-                defaultOpen: {
-                    type: Boolean,
-                    default: false
-                },
-                summary: String,
-                variant: {
-                    type: String,
-                    default: 'default' // default, warning, danger, success, info
-                }
-            },
-            setup(props, { slots }) {
-                const isOpen = ref(props.defaultOpen);
-                const toggle = () => { isOpen.value = !isOpen.value; };
-                
-                const variantClass = computed(() => {
-                    return `panel-${props.variant}`;
-                });
-                
-                return {
-                    isOpen,
-                    toggle,
-                    variantClass
-                };
-            },
-            template: `
-                <div class="collapsible-panel" :class="variantClass">
-                    <div class="panel-header" @click="toggle">
-                        <div class="header-left">
-                            <span class="panel-icon">{{ icon }}</span>
-                            <span class="panel-title">{{ title }}</span>
-                            <span v-if="summary" class="panel-summary">{{ summary }}</span>
-                        </div>
-                        <span class="toggle-arrow" :class="{ open: isOpen }">▼</span>
-                    </div>
-                    <transition name="slide">
-                        <div v-show="isOpen" class="panel-content">
-                            <slot></slot>
-                        </div>
-                    </transition>
-                </div>
-            `
-        });
-        
-        // ========== 数据卡片组件 ==========
-        const DataCard = defineComponent({
-            props: {
-                title: String,
-                value: [String, Number],
-                icon: String,
-                unit: String,
-                trend: String, // up, down, stable
-                color: String,
-                size: {
-                    type: String,
-                    default: 'medium' // small, medium, large
-                }
-            },
-            setup(props) {
-                const formattedValue = computed(() => {
-                    const num = Number(props.value);
-                    if (!isNaN(num)) {
-                        return num.toLocaleString();
-                    }
-                    return props.value;
-                });
-                
-                const trendIcon = computed(() => {
-                    switch(props.trend) {
-                        case 'up': return '📈';
-                        case 'down': return '📉';
-                        case 'stable': return '⚖️';
-                        default: return '';
-                    }
-                });
-                
-                return {
-                    formattedValue,
-                    trendIcon
-                };
-            },
-            template: `
-                <div class="data-card" :class="'size-' + size">
-                    <div class="card-header">
-                        <span v-if="icon" class="card-icon">{{ icon }}</span>
-                        <span class="card-title">{{ title }}</span>
-                    </div>
-                    <div class="card-value" :style="{ color: color }">
-                        {{ formattedValue }}<span v-if="unit" class="unit">{{ unit }}</span>
-                        <span v-if="trendIcon" class="trend">{{ trendIcon }}</span>
-                    </div>
-                </div>
-            `
-        });
-        
-        // ========== 进度条组件 ==========
-        const ProgressBar = defineComponent({
-            props: {
-                value: Number,
-                max: Number,
-                label: String,
-                color: String,
-                showPercentage: {
-                    type: Boolean,
-                    default: true
-                },
-                height: {
-                    type: String,
-                    default: '8px'
-                }
-            },
-            setup(props) {
-                const percentage = computed(() => {
-                    if (!props.max) return 0;
-                    return Math.min(100, (props.value / props.max) * 100);
-                });
-                
-                const barColor = computed(() => {
-                    if (props.color) return props.color;
-                    if (percentage.value < 30) return '#f44336'; // 红色
-                    if (percentage.value < 70) return '#ff9800'; // 橙色
-                    return '#4caf50'; // 绿色
-                });
-                
-                return {
-                    percentage,
-                    barColor
-                };
-            },
-            template: `
-                <div class="progress-container">
-                    <div v-if="label" class="progress-label">
-                        <span>{{ label }}</span>
-                        <span v-if="showPercentage" class="percentage">{{ Math.round(percentage) }}%</span>
-                    </div>
-                    <div class="progress-bar" :style="{ height: height }">
-                        <div class="progress-fill" :style="{
-                            width: percentage + '%',
-                            backgroundColor: barColor
-                        }"></div>
-                    </div>
-                </div>
-            `
-        });
-        
-        // ========== 主应用组件 ==========
-        const App = defineComponent({
+        const app = createApp({
             setup() {
-                const store = useTerritoryStore();
-                const { 
-                    data, loading, error, lastUpdate,
-                    basicInfo, population, economy, warehouse, military, residents,
-                    totalPopulation, financialHealth, resourceWarnings, techProgress, buildingStatus
-                } = storeToRefs(store);
+                // 状态管理
+                const loading = ref(true);
+                const error = ref(null);
+                const lastUpdate = ref(null);
+                const territoryData = ref(null);
                 
-                // 格式化时间
-                const formattedTime = computed(() => {
-                    if (!lastUpdate.value) return '从未更新';
-                    return lastUpdate.value.toLocaleTimeString();
-                });
+                // 模拟数据（实际使用时替换为真实数据）
+                const mockData = {
+                    基本信息: {
+                        名称: "北境边境领",
+                        面积: 85,
+                        地形: "丘陵与森林",
+                        发展阶段: "初建"
+                    },
+                    人口: {
+                        总人口: 1250,
+                        职业分布: {
+                            农民: { 人数: 700 },
+                            工匠: { 人数: 120 },
+                            商人: { 人数: 60 },
+                            官员: { 人数: 15 },
+                            士兵: { 人数: 80 },
+                            无业: { 人数: 275 }
+                        },
+                        种族构成: {
+                            人类: { 数量: 900, 地位: "主导" },
+                            矮人: { 数量: 150, 地位: "平等" },
+                            半精灵: { 数量: 100, 地位: "平等" },
+                            哥布林: { 数量: 50, 地位: "奴隶" }
+                        }
+                    },
+                    经济: {
+                        财政: {
+                            库存金币: 2500,
+                            月总收入: 1850,
+                            月总支出: 1670,
+                            月净收入: 180
+                        },
+                        公共税率: {
+                            农业税: 0.10,
+                            商业税: 0.15,
+                            工业税: 0.12
+                        }
+                    },
+                    仓库: {
+                        res_food_grain: {
+                            名称: "粮食",
+                            当前储量: 6500,
+                            安全储量: 3750,
+                            单位: "担"
+                        },
+                        res_material_wood: {
+                            名称: "木材",
+                            当前储量: 900,
+                            安全储量: 300,
+                            单位: "方"
+                        },
+                        res_material_stone: {
+                            名称: "石材",
+                            当前储量: 500,
+                            安全储量: 200,
+                            单位: "方"
+                        },
+                        res_material_iron: {
+                            名称: "铁矿",
+                            当前储量: 300,
+                            安全储量: 100,
+                            单位: "斤"
+                        }
+                    },
+                    军事: {
+                        兵力: {
+                            常备军: 80,
+                            民兵: 200,
+                            精锐部队: 0
+                        },
+                        战力评级: {
+                            总评级: "D"
+                        },
+                        防御设施: {
+                            城墙完整度: 0.7,
+                            瞭望塔数量: 2
+                        }
+                    },
+                    状态: {
+                        居民状态: {
+                            生活水平: "温饱",
+                            治安状况: 65,
+                            民心指数: 70,
+                            当前事件: "暂无",
+                            威胁等级: "警戒"
+                        }
+                    },
+                    科技: {
+                        tech_basic_agriculture: {
+                            名称: "基础农业技术",
+                            研发状态: ["已研发"],
+                            当前进度: 100
+                        },
+                        tech_iron_smelting: {
+                            名称: "铁器冶炼技术",
+                            研发状态: ["研发中"],
+                            当前进度: 45
+                        },
+                        tech_basic_military_tactics: {
+                            名称: "基础军事战术",
+                            研发状态: ["未研发"],
+                            当前进度: 0
+                        }
+                    },
+                    建筑: {
+                        building_residential: {
+                            名称: "居民区",
+                            等级: 2,
+                            状态: ["正常运营"],
+                            岗位: { 当前人数: 0, 最大人数: 0 }
+                        },
+                        building_market: {
+                            名称: "市场",
+                            等级: 2,
+                            状态: ["正常运营"],
+                            岗位: { 当前人数: 25, 最大人数: 40 },
+                            产权: "lord"
+                        },
+                        building_blacksmith: {
+                            名称: "铁匠铺",
+                            等级: 1,
+                            状态: ["正常运营"],
+                            岗位: { 当前人数: 4, 最大人数: 8 },
+                            产权: "private",
+                            生产配方: {
+                                投入资源: { res_material_iron: 2, res_material_wood: 1 },
+                                产出资源: { item_weapon_spear: 3, item_tool_hammer: 5 },
+                                生产效率: 0.8
+                            }
+                        },
+                        building_watchtower: {
+                            名称: "北境瞭望塔",
+                            等级: 1,
+                            状态: ["建设中"],
+                            岗位: { 当前人数: 0, 最大人数: 5 },
+                            产权: "lord"
+                        }
+                    },
+                    资源: {
+                        森林资源: { 再生速率: 100, 开采速率: 150 },
+                        矿脉资源: { 开采速率: 50 }
+                    },
+                    项目: {
+                        当前建设项目: "北境瞭望塔",
+                        项目进度: 30
+                    },
+                    法令: {
+                        decree_basic_tax: {
+                            名称: "基础税法",
+                            生效状态: [true]
+                        }
+                    }
+                };
+                
+                // 尝试从SillyTavern获取数据
+                async function fetchData() {
+                    try {
+                        loading.value = true;
+                        
+                        // 方法1: 检查全局变量（SillyTavern可能会将数据注入window）
+                        if (window.territoryData) {
+                            territoryData.value = window.territoryData;
+                        }
+                        // 方法2: 尝试从localStorage获取（如果MVU插件存储在那里）
+                        else if (localStorage.getItem('territoryData')) {
+                            territoryData.value = JSON.parse(localStorage.getItem('territoryData'));
+                        }
+                        // 方法3: 如果以上都不存在，使用模拟数据
+                        else {
+                            console.log('未找到真实数据，使用模拟数据');
+                            territoryData.value = mockData;
+                        }
+                        
+                        lastUpdate.value = new Date();
+                        error.value = null;
+                    } catch (err) {
+                        console.error('获取数据失败:', err);
+                        error.value = err.message;
+                        territoryData.value = mockData; // 出错时使用模拟数据
+                    } finally {
+                        loading.value = false;
+                    }
+                }
                 
                 // 刷新数据
                 const refreshData = () => {
-                    store.fetchData();
+                    fetchData();
                 };
                 
-                // 执行月度结算
-                const runMonthlySettlement = async () => {
-                    const confirmed = confirm('确定要执行月度结算吗？这将更新所有经济数据。');
-                    if (confirmed) {
-                        await store.triggerMonthlySettlement();
+                // 月度结算（演示用）
+                const runMonthlySettlement = () => {
+                    alert('月度结算功能需要与SillyTavern MVU插件集成');
+                    // 这里可以添加与AI的交互逻辑
+                    if (window.sendMessageToAI) {
+                        window.sendMessageToAI('执行领地月度结算');
                     }
                 };
+                
+                // 计算属性
+                const basicInfo = computed(() => territoryData.value?.基本信息 || {});
+                const population = computed(() => territoryData.value?.人口 || {});
+                const economy = computed(() => territoryData.value?.经济 || {});
+                const warehouse = computed(() => territoryData.value?.仓库 || {});
+                const military = computed(() => territoryData.value?.军事 || {});
+                const residents = computed(() => territoryData.value?.状态?.居民状态 || {});
+                const tech = computed(() => territoryData.value?.科技 || {});
+                const buildings = computed(() => territoryData.value?.建筑 || {});
+                
+                const totalPopulation = computed(() => population.value?.总人口 || 0);
+                const races = computed(() => population.value?.种族构成 || {});
+                
+                // 计算收支状态
+                const balanceStatus = computed(() => {
+                    const income = economy.value?.财政?.月总收入 || 0;
+                    const expense = economy.value?.财政?.月总支出 || 0;
+                    const net = income - expense;
+                    
+                    if (net > 0) return { text: '盈余', icon: '📈', color: '#4caf50' };
+                    if (net < 0) return { text: '亏损', icon: '📉', color: '#f44336' };
+                    return { text: '平衡', icon: '⚖️', color: '#ff9800' };
+                });
                 
                 // 计算威胁等级颜色
                 const threatColor = computed(() => {
@@ -426,40 +300,33 @@
                     }
                 });
                 
-                // 计算收支状态
-                const balanceStatus = computed(() => {
-                    const income = economy.value?.财政?.月总收入 || 0;
-                    const expense = economy.value?.财政?.月总支出 || 0;
-                    const net = income - expense;
-                    
-                    if (net > 0) return { text: '盈余', icon: '📈', color: '#4caf50' };
-                    if (net < 0) return { text: '亏损', icon: '📉', color: '#f44336' };
-                    return { text: '平衡', icon: '⚖️', color: '#ff9800' };
+                // 初始化
+                onMounted(() => {
+                    fetchData();
                 });
                 
                 return {
                     // 状态
-                    data,
                     loading,
                     error,
-                    formattedTime,
+                    lastUpdate,
                     
                     // 数据
+                    territoryData,
                     basicInfo,
                     population,
                     economy,
                     warehouse,
                     military,
                     residents,
+                    tech,
+                    buildings,
                     totalPopulation,
-                    financialHealth,
-                    resourceWarnings,
-                    techProgress,
-                    buildingStatus,
+                    races,
                     
-                    // 计算值
-                    threatColor,
+                    // 计算属性
                     balanceStatus,
+                    threatColor,
                     
                     // 方法
                     refreshData,
@@ -472,7 +339,7 @@
                     <div class="dashboard-toolbar">
                         <div class="toolbar-left">
                             <h1 class="dashboard-title">🏰 {{ basicInfo.名称 || '领地状态面板' }}</h1>
-                            <span class="update-time">最后更新: {{ formattedTime }}</span>
+                            <span class="update-time">最后更新: {{ lastUpdate ? lastUpdate.toLocaleTimeString() : '从未更新' }}</span>
                         </div>
                         <div class="toolbar-right">
                             <button @click="refreshData" class="btn btn-refresh" :disabled="loading">
@@ -491,55 +358,66 @@
                     </div>
                     
                     <!-- 加载状态 -->
-                    <div v-if="loading && !data" class="loading-overlay">
+                    <div v-if="loading && !territoryData" class="loading-overlay">
                         <div class="loading-spinner"></div>
                         <p>正在加载领地数据...</p>
                     </div>
                     
                     <!-- 主要内容 -->
-                    <div v-if="data" class="dashboard-content">
+                    <div v-if="territoryData" class="dashboard-content">
                         
                         <!-- 第一行: 关键指标 -->
                         <div class="metrics-row">
-                            <DataCard 
-                                title="总人口" 
-                                :value="totalPopulation" 
-                                icon="👥" 
-                                unit="人"
-                                size="large"
-                                color="#2196f3"
-                            />
-                            <DataCard 
-                                title="国库资金" 
-                                :value="economy?.财政?.库存金币" 
-                                icon="💰" 
-                                unit="金币"
-                                size="large"
-                                color="#ffc107"
-                            />
-                            <DataCard 
-                                title="月度收支" 
-                                :value="economy?.财政?.月净收入" 
-                                icon="💸"
-                                :trend="balanceStatus.icon"
-                                :color="balanceStatus.color"
-                                size="large"
-                            />
-                            <DataCard 
-                                title="威胁等级" 
-                                :value="residents?.威胁等级" 
-                                icon="⚠️"
-                                :color="threatColor"
-                                size="medium"
-                            />
-                            <DataCard 
-                                title="民心指数" 
-                                :value="residents?.民心指数" 
-                                icon="❤️"
-                                unit=""
-                                size="medium"
-                                :color="residents?.民心指数 > 70 ? '#4caf50' : residents?.民心指数 > 40 ? '#ff9800' : '#f44336'"
-                            />
+                            <div class="data-card size-large">
+                                <div class="card-header">
+                                    <span class="card-icon">👥</span>
+                                    <span class="card-title">总人口</span>
+                                </div>
+                                <div class="card-value" style="color: #2196f3;">
+                                    {{ totalPopulation.toLocaleString() }}<span class="unit">人</span>
+                                </div>
+                            </div>
+                            
+                            <div class="data-card size-large">
+                                <div class="card-header">
+                                    <span class="card-icon">💰</span>
+                                    <span class="card-title">国库资金</span>
+                                </div>
+                                <div class="card-value" style="color: #ffc107;">
+                                    {{ economy.财政?.库存金币?.toLocaleString() || 0 }}<span class="unit">金币</span>
+                                </div>
+                            </div>
+                            
+                            <div class="data-card size-large">
+                                <div class="card-header">
+                                    <span class="card-icon">💸</span>
+                                    <span class="card-title">月度收支</span>
+                                </div>
+                                <div class="card-value" :style="{ color: balanceStatus.color }">
+                                    {{ economy.财政?.月净收入?.toLocaleString() || 0 }}<span class="unit">金币</span>
+                                    <span class="trend">{{ balanceStatus.icon }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="data-card size-medium">
+                                <div class="card-header">
+                                    <span class="card-icon">⚠️</span>
+                                    <span class="card-title">威胁等级</span>
+                                </div>
+                                <div class="card-value" :style="{ color: threatColor }">
+                                    {{ residents.威胁等级 || '未知' }}
+                                </div>
+                            </div>
+                            
+                            <div class="data-card size-medium">
+                                <div class="card-header">
+                                    <span class="card-icon">❤️</span>
+                                    <span class="card-title">民心指数</span>
+                                </div>
+                                <div class="card-value" :style="{ color: residents.民心指数 > 70 ? '#4caf50' : residents.民心指数 > 40 ? '#ff9800' : '#f44336' }">
+                                    {{ residents.民心指数 || 0 }}
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- 第二行: 详细面板 -->
@@ -548,311 +426,174 @@
                             <!-- 左侧列 -->
                             <div class="panel-column">
                                 <!-- 基础信息 -->
-                                <CollapsiblePanel title="📋 领地基础信息" icon="🏰" defaultOpen>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <span class="info-label">领地名称:</span>
-                                            <span class="info-value">{{ basicInfo.名称 }}</span>
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header" @click="togglePanel('basicInfo')">
+                                        <div class="header-left">
+                                            <span class="panel-icon">🏰</span>
+                                            <span class="panel-title">📋 领地基础信息</span>
                                         </div>
-                                        <div class="info-item">
-                                            <span class="info-label">领地面积:</span>
-                                            <span class="info-value">{{ basicInfo.面积 }} 平方里</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">地形特征:</span>
-                                            <span class="info-value">{{ basicInfo.地形 }}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">发展阶段:</span>
-                                            <span class="info-value">{{ basicInfo.发展阶段 }}</span>
+                                        <span class="toggle-arrow">▼</span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">领地名称:</span>
+                                                <span class="info-value">{{ basicInfo.名称 }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">领地面积:</span>
+                                                <span class="info-value">{{ basicInfo.面积 }} 平方里</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">地形特征:</span>
+                                                <span class="info-value">{{ basicInfo.地形 }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">发展阶段:</span>
+                                                <span class="info-value">{{ basicInfo.发展阶段 }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </CollapsiblePanel>
+                                </div>
                                 
-                                <!-- 人口与种族 -->
-                                <CollapsiblePanel title="👥 人口与种族构成" icon="🌍">
-                                    <div class="population-section">
-                                        <h4>总人口: {{ totalPopulation }} 人</h4>
-                                        <ProgressBar 
-                                            :value="population?.职业分布?.农民?.人数 || 0"
-                                            :max="totalPopulation"
-                                            label="农民"
-                                            color="#8bc34a"
-                                        />
-                                        <ProgressBar 
-                                            :value="population?.职业分布?.工匠?.人数 || 0"
-                                            :max="totalPopulation"
-                                            label="工匠"
-                                            color="#ff9800"
-                                        />
-                                        <ProgressBar 
-                                            :value="population?.职业分布?.商人?.人数 || 0"
-                                            :max="totalPopulation"
-                                            label="商人"
-                                            color="#2196f3"
-                                        />
-                                        
-                                        <div v-if="races && Object.keys(races).length > 0" class="races-section">
-                                            <h4>种族构成</h4>
-                                            <div class="races-grid">
-                                                <div v-for="(race, raceName) in races" :key="raceName" class="race-item">
-                                                    <span class="race-name">{{ raceName }}</span>
-                                                    <span class="race-count">{{ race.数量 }}人</span>
-                                                    <span class="race-status" :class="'status-' + race.地位">{{ race.地位 }}</span>
-                                                </div>
+                                <!-- 经济状况 -->
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header">
+                                        <div class="header-left">
+                                            <span class="panel-icon">💰</span>
+                                            <span class="panel-title">💎 经济与财政</span>
+                                        </div>
+                                        <span class="toggle-arrow">▼</span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="economy-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">月收入:</span>
+                                                <span class="stat-value income">{{ economy.财政?.月总收入 || 0 }} 金币</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">月支出:</span>
+                                                <span class="stat-value expense">{{ economy.财政?.月总支出 || 0 }} 金币</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">净收入:</span>
+                                                <span class="stat-value" :class="balanceStatus.text">{{ economy.财政?.月净收入 || 0 }} 金币 {{ balanceStatus.icon }}</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">国库资金:</span>
+                                                <span class="stat-value treasury">{{ economy.财政?.库存金币 || 0 }} 金币</span>
                                             </div>
                                         </div>
                                     </div>
-                                </CollapsiblePanel>
-                                
-                                <!-- 资源与仓库 -->
-                                <CollapsiblePanel title="🏪 仓库物资储备" icon="📦">
-                                    <div class="warehouse-section">
-                                        <div v-if="resourceWarnings.length > 0" class="resource-warnings">
-                                            <h4 style="color: #f44336;">⚠️ 物资预警</h4>
-                                            <div v-for="warning in resourceWarnings" :key="warning.name" class="warning-item">
-                                                {{ warning.name }}: {{ warning.current }}{{ warning.unit }} (安全线: {{ warning.safe }}{{ warning.unit }})
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="resources-grid">
-                                            <div v-for="(item, key) in warehouse" :key="key" class="resource-item">
-                                                <span class="resource-name">{{ item.名称 }}</span>
-                                                <span class="resource-amount">{{ item.当前储量 }}{{ item.单位 }}</span>
-                                                <ProgressBar 
-                                                    :value="item.当前储量"
-                                                    :max="item.安全储量 * 2"
-                                                    :showPercentage="false"
-                                                    height="4px"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CollapsiblePanel>
+                                </div>
                             </div>
                             
                             <!-- 中间列 -->
                             <div class="panel-column">
-                                <!-- 经济状况 -->
-                                <CollapsiblePanel title="💰 经济与财政" icon="💎" defaultOpen>
-                                    <div class="economy-section">
-                                        <div class="economy-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-label">月收入:</span>
-                                                <span class="stat-value income">{{ economy?.财政?.月总收入 }} 金币</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">月支出:</span>
-                                                <span class="stat-value expense">{{ economy?.财政?.月总支出 }} 金币</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">净收入:</span>
-                                                <span class="stat-value" :class="balanceStatus.text">{{ economy?.财政?.月净收入 }} 金币 {{ balanceStatus.icon }}</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">国库资金:</span>
-                                                <span class="stat-value treasury">{{ economy?.财政?.库存金币 }} 金币</span>
-                                            </div>
+                                <!-- 人口与种族 -->
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header">
+                                        <div class="header-left">
+                                            <span class="panel-icon">👥</span>
+                                            <span class="panel-title">🌍 人口与种族构成</span>
                                         </div>
-                                        
-                                        <div class="taxes-section">
-                                            <h4>税率体系</h4>
-                                            <div class="taxes-grid">
-                                                <div class="tax-item">
-                                                    <span>农业税: {{ (economy?.公共税率?.农业税 * 100).toFixed(1) }}%</span>
-                                                </div>
-                                                <div class="tax-item">
-                                                    <span>商业税: {{ (economy?.公共税率?.商业税 * 100).toFixed(1) }}%</span>
-                                                </div>
-                                                <div class="tax-item">
-                                                    <span>工业税: {{ (economy?.公共税率?.工业税 * 100).toFixed(1) }}%</span>
+                                        <span class="toggle-arrow">▼</span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="population-section">
+                                            <h4>总人口: {{ totalPopulation }} 人</h4>
+                                            <div v-if="races && Object.keys(races).length > 0" class="races-section">
+                                                <h4>种族构成</h4>
+                                                <div class="races-grid">
+                                                    <div v-for="(race, raceName) in races" :key="raceName" class="race-item">
+                                                        <span class="race-name">{{ raceName }}</span>
+                                                        <span class="race-count">{{ race.数量 }}人</span>
+                                                        <span class="race-status" :class="'status-' + race.地位">{{ race.地位 }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </CollapsiblePanel>
+                                </div>
                                 
                                 <!-- 军事与防御 -->
-                                <CollapsiblePanel title="⚔️ 军事与防御" icon="🛡️">
-                                    <div class="military-section">
-                                        <div class="military-stats">
-                                            <div class="military-item">
-                                                <span class="military-label">常备军:</span>
-                                                <span class="military-value">{{ military?.兵力?.常备军 }} 人</span>
-                                            </div>
-                                            <div class="military-item">
-                                                <span class="military-label">民兵:</span>
-                                                <span class="military-value">{{ military?.兵力?.民兵 }} 人</span>
-                                            </div>
-                                            <div class="military-item">
-                                                <span class="military-label">精锐部队:</span>
-                                                <span class="military-value">{{ military?.兵力?.精锐部队 }} 人</span>
-                                            </div>
-                                            <div class="military-item">
-                                                <span class="military-label">总战力评级:</span>
-                                                <span class="military-value rating">{{ military?.战力评级?.总评级 }}</span>
-                                            </div>
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header">
+                                        <div class="header-left">
+                                            <span class="panel-icon">⚔️</span>
+                                            <span class="panel-title">🛡️ 军事与防御</span>
                                         </div>
-                                        
-                                        <div class="defense-section">
-                                            <h4>防御设施</h4>
-                                            <div class="defense-grid">
-                                                <div class="defense-item">
-                                                    <span>城墙完整度:</span>
-                                                    <ProgressBar :value="military?.防御设施?.城墙完整度 * 100" :max="100" />
+                                        <span class="toggle-arrow">▼</span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="military-section">
+                                            <div class="military-stats">
+                                                <div class="military-item">
+                                                    <span class="military-label">常备军:</span>
+                                                    <span class="military-value">{{ military.兵力?.常备军 || 0 }} 人</span>
                                                 </div>
-                                                <div class="defense-item">
-                                                    <span>瞭望塔: {{ military?.防御设施?.瞭望塔数量 }} 座</span>
+                                                <div class="military-item">
+                                                    <span class="military-label">民兵:</span>
+                                                    <span class="military-value">{{ military.兵力?.民兵 || 0 }} 人</span>
+                                                </div>
+                                                <div class="military-item">
+                                                    <span class="military-label">总战力评级:</span>
+                                                    <span class="military-value rating">{{ military.战力评级?.总评级 || '未知' }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </CollapsiblePanel>
-                                
-                                <!-- 居民状态 -->
-                                <CollapsiblePanel title="🏠 居民与社会状态" icon="❤️">
-                                    <div class="residents-section">
-                                        <div class="resident-stats">
-                                            <div class="resident-item">
-                                                <span class="resident-label">生活水平:</span>
-                                                <span class="resident-value">{{ residents?.生活水平 }}</span>
-                                            </div>
-                                            <div class="resident-item">
-                                                <span class="resident-label">治安状况:</span>
-                                                <span class="resident-value">{{ residents?.治安状况 }}</span>
-                                            </div>
-                                            <div class="resident-item">
-                                                <span class="resident-label">民心指数:</span>
-                                                <ProgressBar 
-                                                    :value="residents?.民心指数" 
-                                                    :max="100"
-                                                    :showPercentage="true"
-                                                    height="6px"
-                                                />
-                                            </div>
-                                        </div>
-                                        
-                                        <div v-if="residents?.当前事件 && residents.当前事件 !== '暂无'" class="current-event">
-                                            <h4>📌 当前事件</h4>
-                                            <p>{{ residents.当前事件 }}</p>
-                                        </div>
-                                    </div>
-                                </CollapsiblePanel>
+                                </div>
                             </div>
                             
                             <!-- 右侧列 -->
                             <div class="panel-column">
-                                <!-- 科技研发 -->
-                                <CollapsiblePanel title="🔬 科技研发进展" icon="⚙️">
-                                    <div class="tech-section">
-                                        <div v-if="techProgress.completed.length > 0" class="tech-category">
-                                            <h4>✅ 已研发科技</h4>
-                                            <div class="tech-list">
-                                                <div v-for="tech in techProgress.completed" :key="tech.名称" class="tech-item completed">
-                                                    {{ tech.名称 }}
-                                                </div>
-                                            </div>
+                                <!-- 仓库物资储备 -->
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header">
+                                        <div class="header-left">
+                                            <span class="panel-icon">🏪</span>
+                                            <span class="panel-title">📦 仓库物资储备</span>
                                         </div>
-                                        
-                                        <div v-if="techProgress.inProgress.length > 0" class="tech-category">
-                                            <h4>🔄 研发中科技</h4>
-                                            <div class="tech-list">
-                                                <div v-for="tech in techProgress.inProgress" :key="tech.名称" class="tech-item in-progress">
-                                                    {{ tech.名称 }} ({{ tech.当前进度 }}%)
-                                                    <ProgressBar :value="tech.当前进度" :max="100" height="4px" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div v-if="techProgress.available.length > 0" class="tech-category">
-                                            <h4>📚 可研发科技</h4>
-                                            <div class="tech-list">
-                                                <div v-for="tech in techProgress.available" :key="tech.名称" class="tech-item available">
-                                                    {{ tech.名称 }}
+                                        <span class="toggle-arrow">▼</span>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="warehouse-section">
+                                            <div class="resources-grid">
+                                                <div v-for="(item, key) in warehouse" :key="key" class="resource-item">
+                                                    <span class="resource-name">{{ item.名称 }}</span>
+                                                    <span class="resource-amount">{{ item.当前储量 }}{{ item.单位 }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </CollapsiblePanel>
+                                </div>
                                 
                                 <!-- 建筑设施 -->
-                                <CollapsiblePanel title="🏛️ 建筑设施" icon="🏗️">
-                                    <div class="buildings-section">
-                                        <div class="building-status-summary">
-                                            <span>正常运营: {{ buildingStatus.normal.length }}</span>
-                                            <span>建设中: {{ buildingStatus.constructing.length }}</span>
-                                            <span>升级中: {{ buildingStatus.upgrading.length }}</span>
+                                <div class="collapsible-panel panel-default">
+                                    <div class="panel-header">
+                                        <div class="header-left">
+                                            <span class="panel-icon">🏛️</span>
+                                            <span class="panel-title">🏗️ 建筑设施</span>
                                         </div>
-                                        
-                                        <div class="buildings-grid">
-                                            <div v-for="building in buildingStatus.normal" :key="building.id" class="building-item normal">
-                                                <div class="building-header">
-                                                    <span class="building-name">{{ building.名称 }}</span>
-                                                    <span class="building-level">Lv.{{ building.等级 }}</span>
-                                                </div>
-                                                <div class="building-info">
-                                                    <span>岗位: {{ building.岗位?.当前人数 }}/{{ building.岗位?.最大人数 }}</span>
-                                                    <span v-if="building.产权 === 'private'">[私有]</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div v-for="building in buildingStatus.constructing" :key="building.id" class="building-item constructing">
-                                                <div class="building-header">
-                                                    <span class="building-name">{{ building.名称 }}</span>
-                                                    <span class="building-status">🔄 建设中</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div v-for="building in buildingStatus.upgrading" :key="building.id" class="building-item upgrading">
-                                                <div class="building-header">
-                                                    <span class="building-name">{{ building.名称 }}</span>
-                                                    <span class="building-status">⬆️ 升级中</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <span class="toggle-arrow">▼</span>
                                     </div>
-                                </CollapsiblePanel>
-                                
-                                <!-- 生产与供应链 -->
-                                <CollapsiblePanel title="⚙️ 生产与供应链" icon="🔨">
-                                    <div class="production-section">
-                                        <div v-if="buildingStatus.normal.some(b => b.生产配方)" class="production-list">
-                                            <h4>当前生产</h4>
-                                            <div v-for="building in buildingStatus.normal" :key="building.id">
-                                                <div v-if="building.生产配方 && building.岗位?.当前人数 > 0" class="production-item">
-                                                    <div class="production-header">
-                                                        <span class="production-name">{{ building.名称 }}</span>
-                                                        <span class="production-efficiency">效率: {{ (building.生产配方?.生产效率 * 100).toFixed(0) }}%</span>
+                                    <div class="panel-content">
+                                        <div class="buildings-section">
+                                            <div class="buildings-grid">
+                                                <div v-for="(building, id) in buildings" :key="id" class="building-item normal">
+                                                    <div class="building-header">
+                                                        <span class="building-name">{{ building.名称 }}</span>
+                                                        <span class="building-level">Lv.{{ building.等级 }}</span>
                                                     </div>
-                                                    <div class="production-details">
-                                                        <div v-if="building.生产配方?.投入资源">
-                                                            投入:
-                                                            <span v-for="(amount, resource) in building.生产配方.投入资源" :key="resource">
-                                                                {{ amount * building.岗位.当前人数 }}{{ resource }}
-                                                            </span>
-                                                        </div>
-                                                        <div v-if="building.生产配方?.产出资源">
-                                                            产出:
-                                                            <span v-for="(amount, resource) in building.生产配方.产出资源" :key="resource">
-                                                                {{ amount * building.岗位.当前人数 }}{{ resource }}
-                                                            </span>
-                                                        </div>
+                                                    <div class="building-info">
+                                                        <span>状态: {{ building.状态?.[0] }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        
-                                        <div class="resource-regeneration">
-                                            <h4>资源再生</h4>
-                                            <div class="regeneration-item">
-                                                森林: {{ resources?.森林资源?.再生速率 }} 方/月
-                                            </div>
-                                            <div class="regeneration-item">
-                                                矿脉: {{ resources?.矿脉资源?.开采速率 }} 斤/月
-                                            </div>
-                                        </div>
                                     </div>
-                                </CollapsiblePanel>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -860,10 +601,10 @@
                     <!-- 底部状态栏 -->
                     <div class="dashboard-footer">
                         <div class="footer-left">
-                            <span>领地经营系统 v3.0 | MVU变量驱动</span>
+                            <span>领地经营系统 v1.0 | 简化版</span>
                         </div>
                         <div class="footer-right">
-                            <span>数据来源: MVU变量系统</span>
+                            <span>数据: {{ territoryData ? '已加载' : '未加载' }}</span>
                             <span class="footer-separator">|</span>
                             <span @click="refreshData" class="refresh-link">点击刷新</span>
                         </div>
@@ -872,796 +613,64 @@
             `
         });
         
-        // ========== 创建Vue应用 ==========
-        const app = createApp(App);
-        app.use(pinia);
-        
-        // 挂载到DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            app.mount('#app');
+        // 添加一些简单的交互逻辑
+        app.directive('click-outside', {
+            mounted(el, binding) {
+                el.clickOutsideEvent = function(event) {
+                    if (!(el === event.target || el.contains(event.target))) {
+                        binding.value(event, el);
+                    }
+                };
+                document.body.addEventListener('click', el.clickOutsideEvent);
+            },
+            unmounted(el) {
+                document.body.removeEventListener('click', el.clickOutsideEvent);
+            }
         });
         
-        // ========== 全局样式 ==========
-        const style = document.createElement('style');
-        style.textContent = `
-            :root {
-                --primary-color: #2c3e50;
-                --secondary-color: #34495e;
-                --accent-color: #3498db;
-                --success-color: #2ecc71;
-                --warning-color: #f39c12;
-                --danger-color: #e74c3c;
-                --info-color: #9b59b6;
-                --light-color: #ecf0f1;
-                --dark-color: #2c3e50;
-                --border-radius: 8px;
-                --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                --transition-speed: 0.3s;
-            }
-            
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 20px;
-            }
-            
-            .territory-dashboard {
-                max-width: 1800px;
-                margin: 0 auto;
-                background: white;
-                border-radius: var(--border-radius);
-                box-shadow: var(--box-shadow);
-                overflow: hidden;
-            }
-            
-            /* 工具栏 */
-            .dashboard-toolbar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 20px;
-                background: var(--primary-color);
-                color: white;
-            }
-            
-            .toolbar-left {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .dashboard-title {
-                font-size: 24px;
-                font-weight: bold;
-            }
-            
-            .update-time {
-                font-size: 14px;
-                opacity: 0.8;
-            }
-            
-            .toolbar-right {
-                display: flex;
-                gap: 10px;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: var(--border-radius);
-                cursor: pointer;
-                font-weight: bold;
-                transition: all var(--transition-speed);
-            }
-            
-            .btn-refresh {
-                background: var(--accent-color);
-                color: white;
-            }
-            
-            .btn-refresh:hover {
-                background: #2980b9;
-            }
-            
-            .btn-settlement {
-                background: var(--success-color);
-                color: white;
-            }
-            
-            .btn-settlement:hover {
-                background: #27ae60;
-            }
-            
-            .btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            
-            /* 错误和加载状态 */
-            .error-alert {
-                margin: 20px;
-                padding: 15px;
-                background: var(--danger-color);
-                color: white;
-                border-radius: var(--border-radius);
-            }
-            
-            .loading-overlay {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 100px 20px;
-            }
-            
-            .loading-spinner {
-                width: 50px;
-                height: 50px;
-                border: 5px solid #f3f3f3;
-                border-top: 5px solid var(--accent-color);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-            }
-            
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
-            /* 主要内容 */
-            .dashboard-content {
-                padding: 20px;
-            }
-            
-            /* 指标行 */
-            .metrics-row {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-                margin-bottom: 30px;
-            }
-            
-            .data-card {
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: var(--border-radius);
-                padding: 15px;
-                box-shadow: var(--box-shadow);
-            }
-            
-            .data-card.size-large {
-                grid-column: span 2;
-            }
-            
-            .card-header {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 10px;
-            }
-            
-            .card-icon {
-                font-size: 24px;
-            }
-            
-            .card-title {
-                font-weight: bold;
-                color: var(--secondary-color);
-            }
-            
-            .card-value {
-                font-size: 32px;
-                font-weight: bold;
-            }
-            
-            .card-value .unit {
-                font-size: 16px;
-                margin-left: 5px;
-                opacity: 0.7;
-            }
-            
-            .card-value .trend {
-                margin-left: 10px;
-                font-size: 20px;
-            }
-            
-            /* 面板行 */
-            .panels-row {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 20px;
-            }
-            
-            @media (max-width: 1200px) {
-                .panels-row {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-            
-            @media (max-width: 768px) {
-                .panels-row {
-                    grid-template-columns: 1fr;
-                }
-            }
-            
-            .panel-column {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            /* 可折叠面板 */
-            .collapsible-panel {
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: var(--border-radius);
-                overflow: hidden;
-                box-shadow: var(--box-shadow);
-            }
-            
-            .panel-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 15px 20px;
-                background: var(--light-color);
-                cursor: pointer;
-                transition: background var(--transition-speed);
-            }
-            
-            .panel-header:hover {
-                background: #d5dbdb;
-            }
-            
-            .header-left {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            
-            .panel-icon {
-                font-size: 20px;
-            }
-            
-            .panel-title {
-                font-weight: bold;
-                font-size: 18px;
-                color: var(--primary-color);
-            }
-            
-            .panel-summary {
-                font-size: 14px;
-                color: #666;
-                margin-left: 10px;
-            }
-            
-            .toggle-arrow {
-                transition: transform var(--transition-speed);
-            }
-            
-            .toggle-arrow.open {
-                transform: rotate(180deg);
-            }
-            
-            .panel-content {
-                padding: 20px;
-            }
-            
-            .slide-enter-active, .slide-leave-active {
-                transition: all var(--transition-speed);
-                max-height: 1000px;
-                overflow: hidden;
-            }
-            
-            .slide-enter-from, .slide-leave-to {
-                max-height: 0;
-                opacity: 0;
-                padding-top: 0;
-                padding-bottom: 0;
-            }
-            
-            /* 信息网格 */
-            .info-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            
-            .info-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 5px 0;
-                border-bottom: 1px solid #eee;
-            }
-            
-            .info-label {
-                font-weight: bold;
-                color: #666;
-            }
-            
-            .info-value {
-                color: var(--primary-color);
-            }
-            
-            /* 进度条 */
-            .progress-container {
-                margin-bottom: 10px;
-            }
-            
-            .progress-label {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 5px;
-                font-size: 14px;
-            }
-            
-            .progress-bar {
-                background: #eee;
-                border-radius: 10px;
-                overflow: hidden;
-            }
-            
-            .progress-fill {
-                height: 100%;
-                border-radius: 10px;
-                transition: width 0.5s ease;
-            }
-            
-            /* 资源网格 */
-            .resources-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                margin-top: 15px;
-            }
-            
-            .resource-item {
-                padding: 10px;
-                border: 1px solid #eee;
-                border-radius: var(--border-radius);
-            }
-            
-            .resource-name {
-                display: block;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-            
-            .resource-amount {
-                font-size: 18px;
-                font-weight: bold;
-                color: var(--accent-color);
-            }
-            
-            /* 经济统计 */
-            .economy-stats {
-                display: grid;
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            
-            .stat-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px;
-                background: #f8f9fa;
-                border-radius: var(--border-radius);
-            }
-            
-            .stat-label {
-                font-weight: bold;
-            }
-            
-            .stat-value {
-                font-weight: bold;
-            }
-            
-            .stat-value.income {
-                color: var(--success-color);
-            }
-            
-            .stat-value.expense {
-                color: var(--danger-color);
-            }
-            
-            .stat-value.treasury {
-                color: var(--warning-color);
-            }
-            
-            /* 建筑网格 */
-            .buildings-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 10px;
-                margin-top: 15px;
-            }
-            
-            .building-item {
-                padding: 10px;
-                border-radius: var(--border-radius);
-                border: 1px solid #eee;
-            }
-            
-            .building-item.normal {
-                border-left: 4px solid var(--success-color);
-            }
-            
-            .building-item.constructing {
-                border-left: 4px solid var(--warning-color);
-            }
-            
-            .building-item.upgrading {
-                border-left: 4px solid var(--accent-color);
-            }
-            
-            .building-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 5px;
-            }
-            
-            .building-name {
-                font-weight: bold;
-            }
-            
-            .building-level {
-                background: #eee;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-size: 12px;
-            }
-            
-            /* 科技列表 */
-            .tech-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                margin-top: 10px;
-            }
-            
-            .tech-item {
-                padding: 10px;
-                border-radius: var(--border-radius);
-                border: 1px solid #eee;
-            }
-            
-            .tech-item.completed {
-                border-left: 4px solid var(--success-color);
-                background: #f0fff4;
-            }
-            
-            .tech-item.in-progress {
-                border-left: 4px solid var(--accent-color);
-                background: #f0f8ff;
-            }
-            
-            .tech-item.available {
-                border-left: 4px solid #ccc;
-                background: #f9f9f9;
-            }
-            
-            /* 种族网格 */
-            .races-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 10px;
-                margin-top: 10px;
-            }
-            
-            .race-item {
-                padding: 10px;
-                border: 1px solid #eee;
-                border-radius: var(--border-radius);
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .race-name {
-                font-weight: bold;
-            }
-            
-            .race-count {
-                font-size: 18px;
-                color: var(--accent-color);
-            }
-            
-            .race-status {
-                font-size: 12px;
-                padding: 2px 8px;
-                border-radius: 10px;
-                text-align: center;
-            }
-            
-            .race-status.status-主导 {
-                background: #d4edda;
-                color: #155724;
-            }
-            
-            .race-status.status-平等 {
-                background: #cce5ff;
-                color: #004085;
-            }
-            
-            .race-status.status-受限制 {
-                background: #fff3cd;
-                color: #856404;
-            }
-            
-            .race-status.status-奴隶 {
-                background: #f8d7da;
-                color: #721c24;
-            }
-            
-            /* 底部栏 */
-            .dashboard-footer {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 15px 20px;
-                background: var(--light-color);
-                border-top: 1px solid #ddd;
-                font-size: 14px;
-                color: #666;
-            }
-            
-            .footer-right {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-            }
-            
-            .footer-separator {
-                opacity: 0.5;
-            }
-            
-            .refresh-link {
-                color: var(--accent-color);
-                cursor: pointer;
-                text-decoration: underline;
-            }
-            
-            .refresh-link:hover {
-                color: var(--primary-color);
-            }
-            
-            /* 资源预警 */
-            .resource-warnings {
-                padding: 15px;
-                background: #fff8f8;
-                border: 1px solid #ffcccc;
-                border-radius: var(--border-radius);
-                margin-bottom: 15px;
-            }
-            
-            .warning-item {
-                padding: 5px 0;
-                border-bottom: 1px dashed #ffcccc;
-            }
-            
-            .warning-item:last-child {
-                border-bottom: none;
-            }
-        `;
+        // 挂载应用
+        app.mount('#app');
         
-        document.head.appendChild(style);
+        // 简单的面板切换功能
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.panel-header')) {
+                const panel = e.target.closest('.collapsible-panel');
+                const content = panel.querySelector('.panel-content');
+                const arrow = panel.querySelector('.toggle-arrow');
+                
+                if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                    content.style.maxHeight = '0px';
+                    arrow.style.transform = 'rotate(0deg)';
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            }
+        });
         
-        // ========== MVU API 模拟 (开发环境) ==========
-        // 在实际环境中，这些函数应该由SillyTavern的MVU插件提供
-        if (typeof window.getVariables !== 'function') {
-            console.warn('MVU API未找到，使用模拟数据');
-            
-            // 模拟MVU数据 - 基于您的3.0版变量结构
-            const mockTerritoryData = {
-                基本信息: {
-                    名称: "北境边境领",
-                    面积: 85,
-                    地形: "丘陵与森林",
-                    发展阶段: "初建"
-                },
-                人口: {
-                    总人口: 1250,
-                    职业分布: {
-                        农民: { 人数: 700 },
-                        工匠: { 人数: 120 },
-                        商人: { 人数: 60 },
-                        官员: { 人数: 15 },
-                        士兵: { 人数: 80 },
-                        无业: { 人数: 275 }
-                    },
-                    种族构成: {
-                        人类: { 数量: 900, 地位: "主导" },
-                        矮人: { 数量: 150, 地位: "平等" },
-                        半精灵: { 数量: 100, 地位: "平等" },
-                        哥布林: { 数量: 50, 地位: "奴隶" }
-                    }
-                },
-                经济: {
-                    财政: {
-                        库存金币: 2500,
-                        月总收入: 1850,
-                        月总支出: 1670,
-                        月净收入: 180
-                    },
-                    公共税率: {
-                        农业税: 0.10,
-                        商业税: 0.15,
-                        工业税: 0.12
-                    }
-                },
-                仓库: {
-                    res_food_grain: {
-                        名称: "粮食",
-                        当前储量: 6500,
-                        安全储量: 3750,
-                        单位: "担"
-                    },
-                    res_material_wood: {
-                        名称: "木材",
-                        当前储量: 900,
-                        安全储量: 300,
-                        单位: "方"
-                    },
-                    res_material_stone: {
-                        名称: "石材",
-                        当前储量: 500,
-                        安全储量: 200,
-                        单位: "方"
-                    },
-                    res_material_iron: {
-                        名称: "铁矿",
-                        当前储量: 300,
-                        安全储量: 100,
-                        单位: "斤"
-                    }
-                },
-                军事: {
-                    兵力: {
-                        常备军: 80,
-                        民兵: 200,
-                        精锐部队: 0
-                    },
-                    战力评级: {
-                        总评级: "D"
-                    },
-                    防御设施: {
-                        城墙完整度: 0.7,
-                        瞭望塔数量: 2
-                    }
-                },
-                状态: {
-                    居民状态: {
-                        生活水平: "温饱",
-                        治安状况: 65,
-                        民心指数: 70,
-                        当前事件: "暂无",
-                        威胁等级: "警戒"
-                    }
-                },
-                科技: {
-                    tech_basic_agriculture: {
-                        名称: "基础农业技术",
-                        研发状态: ["已研发"],
-                        当前进度: 100
-                    },
-                    tech_iron_smelting: {
-                        名称: "铁器冶炼技术",
-                        研发状态: ["研发中"],
-                        当前进度: 45
-                    },
-                    tech_basic_military_tactics: {
-                        名称: "基础军事战术",
-                        研发状态: ["未研发"],
-                        当前进度: 0
-                    }
-                },
-                建筑: {
-                    building_residential: {
-                        名称: "居民区",
-                        等级: 2,
-                        状态: ["正常运营"],
-                        岗位: { 当前人数: 0, 最大人数: 0 }
-                    },
-                    building_market: {
-                        名称: "市场",
-                        等级: 2,
-                        状态: ["正常运营"],
-                        岗位: { 当前人数: 25, 最大人数: 40 },
-                        产权: "lord"
-                    },
-                    building_blacksmith: {
-                        名称: "铁匠铺",
-                        等级: 1,
-                        状态: ["正常运营"],
-                        岗位: { 当前人数: 4, 最大人数: 8 },
-                        产权: "private",
-                        生产配方: {
-                            投入资源: { res_material_iron: 2, res_material_wood: 1 },
-                            产出资源: { item_weapon_spear: 3, item_tool_hammer: 5 },
-                            生产效率: 0.8
-                        }
-                    },
-                    building_watchtower: {
-                        名称: "北境瞭望塔",
-                        等级: 1,
-                        状态: ["建设中"],
-                        岗位: { 当前人数: 0, 最大人数: 5 },
-                        产权: "lord"
-                    }
-                },
-                资源: {
-                    森林资源: { 再生速率: 100, 开采速率: 150 },
-                    矿脉资源: { 开采速率: 50 }
-                },
-                项目: {
-                    当前建设项目: "北境瞭望塔",
-                    项目进度: 30
-                },
-                法令: {
-                    decree_basic_tax: {
-                        名称: "基础税法",
-                        生效状态: [true]
-                    }
+        // 初始化面板状态
+        setTimeout(() => {
+            document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                const content = panel.querySelector('.panel-content');
+                const arrow = panel.querySelector('.toggle-arrow');
+                content.style.maxHeight = content.scrollHeight + 'px';
+                arrow.style.transform = 'rotate(180deg)';
+            });
+        }, 100);
+        
+        // 提供全局API供SillyTavern调用
+        window.updateTerritoryData = function(data) {
+            const appElement = document.querySelector('#app');
+            if (appElement && appElement.__vue_app__) {
+                const instance = appElement.__vue_app__._instance;
+                if (instance && instance.setupState) {
+                    instance.setupState.territoryData = data;
+                    instance.setupState.lastUpdate = new Date();
                 }
-            };
-            
-            // 模拟MVU API函数
-            window.getVariables = async function() {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        resolve({ Territory: mockTerritoryData });
-                    }, 500);
-                });
-            };
-            
-            window.getCurrentMessageId = function() {
-                return 'mock-message-id';
-            };
-            
-            window.replaceMvuData = async function() {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        console.log('模拟: MVU数据已更新');
-                        resolve(true);
-                    }, 300);
-                });
-            };
-            
-            window.executeMvuCode = async function(code) {
-                console.log('模拟: 执行MVU代码:', code);
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        resolve(true);
-                    }, 500);
-                });
-            };
-            
-            // 模拟lodash
-            window._ = {
-                set: function(obj, path, value) {
-                    const keys = path.split('.');
-                    let current = obj;
-                    for (let i = 0; i < keys.length - 1; i++) {
-                        if (!current[keys[i]]) current[keys[i]] = {};
-                        current = current[keys[i]];
-                    }
-                    current[keys[keys.length - 1]] = value;
-                    return obj;
-                }
-            };
-        }
+            }
+        };
+        
+        console.log('领地管理面板已加载完成');
     </script>
-</head>
-<body>
-    <div id="app"></div>
 </body>
 </html>
