@@ -695,40 +695,48 @@
         let autoRefreshInterval = null;
         let debugMode = false;
         
-        // 核心数据转换函数 - 修复版
+        // 增强的数据转换函数 - 修复版
         function extractValueFromMVUArray(value) {
             if (value === undefined || value === null) return null;
             
             // 如果是数组，检查可能的格式
             if (Array.isArray(value)) {
+                console.log('处理数组数据:', value);
+                
                 // 格式1: [值, "描述"] - MVU常见格式
                 if (value.length === 2 && typeof value[1] === 'string') {
+                    console.log('格式1: [值, "描述"]，返回:', value[0]);
                     return value[0];
                 }
-                // 格式2: 嵌套的对象数组
+                // 格式2: 嵌套的对象数组（如种族数据）
                 else if (value.length > 0 && typeof value[0] === 'object') {
-                    // 检查是否是种族/职业数组
+                    console.log('格式2: 对象数组');
+                    
+                    // 检查是否是种族数组: [{种族: "人类", 数量: 900, ...}, ...]
                     const firstItem = value[0];
                     
-                    // 如果是种族数组: [{种族: "人类", 数量: 900, ...}, ...]
                     if (firstItem.种族) {
+                        console.log('检测到种族数组格式');
                         const result = {};
-                        value.forEach(item => {
+                        value.forEach((item, index) => {
                             if (item && item.种族) {
                                 const raceName = item.种族;
                                 const raceData = {};
                                 Object.keys(item).forEach(key => {
                                     if (key !== '种族') {
+                                        // 递归处理嵌套的数组
                                         raceData[key] = extractValueFromMVUArray(item[key]);
                                     }
                                 });
                                 result[raceName] = raceData;
+                                console.log(`添加种族 ${raceName}:`, raceData);
                             }
                         });
                         return result;
                     }
-                    // 如果是职业数组: [{职业: "农民", 人数: 700, ...}, ...]
+                    // 检查是否是职业数组
                     else if (firstItem.职业) {
+                        console.log('检测到职业数组格式');
                         const result = {};
                         value.forEach(item => {
                             if (item && item.职业) {
@@ -746,22 +754,28 @@
                     }
                     // 其他对象数组，取第一个
                     else {
+                        console.log('其他对象数组，取第一个');
                         return extractValueFromMVUArray(value[0]);
                     }
                 }
                 // 格式3: 简单值数组，取第一个
                 else if (value.length > 0) {
+                    console.log('格式3: 简单值数组，返回:', value[0]);
                     return value[0];
                 }
                 // 空数组
                 else {
+                    console.log('空数组，返回null');
                     return null;
                 }
             }
             // 如果是对象，递归处理
             else if (typeof value === 'object') {
+                console.log('处理对象数据:', value);
+                
                 // 处理MVU模板对象
                 if (value.$meta && value.$meta.extensible === true) {
+                    console.log('处理MVU模板对象');
                     const result = {};
                     Object.keys(value).forEach(key => {
                         if (key !== '$meta') {
@@ -781,6 +795,7 @@
             }
             // 基本类型，直接返回
             else {
+                console.log('基本类型:', value);
                 return value;
             }
         }
@@ -820,63 +835,107 @@
                     }
                 }
                 
-                // 从stat_data中提取Territory数据
+                // 保存原始数据用于调试
+                window.rawMVUData = mvuData;
+                
                 if (mvuData) {
-                    console.log('原始MVU数据键:', Object.keys(mvuData));
+                    console.log('原始MVU数据结构:', mvuData);
                     
-                    // 关键：检查stat_data是否存在
-                    if (mvuData.stat_data) {
-                        console.log('找到 stat_data');
+                    // 检查常见的数据结构
+                    let territoryRawData = null;
+                    
+                    // 情况1: 数据在 stat_data.Territory
+                    if (mvuData.stat_data && mvuData.stat_data.Territory) {
+                        console.log('找到数据路径: stat_data.Territory');
+                        territoryRawData = mvuData.stat_data.Territory;
+                    }
+                    // 情况2: 数据直接在 Territory
+                    else if (mvuData.Territory) {
+                        console.log('找到数据路径: Territory');
+                        territoryRawData = mvuData.Territory;
+                    }
+                    // 情况3: 数据在 stat_data 但没有 Territory 键
+                    else if (mvuData.stat_data) {
+                        console.log('找到数据路径: stat_data (直接)');
+                        territoryRawData = mvuData.stat_data;
+                    }
+                    // 情况4: 数据可能在顶层
+                    else if (mvuData.人口 || mvuData.经济) {
+                        console.log('数据在顶层');
+                        territoryRawData = mvuData;
+                    }
+                    
+                    if (territoryRawData) {
+                        console.log('找到领地原始数据:', territoryRawData);
                         
-                        // 检查Territory是否存在
-                        if (mvuData.stat_data.Territory) {
-                            console.log('找到 Territory 数据');
-                            // 使用新的提取函数处理数据
-                            territoryData = extractValueFromMVUArray(mvuData.stat_data.Territory);
-                        } else {
-                            console.warn('stat_data 中没有 Territory 数据');
-                            territoryData = extractValueFromMVUArray(mvuData.stat_data);
+                        // 使用新的提取函数处理数据
+                        territoryData = extractValueFromMVUArray(territoryRawData);
+                        
+                        console.log('转换后的领地数据:', territoryData);
+                        
+                        // 验证数据提取
+                        console.log('数据验证:');
+                        console.log('  - 总人口:', territoryData.人口?.总人口);
+                        console.log('  - 金钱:', territoryData.经济?.财政?.库存金币);
+                        console.log('  - 种族构成:', territoryData.人口?.种族构成);
+                        console.log('  - 人类数量:', territoryData.人口?.种族构成?.人类?.数量);
+                        
+                        // 如果种族数据是数组格式，进行额外处理
+                        if (Array.isArray(territoryData.人口?.种族构成)) {
+                            console.log('种族构成是数组格式，正在转换为对象格式...');
+                            const raceArray = territoryData.人口.种族构成;
+                            const raceObj = {};
+                            
+                            raceArray.forEach((race, index) => {
+                                if (race && race.种族) {
+                                    raceObj[race.种族] = {
+                                        数量: extractValue(race.数量, 0),
+                                        地位: extractValue(race.地位, ''),
+                                        特殊能力: extractValue(race.特殊能力, '')
+                                    };
+                                }
+                            });
+                            
+                            territoryData.人口.种族构成 = raceObj;
+                            console.log('转换后的种族构成:', raceObj);
                         }
-                    } else if (mvuData.Territory) {
-                        console.log('直接找到 Territory 数据');
-                        territoryData = extractValueFromMVUArray(mvuData.Territory);
                     } else {
-                        console.warn('MVU数据中没有找到领地数据');
-                        territoryData = getDefaultData();
+                        console.warn('未找到领地数据，使用缓存或默认数据');
+                        useFallbackData();
                     }
                 } else {
-                    console.log('无法从MVU获取数据，使用缓存或默认数据');
-                    const storedData = localStorage.getItem('territoryData');
-                    if (storedData) {
-                        territoryData = JSON.parse(storedData);
-                        console.log('使用localStorage缓存数据');
-                    } else {
-                        territoryData = getDefaultData();
-                        console.log('使用默认数据');
-                    }
+                    console.log('无法从MVU获取数据');
+                    useFallbackData();
                 }
-                
-                // 验证数据
-                if (!territoryData || !territoryData.人口) {
-                    console.warn('领地数据不完整，使用默认数据');
-                    territoryData = getDefaultData();
-                }
-                
-                console.log('最终领地数据:', territoryData);
                 
                 lastUpdate = new Date();
                 document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
                 
+                // 更新UI
                 updateUI();
+                
+                // 保存到localStorage
                 localStorage.setItem('territoryData', JSON.stringify(territoryData));
                 
             } catch (error) {
                 console.error('获取数据失败:', error);
-                territoryData = getDefaultData();
+                useFallbackData();
                 updateUI();
             } finally {
                 showLoading(false);
                 adjustIframeHeight();
+            }
+        }
+        
+        // 使用回退数据
+        function useFallbackData() {
+            const storedData = localStorage.getItem('territoryData');
+            if (storedData) {
+                territoryData = JSON.parse(storedData);
+                console.log('使用localStorage缓存数据');
+            } else {
+                territoryData = getDefaultData();
+                console.log('使用默认数据');
             }
         }
         
@@ -1141,6 +1200,8 @@
             // 获取种族数据，处理各种可能的格式
             let races = territoryData.人口?.种族构成 || {};
             
+            console.log('原始种族数据:', races);
+            
             // 如果是数组，转换为对象
             if (Array.isArray(races)) {
                 const raceObj = {};
@@ -1154,6 +1215,7 @@
                     }
                 });
                 races = raceObj;
+                console.log('转换后的种族数据:', raceObj);
             }
             
             // 计算种族分布
@@ -1247,63 +1309,6 @@
             `;
             
             container.innerHTML = html;
-        }
-        
-        // 切换章节显示/隐藏
-        function toggleSection(header) {
-            const content = header.nextElementSibling;
-            const toggle = header.querySelector('.section-toggle');
-            
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                toggle.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                toggle.textContent = '▶';
-            }
-            
-            adjustIframeHeight();
-        }
-        
-        // 切换选项卡
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const targetTab = document.getElementById(`tab-${tabName}`);
-            if (targetTab) {
-                targetTab.style.display = 'block';
-            }
-            
-            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-                btn.textContent.trim().toLowerCase().includes(tabName)
-            );
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
-            
-            loadTabData(tabName);
-            adjustIframeHeight();
-        }
-        
-        // 加载选项卡数据
-        function loadTabData(tabName) {
-            if (!territoryData) return;
-            
-            switch(tabName) {
-                case 'overview': break;
-                case 'population': loadPopulationDetails(); break;
-                case 'economy': loadEconomyDetails(); break;
-                case 'resources': loadResourcesDetails(); break;
-                case 'military': loadMilitaryDetails(); break;
-                case 'buildings': loadBuildingsDetails(); break;
-                case 'system': loadSystemDetails(); break;
-            }
         }
         
         // 加载人口详情
@@ -1465,184 +1470,9 @@
             container.innerHTML = html;
         }
         
-        // 加载经济详情
-        function loadEconomyDetails() {
-            // 财政详情
-            const financeContainer = document.getElementById('finance-details');
-            if (financeContainer) {
-                const income = extractValue(territoryData.经济?.财政?.月总收入, 1850);
-                const expense = extractValue(territoryData.经济?.财政?.月总支出, 1670);
-                const net = extractValue(territoryData.经济?.财政?.月净收入, 180);
-                const treasury = extractValue(territoryData.经济?.财政?.库存金币, 2500);
-                const balanceStatus = extractValue(territoryData.经济?.财政?.收支状态, '📈盈余');
-                
-                const netColor = net >= 0 ? '#28a745' : '#dc3545';
-                const balanceColor = balanceStatus.includes('盈余') ? '#28a745' : 
-                                    balanceStatus.includes('亏损') ? '#dc3545' : '#ffc107';
-                
-                let html = `
-                    <tr>
-                        <td>国库资金</td>
-                        <td style="font-weight: bold; color: #ffc107;">${formatCurrency(treasury)}</td>
-                    </tr>
-                    <tr>
-                        <td>月总收入</td>
-                        <td style="color: #28a745;">${formatCurrency(income)}</td>
-                    </tr>
-                    <tr>
-                        <td>月总支出</td>
-                        <td style="color: #dc3545;">${formatCurrency(expense)}</td>
-                    </tr>
-                    <tr>
-                        <td>月净收入</td>
-                        <td style="color: ${netColor}; font-weight: bold;">${formatCurrency(net, true)}</td>
-                    </tr>
-                    <tr>
-                        <td>收支状态</td>
-                        <td style="color: ${balanceColor};">${balanceStatus}</td>
-                    </tr>
-                `;
-                
-                financeContainer.innerHTML = html;
-            }
-            
-            // 税收详情
-            const taxContainer = document.getElementById('tax-details');
-            if (taxContainer) {
-                const taxes = territoryData.经济?.公共税率 || {};
-                
-                let html = '';
-                Object.entries(taxes).forEach(([name, value]) => {
-                    const rate = extractValue(value, 0);
-                    html += `
-                        <tr>
-                            <td>${name}</td>
-                            <td>${(rate * 100).toFixed(1)}%</td>
-                        </tr>
-                    `;
-                });
-                
-                taxContainer.innerHTML = html;
-            }
-            
-            // 经济指标
-            const indicatorsContainer = document.getElementById('economy-indicators');
-            if (indicatorsContainer) {
-                const indicators = territoryData.经济?.经济指标 || {};
-                
-                const rows = [
-                    ['GDP(年)', formatCurrency(extractValue(indicators.GDP, 25000))],
-                    ['人均GDP', `${extractValue(indicators.人均GDP, 20)} 金币/人/年`],
-                    ['通货膨胀率', `${(extractValue(indicators.通货膨胀率, 0.02) * 100).toFixed(2)}%`],
-                    ['失业率', `${(extractValue(indicators.失业率, 0.212) * 100).toFixed(1)}%`],
-                    ['贸易顺差', formatCurrency(extractValue(indicators.贸易顺差, 300))]
-                ];
-                
-                let html = '';
-                rows.forEach(row => {
-                    html += `
-                        <tr>
-                            <td>${row[0]}</td>
-                            <td>${row[1]}</td>
-                        </tr>
-                    `;
-                });
-                
-                indicatorsContainer.innerHTML = html;
-            }
-        }
-        
         // 刷新数据
         async function refreshData() {
             await fetchFromMVU();
-        }
-        
-        // 月度结算
-        async function monthlySettlement() {
-            if (confirm('确定要执行月度结算吗？这将更新所有经济数据。')) {
-                try {
-                    showLoading(true);
-                    
-                    if (typeof executeMvuCode === 'function') {
-                        await executeMvuCode('Territory.monthlySettlement()');
-                        console.log('月度结算执行成功');
-                    } else if (typeof window.executeMvuCode === 'function') {
-                        await window.executeMvuCode('Territory.monthlySettlement()');
-                        console.log('月度结算执行成功（通过window）');
-                    } else {
-                        console.log('模拟执行月度结算');
-                        // 模拟数据变化
-                        if (territoryData) {
-                            const netIncome = extractValue(territoryData.经济?.财政?.月净收入, 0);
-                            const currentTreasury = extractValue(territoryData.经济?.财政?.库存金币, 0);
-                            territoryData.经济.财政.库存金币 = currentTreasury + netIncome;
-                            
-                            lastUpdate = new Date();
-                            document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
-                            
-                            localStorage.setItem('territoryData', JSON.stringify(territoryData));
-                            updateUI();
-                        }
-                    }
-                    
-                    alert('月度结算完成！');
-                } catch (error) {
-                    console.error('月度结算失败:', error);
-                    alert('月度结算失败: ' + error.message);
-                } finally {
-                    showLoading(false);
-                }
-            }
-        }
-        
-        // 切换自动刷新
-        function toggleAutoRefresh() {
-            autoRefreshEnabled = !autoRefreshEnabled;
-            const btn = document.getElementById('auto-refresh-btn');
-            
-            if (autoRefreshEnabled) {
-                btn.innerHTML = '⏸️ 暂停刷新';
-                btn.style.background = '#28a745';
-                autoRefreshInterval = setInterval(refreshData, 30000);
-                console.log('自动刷新已启用');
-            } else {
-                btn.innerHTML = '▶️ 自动刷新';
-                btn.style.background = '#8B6914';
-                if (autoRefreshInterval) {
-                    clearInterval(autoRefreshInterval);
-                    autoRefreshInterval = null;
-                }
-                console.log('自动刷新已禁用');
-            }
-        }
-        
-        // 导出数据
-        function exportData() {
-            if (!territoryData) {
-                alert('没有数据可导出');
-                return;
-            }
-            
-            const dataStr = JSON.stringify(territoryData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `领地数据_${new Date().toISOString().slice(0,10)}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            alert('数据已导出为JSON文件');
-        }
-        
-        // 清除本地数据
-        function clearData() {
-            if (confirm('确定要清除本地存储的数据吗？这不会影响MVU系统中的数据。')) {
-                localStorage.removeItem('territoryData');
-                territoryData = null;
-                alert('本地数据已清除，请刷新页面重新获取数据');
-            }
         }
         
         // 显示调试面板
@@ -1664,6 +1494,7 @@
                     debugHtml += '<div class="debug-item"><span class="debug-key">总人口:</span> <span class="debug-value">' + extractValue(territoryData.人口?.总人口, 'N/A') + '</span></div>';
                     debugHtml += '<div class="debug-item"><span class="debug-key">国库资金:</span> <span class="debug-value">' + extractValue(territoryData.经济?.财政?.库存金币, 'N/A') + '</span></div>';
                     debugHtml += '<div class="debug-item"><span class="debug-key">人类数量:</span> <span class="debug-value">' + (territoryData.人口?.种族构成?.人类 ? extractValue(territoryData.人口.种族构成.人类.数量, 'N/A') : 'N/A') + '</span></div>';
+                    debugHtml += '<div class="debug-item"><span class="debug-key">种族构成类型:</span> <span class="debug-value">' + (Array.isArray(territoryData.人口?.种族构成) ? '数组' : typeof territoryData.人口?.种族构成) + '</span></div>';
                     debugHtml += '<div class="debug-item"><span class="debug-key">最后更新:</span> <span class="debug-value">' + (lastUpdate ? lastUpdate.toLocaleTimeString() : 'N/A') + '</span></div>';
                 }
                 
@@ -1675,19 +1506,6 @@
             }
             
             adjustIframeHeight();
-        }
-        
-        // 调整iframe高度
-        function adjustIframeHeight() {
-            setTimeout(() => {
-                const height = document.documentElement.scrollHeight;
-                if (window.parent && window.parent.postMessage) {
-                    window.parent.postMessage({
-                        type: 'resize_iframe',
-                        height: height + 'px'
-                    }, '*');
-                }
-            }, 100);
         }
         
         // 工具函数
@@ -1726,44 +1544,7 @@
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
             console.log('领地状态面板初始化...');
-            
-            // 加载数据
             fetchFromMVU();
-            
-            // 调整iframe高度
-            setTimeout(adjustIframeHeight, 200);
-            
-            // 监听窗口大小变化
-            window.addEventListener('resize', adjustIframeHeight);
-            
-            // 提供全局API
-            window.TerritoryPanel = {
-                refresh: refreshData,
-                setData: function(newData) {
-                    territoryData = newData;
-                    lastUpdate = new Date();
-                    document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
-                    localStorage.setItem('territoryData', JSON.stringify(territoryData));
-                    updateUI();
-                    console.log('手动设置领地数据成功');
-                },
-                getData: function() {
-                    return territoryData;
-                }
-            };
-            
-            console.log('领地状态面板已就绪');
-        });
-        
-        // 监听来自父窗口的消息
-        window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'update_territory_data') {
-                window.TerritoryPanel.setData(event.data.data);
-            }
-            
-            if (event.data && event.data.type === 'refresh_territory_data') {
-                refreshData();
-            }
         });
     </script>
 </body>
