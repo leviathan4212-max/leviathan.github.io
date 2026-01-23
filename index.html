@@ -204,10 +204,6 @@
             .control-btn {
                 min-width: 100px;
             }
-            
-            .tab-nav {
-                flex-wrap: wrap;
-            }
         }
         
         @media (max-width: 480px) {
@@ -215,9 +211,13 @@
                 grid-template-columns: 1fr;
             }
             
+            .tab-nav {
+                flex-wrap: wrap;
+            }
+            
             .tab-btn {
-                padding: 8px 10px;
-                font-size: 12px;
+                flex: 1;
+                text-align: center;
             }
         }
         
@@ -326,86 +326,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* 建筑详情折叠样式 */
-        .building-details {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(245, 230, 200, 0.3);
-            border-radius: 4px;
-            border: 1px solid rgba(139, 105, 20, 0.2);
-        }
-        
-        .building-details h4 {
-            margin: 10px 0 5px 0;
-            font-size: 13px;
-            color: #2C1810;
-        }
-        
-        /* 科技卡片样式 */
-        .tech-card {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #8B6914;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.8);
-        }
-        
-        /* 项目卡片样式 */
-        .project-card {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #8B6914;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.8);
-        }
-        
-        /* 法令卡片样式 */
-        .decree-card {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #8B6914;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.8);
-        }
-        
-        /* 详细信息折叠按钮 */
-        .details-toggle {
-            background: none;
-            border: none;
-            color: #8B6914;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 2px 5px;
-            margin-top: 5px;
-        }
-        
-        /* 资源警告 */
-        .resource-alert {
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-        
-        .resource-alert.low {
-            background: rgba(220, 53, 69, 0.1);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            color: #721c24;
-        }
-        
-        .resource-alert.warning {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            color: #856404;
-        }
-        
-        /* 缩进内容 */
-        .indent-content {
-            padding-left: 15px;
-            margin: 5px 0;
-        }
     </style>
 </head>
 <body>
@@ -439,8 +359,7 @@
             <button class="tab-btn" onclick="switchTab('military')">军事</button>
             <button class="tab-btn" onclick="switchTab('buildings')">建筑</button>
             <button class="tab-btn" onclick="switchTab('technology')">科技</button>
-            <button class="tab-btn" onclick="switchTab('projects')">项目</button>
-            <button class="tab-btn" onclick="switchTab('decrees')">法令</button>
+            <button class="tab-btn" onclick="switchTab('affairs')">政务</button>
             <button class="tab-btn" onclick="switchTab('system')">系统</button>
         </div>
         
@@ -501,23 +420,10 @@
         
         <!-- 人口选项卡 -->
         <div class="tab-content" id="tab-population" style="display: none;">
-            <!-- 详细人口数据 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">📊 详细人口数据</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="population-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
             <!-- 年龄结构 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">📅 年龄结构</div>
+                    <div class="section-title">👶 年龄结构</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
@@ -556,11 +462,11 @@
             <!-- 满意度维度 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">😊 满意度维度</div>
+                    <div class="section-title">😊 居民满意度</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
-                    <table class="data-table" id="satisfaction-dimensions">
+                    <table class="data-table" id="satisfaction-details">
                         <!-- 动态生成 -->
                     </table>
                 </div>
@@ -582,19 +488,6 @@
                 </div>
             </div>
             
-            <!-- 财政详细构成 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">📊 财政详细构成</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="finance-composition">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
             <!-- 税收体系 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -611,7 +504,7 @@
             <!-- 物价指数 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">💰 物价指数</div>
+                    <div class="section-title">📊 物价指数</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
@@ -725,7 +618,7 @@
         
         <!-- 科技选项卡 -->
         <div class="tab-content" id="tab-technology" style="display: none;">
-            <!-- 科技列表 -->
+            <!-- 科技研发 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
                     <div class="section-title">🔬 科技研发</div>
@@ -739,32 +632,29 @@
             </div>
         </div>
         
-        <!-- 项目选项卡 -->
-        <div class="tab-content" id="tab-projects" style="display: none;">
-            <!-- 项目信息 -->
+        <!-- 政务选项卡 -->
+        <div class="tab-content" id="tab-affairs" style="display: none;">
+            <!-- 当前项目 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🏗️ 建设项目</div>
+                    <div class="section-title">🏗️ 当前项目</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
-                    <div id="projects-list">
+                    <table class="data-table" id="project-details">
                         <!-- 动态生成 -->
-                    </div>
+                    </table>
                 </div>
             </div>
-        </div>
-        
-        <!-- 法令选项卡 -->
-        <div class="tab-content" id="tab-decrees" style="display: none;">
-            <!-- 法令列表 -->
+            
+            <!-- 现行法令 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">📜 法令列表</div>
+                    <div class="section-title">📜 现行法令</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
-                    <div id="decrees-list">
+                    <div id="decree-list">
                         <!-- 动态生成 -->
                     </div>
                 </div>
@@ -1011,10 +901,19 @@
                         兽人: { 数量: 30, 地位: "受限制", 特殊能力: "力量强大，耐力超常" }
                     },
                     年龄结构: {
-                        儿童_0-14: 250,
-                        青年_15-35: 600,
-                        中年_36-60: 300,
-                        老年_60: 100
+                        儿童_0_14: 250,
+                        青年_15_35: 600,
+                        中年_36_60: 300,
+                        老年_60_: 100
+                    },
+                    职业分布: {
+                        农民: { 人数: 700, 月贡献: 15, 平均薪资: 2, 满意度: 65 },
+                        工匠: { 人数: 120, 月贡献: 25, 平均薪资: 5, 满意度: 70 },
+                        商人: { 人数: 60, 月贡献: 30, 平均薪资: 8, 满意度: 75 },
+                        官员: { 人数: 15, 月贡献: -10, 平均薪资: 10, 满意度: 80 },
+                        士兵: { 人数: 80, 月贡献: -20, 平均薪资: 6, 满意度: 70 },
+                        学者: { 人数: 10, 月贡献: 5, 平均薪资: 7, 满意度: 85 },
+                        无业: { 人数: 265, 月贡献: 0, 平均薪资: 0, 满意度: 40 }
                     },
                     满意度维度: {
                         食物满意度: 70,
@@ -1026,29 +925,14 @@
                         教育满意度: 40,
                         医疗满意度: 45
                     },
-                    职业分布: {
-                        农民: { 人数: 700, 月贡献: 15, 平均薪资: 2, 满意度: 65 },
-                        工匠: { 人数: 120, 月贡献: 25, 平均薪资: 5, 满意度: 70 },
-                        商人: { 人数: 60, 月贡献: 30, 平均薪资: 8, 满意度: 75 },
-                        官员: { 人数: 15, 月贡献: -10, 平均薪资: 10, 满意度: 80 },
-                        士兵: { 人数: 80, 月贡献: -20, 平均薪资: 6, 满意度: 70 },
-                        学者: { 人数: 10, 月贡献: 5, 平均薪资: 7, 满意度: 85 },
-                        无业: { 人数: 265, 月贡献: 0, 平均薪资: 0, 满意度: 40 }
-                    },
                     人口增长率: 0.008
                 },
                 经济: {
                     财政: {
                         库存金币: 2500,
-                        领主资产_月收入: 400,
-                        领主资产_月支出: 135,
-                        私有资产_应税收入: 960,
-                        私有资产税率: 0.15,
-                        私有资产_税收: 144,
-                        特殊收支: 0,
-                        月总收入: 544,
-                        月总支出: 135,
-                        月净收入: 409,
+                        月总收入: 1850,
+                        月总支出: 1670,
+                        月净收入: 180,
                         收支状态: "📈盈余"
                     },
                     公共税率: {
@@ -1094,43 +978,20 @@
                         安全储量: 100,
                         单位: "斤",
                         市场价格: 3.0
-                    },
-                    item_weapon_spear: {
-                        名称: "长矛",
-                        当前储量: 30,
-                        安全储量: 50,
-                        单位: "把",
-                        市场价格: 12
-                    },
-                    item_tool_hammer: {
-                        名称: "铁锤",
-                        当前储量: 40,
-                        安全储量: 30,
-                        单位: "把",
-                        市场价格: 8
                     }
                 },
                 资源动态: {
                     森林: {
                         当前储量: 12000,
-                        每月开采量: 150,
-                        开采难度: 0.6,
-                        矿石品质: 0.7,
-                        预估枯竭时间: 100
+                        每月开采量: 150
                     },
                     铁矿脉: {
                         当前储量: 5000,
-                        每月开采量: 50,
-                        开采难度: 0.6,
-                        矿石品质: 0.7,
-                        预估枯竭时间: 100
+                        每月开采量: 50
                     },
                     石矿: {
                         当前储量: 8000,
-                        每月开采量: 40,
-                        开采难度: 0.5,
-                        矿石品质: 0.8,
-                        预估枯竭时间: 200
+                        每月开采量: 40
                     }
                 },
                 军事: {
@@ -1169,9 +1030,6 @@
                     威胁状态: {
                         威胁等级: "警戒",
                         主要魔物: "哥布林团伙",
-                        魔物数量: "约30-50",
-                        上次袭击: "一个月前",
-                        威胁方向: "北面森林",
                         预计下次袭击: "1-3个月内"
                     }
                 },
@@ -1228,69 +1086,17 @@
                             }
                         },
                         财务: {
-                            基础收入: 60,
-                            人均产出价值: 15,
-                            维护费用: 30,
                             计算_月收入: 120,
                             计算_月支出: 46,
                             计算_净收益: 74
                         },
                         特殊效果: "生产武器和工具，提升军队装备完整率。"
-                    },
-                    building_market: {
-                        名称: "中心市场",
-                        类型: "商业",
-                        产权: "lord",
-                        等级: 2,
-                        状态: "正常运营",
-                        岗位: {
-                            当前人数: 25,
-                            最大人数: 40,
-                            月薪: 3
-                        },
-                        生产配方: {
-                            投入资源: {},
-                            产出资源: {},
-                            生产效率: 1.0,
-                            每月产量: 0
-                        },
-                        升级路径: {
-                            下一等级: 3,
-                            所需金币: 800,
-                            所需材料: {
-                                木材: 150,
-                                石材: 100,
-                                铁矿: 30
-                            },
-                            所需时间: 45,
-                            升级效果: {
-                                基础收入增加: 100,
-                                最大岗位增加: 10,
-                                生产效率提升: 0,
-                                新功能解锁: "可举办月度集市"
-                            }
-                        },
-                        财务: {
-                            基础收入: 200,
-                            人均产出价值: 8,
-                            维护费用: 60,
-                            计算_月收入: 400,
-                            计算_月支出: 135,
-                            计算_净收益: 265
-                        },
-                        特殊效果: "提升领地商业繁荣度，是商业税的主要来源。"
                     }
                 },
                 科技: {
                     tech_basic_agriculture: {
                         名称: "基础农业技术",
-                        类别: "农业",
                         研发状态: "已研发",
-                        研发成本: {
-                            金币: 200,
-                            时间: 30,
-                            人员: 2
-                        },
                         当前进度: 100,
                         效果描述: "提高粮食产量和农业效率。",
                         具体效果: {
@@ -1310,74 +1116,16 @@
                                 人口影响: 0.01
                             }
                         }
-                    },
-                    tech_iron_smelting: {
-                        名称: "铁器冶炼技术",
-                        类别: "工业",
-                        研发状态: "研发中",
-                        研发成本: {
-                            金币: 500,
-                            时间: 60,
-                            人员: 5
-                        },
-                        当前进度: 45,
-                        效果描述: "改进铁器冶炼工艺，提高武器和工具质量。",
-                        具体效果: {
-                            经济效果: {
-                                收入加成: 0,
-                                效率提升: 0.2,
-                                成本降低: 0.1
-                            },
-                            军事效果: {
-                                战力提升: 0.15,
-                                训练效率: 0,
-                                装备质量: 0.25
-                            },
-                            社会效果: {
-                                民心影响: 3,
-                                治安影响: 5,
-                                人口影响: 0
-                            }
-                        }
-                    },
-                    tech_basic_military_tactics: {
-                        名称: "基础军事战术",
-                        类别: "军事",
-                        研发状态: "未研发",
-                        研发成本: {
-                            金币: 300,
-                            时间: 45,
-                            人员: 3
-                        },
-                        当前进度: 0,
-                        效果描述: "提高军队训练效率和战斗能力。",
-                        具体效果: {
-                            经济效果: {
-                                收入加成: 0,
-                                效率提升: 0,
-                                成本降低: 0.05
-                            },
-                            军事效果: {
-                                战力提升: 0.2,
-                                训练效率: 0.25,
-                                装备质量: 0
-                            },
-                            社会效果: {
-                                民心影响: 2,
-                                治安影响: 8,
-                                人口影响: 0
-                            }
-                        }
                     }
                 },
                 项目: {
-                    当前建设项目: "城墙扩建",
-                    项目进度: 30,
+                    当前建设项目: "无",
+                    项目进度: 0,
                     项目所需资源: {
-                        金币: 1000,
-                        木材: 200,
-                        石材: 300,
-                        铁矿: 50
+                        金币: 0,
+                        木材: 0,
+                        石材: 0,
+                        铁矿: 0
                     }
                 },
                 法令: {
@@ -1385,7 +1133,6 @@
                         名称: "基础税法",
                         生效状态: true,
                         生效时间: "第1年 1月",
-                        失效条件: "被新税法取代",
                         经济效果: {
                             税率修正: 0,
                             专项税率: 0,
@@ -1478,11 +1225,8 @@
                     case '科技':
                         loadTabData('technology');
                         break;
-                    case '项目':
-                        loadTabData('projects');
-                        break;
-                    case '法令':
-                        loadTabData('decrees');
+                    case '政务':
+                        loadTabData('affairs');
                         break;
                     case '系统':
                         loadTabData('system');
@@ -1501,38 +1245,35 @@
                     
                     switch(tabId) {
                         case 'tab-population':
-                            loadTabData('population');
+                            loadPopulationDetails();
                             break;
                         case 'tab-economy':
-                            loadTabData('economy');
+                            loadEconomyDetails();
                             break;
                         case 'tab-resources':
-                            loadTabData('resources');
+                            loadResourcesDetails();
                             break;
                         case 'tab-military':
-                            loadTabData('military');
+                            loadMilitaryDetails();
                             break;
                         case 'tab-buildings':
-                            loadTabData('buildings');
+                            loadBuildingsDetails();
                             break;
                         case 'tab-technology':
-                            loadTabData('technology');
+                            loadTechnologyDetails();
                             break;
-                        case 'tab-projects':
-                            loadTabData('projects');
-                            break;
-                        case 'tab-decrees':
-                            loadTabData('decrees');
+                        case 'tab-affairs':
+                            loadAffairsDetails();
                             break;
                         case 'tab-system':
-                            loadTabData('system');
+                            loadSystemDetails();
                             break;
                     }
                 }
             });
         }
         
-        // 更新快速状态 - 移除移民率和经济指标
+        // 更新快速状态
         function updateQuickStats() {
             const container = document.getElementById('quick-stats');
             if (!container) return;
@@ -1546,7 +1287,7 @@
             // 安全获取数据，防止NaN
             const totalPopulation = safeNumber(population.总人口, 1250);
             const treasury = safeNumber(finance.库存金币, 2500);
-            const netIncome = safeNumber(finance.月净收入, 409);
+            const netIncome = safeNumber(finance.月净收入, 180);
             const threatLevel = safeString(threat.威胁等级, '警戒');
             const morale = safeNumber(residents.民心指数, 70);
             const area = safeNumber(basic.面积, 85);
@@ -1655,9 +1396,9 @@
             const finance = territoryData.经济?.财政 || {};
             const taxes = territoryData.经济?.公共税率 || {};
             
-            const income = safeNumber(finance.月总收入, 544);
-            const expense = safeNumber(finance.月总支出, 135);
-            const net = safeNumber(finance.月净收入, 409);
+            const income = safeNumber(finance.月总收入, 1850);
+            const expense = safeNumber(finance.月总支出, 1670);
+            const net = safeNumber(finance.月净收入, 180);
             const balanceStatus = safeString(finance.收支状态, '📈盈余');
             
             const incomeColor = income >= expense ? '#28a745' : '#dc3545';
@@ -1695,7 +1436,7 @@
             container.innerHTML = html;
         }
         
-        // 更新人口概况 - 移除移民率
+        // 更新人口概况
         function updatePopulationOverview() {
             const container = document.getElementById('population-overview');
             if (!container) return;
@@ -1733,7 +1474,7 @@
                 <div style="margin-bottom: 15px;">
                     <div style="font-weight: bold; margin-bottom: 5px;">总人口: ${formatNumber(total)} 人</div>
                     <div style="font-size: 12px; color: #4A3728;">
-                        增长率: ${(safeNumber(population.人口增长率, 0.008) * 100).toFixed(2)}%
+                        人口增长率: ${(safeNumber(population.人口增长率, 0.008) * 100).toFixed(2)}%
                     </div>
                 </div>
                 ${raceHtml}
@@ -1754,10 +1495,8 @@
             const threatColor = getThreatColor(threatLevel);
             const morale = safeNumber(residents.民心指数, 70);
             const moraleColor = getMoraleColor(morale);
-            
-            // 新增居民状态扩展
-            const epidemicRisk = safeNumber(residents.流行病风险, 0.1);
-            const crimeRate = safeNumber(residents.犯罪率, 0.05);
+            const crimeRate = safeNumber(residents.犯罪率, 0.05) * 100;
+            const epidemicRisk = safeNumber(residents.流行病风险, 0.1) * 100;
             
             let html = `
                 <table class="data-table">
@@ -1768,18 +1507,6 @@
                     <tr>
                         <td>主要威胁</td>
                         <td>${safeString(threat.主要魔物, '哥布林团伙')}</td>
-                    </tr>
-                    <tr>
-                        <td>魔物数量</td>
-                        <td>${safeString(threat.魔物数量, '约30-50')}</td>
-                    </tr>
-                    <tr>
-                        <td>上次袭击</td>
-                        <td>${safeString(threat.上次袭击, '一个月前')}</td>
-                    </tr>
-                    <tr>
-                        <td>威胁方向</td>
-                        <td>${safeString(threat.威胁方向, '北面森林')}</td>
                     </tr>
                     <tr>
                         <td>预估下次袭击</td>
@@ -1794,12 +1521,12 @@
                         <td>${safeNumber(residents.治安状况, 65)}/100</td>
                     </tr>
                     <tr>
-                        <td>流行病风险</td>
-                        <td>${(epidemicRisk * 100).toFixed(1)}%</td>
+                        <td>犯罪率</td>
+                        <td>${crimeRate.toFixed(1)}%</td>
                     </tr>
                     <tr>
-                        <td>犯罪率</td>
-                        <td>${(crimeRate * 100).toFixed(2)}%</td>
+                        <td>流行病风险</td>
+                        <td>${epidemicRisk.toFixed(1)}%</td>
                     </tr>
                     <tr>
                         <td>民心指数</td>
@@ -1852,7 +1579,7 @@
             }
         }
         
-        // 切换章节显示/隐藏 - 恢复功能
+        // 切换章节显示/隐藏
         function toggleSection(header) {
             const content = header.nextElementSibling;
             const toggle = header.querySelector('.section-toggle');
@@ -1868,7 +1595,7 @@
             adjustIframeHeight();
         }
         
-        // 切换选项卡 - 恢复功能
+        // 切换选项卡
         function switchTab(tabName) {
             // 隐藏所有选项卡
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1894,7 +1621,7 @@
                 targetBtn.classList.add('active');
             }
             
-            // 根据需要加载选项卡数据 - 强制刷新
+            // 根据需要加载选项卡数据
             loadTabData(tabName);
             
             adjustIframeHeight();
@@ -1911,84 +1638,27 @@
                     // 概览选项卡已经在updateUI中更新
                     break;
                 case 'population':
-                    // 清空现有表格内容，强制重新渲染
-                    const popTables = ['population-details', 'age-structure', 'race-details', 'occupation-details', 'satisfaction-dimensions'];
-                    popTables.forEach(tableId => {
-                        const table = document.getElementById(tableId);
-                        if (table) table.innerHTML = '';
-                    });
                     loadPopulationDetails();
                     break;
                 case 'economy':
-                    // 清空现有表格内容
-                    const economyTables = ['finance-details', 'finance-composition', 'tax-details', 'price-index'];
-                    economyTables.forEach(tableId => {
-                        const table = document.getElementById(tableId);
-                        if (table) table.innerHTML = '';
-                    });
                     loadEconomyDetails();
                     break;
                 case 'resources':
-                    // 清空现有表格内容
-                    const resourceTables = ['warehouse-details', 'natural-resources', 'environment-details'];
-                    resourceTables.forEach(tableId => {
-                        const table = document.getElementById(tableId);
-                        if (table) table.innerHTML = '';
-                    });
                     loadResourcesDetails();
                     break;
                 case 'military':
-                    // 清空现有表格内容
-                    const militaryTables = ['military-details', 'equipment-details', 'defense-details'];
-                    militaryTables.forEach(tableId => {
-                        const table = document.getElementById(tableId);
-                        if (table) table.innerHTML = '';
-                    });
                     loadMilitaryDetails();
                     break;
                 case 'buildings':
-                    // 清空现有内容
-                    const buildingsContainers = ['buildings-list'];
-                    buildingsContainers.forEach(containerId => {
-                        const container = document.getElementById(containerId);
-                        if (container) container.innerHTML = '';
-                    });
                     loadBuildingsDetails();
                     break;
                 case 'technology':
-                    // 清空现有内容
-                    const techContainers = ['technology-list'];
-                    techContainers.forEach(containerId => {
-                        const container = document.getElementById(containerId);
-                        if (container) container.innerHTML = '';
-                    });
                     loadTechnologyDetails();
                     break;
-                case 'projects':
-                    // 清空现有内容
-                    const projectContainers = ['projects-list'];
-                    projectContainers.forEach(containerId => {
-                        const container = document.getElementById(containerId);
-                        if (container) container.innerHTML = '';
-                    });
-                    loadProjectsDetails();
-                    break;
-                case 'decrees':
-                    // 清空现有内容
-                    const decreeContainers = ['decrees-list'];
-                    decreeContainers.forEach(containerId => {
-                        const container = document.getElementById(containerId);
-                        if (container) container.innerHTML = '';
-                    });
-                    loadDecreesDetails();
+                case 'affairs':
+                    loadAffairsDetails();
                     break;
                 case 'system':
-                    // 清空现有表格内容
-                    const systemTables = ['system-details', 'lord-details'];
-                    systemTables.forEach(tableId => {
-                        const table = document.getElementById(tableId);
-                        if (table) table.innerHTML = '';
-                    });
                     loadSystemDetails();
                     break;
             }
@@ -1996,244 +1666,201 @@
         
         // 加载人口详情
         function loadPopulationDetails() {
-            const container = document.getElementById('population-details');
-            if (!container) return;
-            
-            const population = territoryData.人口 || {};
-            const total = safeNumber(population.总人口, 1250);
-            const growth = safeNumber(population.人口增长率, 0.008);
-            
-            let html = `
-                <tr>
-                    <th>指标</th>
-                    <th>数值</th>
-                    <th>说明</th>
-                </tr>
-                <tr>
-                    <td>总人口</td>
-                    <td>${formatNumber(total)} 人</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>人口增长率</td>
-                    <td>${(growth * 100).toFixed(2)}%</td>
-                    <td>每月自然增长率</td>
-                </tr>
-            `;
-            
-            container.innerHTML = html;
-            
-            // 加载年龄结构
-            loadAgeStructure();
-            // 加载种族详情
-            loadRaceDetails();
-            // 加载职业详情
-            loadOccupationDetails();
-            // 加载满意度维度
-            loadSatisfactionDimensions();
-        }
-        
-        // 加载年龄结构
-        function loadAgeStructure() {
-            const container = document.getElementById('age-structure');
-            if (!container) return;
-            
-            const ageStructure = territoryData.人口?.年龄结构 || {};
-            const total = safeNumber(territoryData.人口?.总人口, 1250);
-            
-            let html = `
-                <tr>
-                    <th>年龄段</th>
-                    <th>人数</th>
-                    <th>占比</th>
-                    <th>说明</th>
-                </tr>
-            `;
-            
-            const ageGroups = [
-                { key: '儿童_0-14', name: '儿童 (0-14岁)', desc: '未成年人口' },
-                { key: '青年_15-35', name: '青年 (15-35岁)', desc: '主要劳动力' },
-                { key: '中年_36-60', name: '中年 (36-60岁)', desc: '经验丰富的劳动力' },
-                { key: '老年_60', name: '老年 (60岁以上)', desc: '老年人口' }
-            ];
-            
-            ageGroups.forEach(group => {
-                const count = safeNumber(ageStructure[group.key], 0);
-                const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+            // 年龄结构
+            const ageContainer = document.getElementById('age-structure');
+            if (ageContainer) {
+                const ageStructure = territoryData.人口?.年龄结构 || {};
+                const total = safeNumber(territoryData.人口?.总人口, 1250);
                 
-                html += `
+                let html = `
                     <tr>
-                        <td>${group.name}</td>
-                        <td>${formatNumber(count)}人</td>
-                        <td>${percentage}%</td>
-                        <td>${group.desc}</td>
+                        <th>年龄段</th>
+                        <th>人数</th>
+                        <th>占比</th>
+                        <th>说明</th>
                     </tr>
                 `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // 加载种族详情
-        function loadRaceDetails() {
-            const container = document.getElementById('race-details');
-            if (!container) return;
-            
-            const races = territoryData.人口?.种族构成 || {};
-            const total = safeNumber(territoryData.人口?.总人口, 1250);
-            
-            let html = `
-                <tr>
-                    <th>种族</th>
-                    <th>数量</th>
-                    <th>占比</th>
-                    <th>地位</th>
-                    <th>特殊能力</th>
-                </tr>
-            `;
-            
-            Object.entries(races).forEach(([name, data]) => {
-                if (typeof data === 'object' && data !== null) {
-                    const count = safeNumber(data.数量, 0);
+                
+                const ageGroups = [
+                    { key: '儿童_0_14', label: '儿童 (0-14岁)', desc: '未来劳动力与兵源' },
+                    { key: '青年_15_35', label: '青年 (15-35岁)', desc: '主要劳动力与兵源' },
+                    { key: '中年_36_60', label: '中年 (36-60岁)', desc: '经验丰富的劳动力' },
+                    { key: '老年_60_', label: '老年 (60岁以上)', desc: '需要供养的人口' }
+                ];
+                
+                ageGroups.forEach(group => {
+                    const count = safeNumber(ageStructure[group.key], 0);
                     const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                    const status = safeString(data.地位, '');
-                    const ability = safeString(data.特殊能力, '');
-                    
-                    let statusClass = 'tag';
-                    switch(status) {
-                        case '主导': statusClass += ' tag-success'; break;
-                        case '平等': statusClass += ' tag-warning'; break;
-                        case '奴隶': statusClass += ' tag-danger'; break;
-                        case '受限制': statusClass += ' tag-warning'; break;
-                        default: statusClass += ' tag-warning';
-                    }
                     
                     html += `
                         <tr>
-                            <td>${name}</td>
+                            <td>${group.label}</td>
                             <td>${formatNumber(count)}人</td>
                             <td>${percentage}%</td>
-                            <td><span class="${statusClass}">${status}</span></td>
-                            <td style="font-size: 11px;">${ability}</td>
+                            <td style="font-size: 11px;">${group.desc}</td>
                         </tr>
                     `;
-                }
-            });
+                });
+                
+                ageContainer.innerHTML = html;
+            }
             
-            container.innerHTML = html;
-        }
-        
-        // 加载职业详情
-        function loadOccupationDetails() {
-            const container = document.getElementById('occupation-details');
-            if (!container) return;
+            // 种族详情
+            const raceContainer = document.getElementById('race-details');
+            if (raceContainer) {
+                const races = territoryData.人口?.种族构成 || {};
+                const total = safeNumber(territoryData.人口?.总人口, 1250);
+                
+                let html = `
+                    <tr>
+                        <th>种族</th>
+                        <th>数量</th>
+                        <th>占比</th>
+                        <th>地位</th>
+                        <th>特殊能力</th>
+                    </tr>
+                `;
+                
+                Object.entries(races).forEach(([name, data]) => {
+                    if (typeof data === 'object' && data !== null) {
+                        const count = safeNumber(data.数量, 0);
+                        const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                        const status = safeString(data.地位, '');
+                        const ability = safeString(data.特殊能力, '');
+                        
+                        let statusClass = 'tag';
+                        switch(status) {
+                            case '主导': statusClass += ' tag-success'; break;
+                            case '平等': statusClass += ' tag-warning'; break;
+                            case '奴隶': statusClass += ' tag-danger'; break;
+                            case '受限制': statusClass += ' tag-warning'; break;
+                            default: statusClass += ' tag-warning';
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${formatNumber(count)}人</td>
+                                <td>${percentage}%</td>
+                                <td><span class="${statusClass}">${status}</span></td>
+                                <td style="font-size: 11px;">${ability}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                raceContainer.innerHTML = html;
+            }
             
-            const jobs = territoryData.人口?.职业分布 || {};
-            const total = safeNumber(territoryData.人口?.总人口, 1250);
+            // 职业详情
+            const occupationContainer = document.getElementById('occupation-details');
+            if (occupationContainer) {
+                const jobs = territoryData.人口?.职业分布 || {};
+                const total = safeNumber(territoryData.人口?.总人口, 1250);
+                
+                let html = `
+                    <tr>
+                        <th>职业</th>
+                        <th>人数</th>
+                        <th>占比</th>
+                        <th>月贡献</th>
+                        <th>满意度</th>
+                    </tr>
+                `;
+                
+                Object.entries(jobs).forEach(([name, data]) => {
+                    if (typeof data === 'object' && data !== null) {
+                        const count = safeNumber(data.人数, 0);
+                        const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                        const contribution = safeNumber(data.月贡献, 0);
+                        const satisfaction = safeNumber(data.满意度, 0);
+                        
+                        const contributionColor = contribution >= 0 ? '#28a745' : '#dc3545';
+                        const satisfactionColor = getMoraleColor(satisfaction);
+                        
+                        html += `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${formatNumber(count)}人</td>
+                                <td>${percentage}%</td>
+                                <td style="color: ${contributionColor}; font-weight: bold;">
+                                    ${contribution >= 0 ? '+' : ''}${contribution}金币
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="color: ${satisfactionColor};">${satisfaction}/100</span>
+                                        <div class="progress" style="flex: 1;">
+                                            <div class="progress-bar" style="width: ${satisfaction}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                occupationContainer.innerHTML = html;
+            }
             
-            let html = `
-                <tr>
-                    <th>职业</th>
-                    <th>人数</th>
-                    <th>占比</th>
-                    <th>月贡献</th>
-                    <th>满意度</th>
-                </tr>
-            `;
-            
-            Object.entries(jobs).forEach(([name, data]) => {
-                if (typeof data === 'object' && data !== null) {
-                    const count = safeNumber(data.人数, 0);
-                    const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                    const contribution = safeNumber(data.月贡献, 0);
-                    const satisfaction = safeNumber(data.满意度, 0);
-                    
-                    const contributionColor = contribution >= 0 ? '#28a745' : '#dc3545';
-                    const satisfactionColor = getMoraleColor(satisfaction);
+            // 满意度维度
+            const satisfactionContainer = document.getElementById('satisfaction-details');
+            if (satisfactionContainer) {
+                const satisfaction = territoryData.人口?.满意度维度 || {};
+                
+                let html = `
+                    <tr>
+                        <th>满意度维度</th>
+                        <th>数值</th>
+                        <th>状态</th>
+                    </tr>
+                `;
+                
+                const satisfactionItems = [
+                    { key: '食物满意度', label: '食物' },
+                    { key: '住房满意度', label: '住房' },
+                    { key: '安全满意度', label: '安全' },
+                    { key: '娱乐满意度', label: '娱乐' },
+                    { key: '税收满意度', label: '税收' },
+                    { key: '工作满意度', label: '工作' },
+                    { key: '教育满意度', label: '教育' },
+                    { key: '医疗满意度', label: '医疗' }
+                ];
+                
+                satisfactionItems.forEach(item => {
+                    const value = safeNumber(satisfaction[item.key], 0);
+                    const color = getMoraleColor(value);
+                    const status = value > 70 ? '良好' : value > 40 ? '一般' : '较差';
                     
                     html += `
                         <tr>
-                            <td>${name}</td>
-                            <td>${formatNumber(count)}人</td>
-                            <td>${percentage}%</td>
-                            <td style="color: ${contributionColor}; font-weight: bold;">
-                                ${contribution >= 0 ? '+' : ''}${contribution}金币
-                            </td>
+                            <td>${item.label}</td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="color: ${satisfactionColor};">${satisfaction}/100</span>
+                                    <span style="color: ${color};">${value}/100</span>
                                     <div class="progress" style="flex: 1;">
-                                        <div class="progress-bar" style="width: ${satisfaction}%"></div>
+                                        <div class="progress-bar" style="width: ${value}%"></div>
                                     </div>
                                 </div>
                             </td>
+                            <td style="color: ${color};">${status}</td>
                         </tr>
                     `;
-                }
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // 加载满意度维度
-        function loadSatisfactionDimensions() {
-            const container = document.getElementById('satisfaction-dimensions');
-            if (!container) return;
-            
-            const satisfaction = territoryData.人口?.满意度维度 || {};
-            
-            let html = `
-                <tr>
-                    <th>满意度维度</th>
-                    <th>数值</th>
-                    <th>状态</th>
-                </tr>
-            `;
-            
-            const dimensions = [
-                { key: '食物满意度', name: '食物' },
-                { key: '住房满意度', name: '住房' },
-                { key: '安全满意度', name: '安全' },
-                { key: '娱乐满意度', name: '娱乐' },
-                { key: '税收满意度', name: '税收' },
-                { key: '工作满意度', name: '工作' },
-                { key: '教育满意度', name: '教育' },
-                { key: '医疗满意度', name: '医疗' }
-            ];
-            
-            dimensions.forEach(dim => {
-                const value = safeNumber(satisfaction[dim.key], 0);
-                const color = getMoraleColor(value);
+                });
                 
-                html += `
-                    <tr>
-                        <td>${dim.name}</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="color: ${color};">${value}/100</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${value}%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>${value > 70 ? '良好' : value > 40 ? '一般' : '较差'}</td>
-                    </tr>
-                `;
-            });
-            
-            container.innerHTML = html;
+                satisfactionContainer.innerHTML = html;
+            }
         }
         
         // 加载经济详情
         function loadEconomyDetails() {
-            // 财政状况
+            // 财政详情
             const financeContainer = document.getElementById('finance-details');
             if (financeContainer) {
                 const finance = territoryData.经济?.财政 || {};
                 
-                const income = safeNumber(finance.月总收入, 544);
-                const expense = safeNumber(finance.月总支出, 135);
-                const net = safeNumber(finance.月净收入, 409);
+                const income = safeNumber(finance.月总收入, 1850);
+                const expense = safeNumber(finance.月总支出, 1670);
+                const net = safeNumber(finance.月净收入, 180);
                 const treasury = safeNumber(finance.库存金币, 2500);
                 const balanceStatus = safeString(finance.收支状态, '📈盈余');
                 
@@ -2265,59 +1892,6 @@
                 `;
                 
                 financeContainer.innerHTML = html;
-            }
-            
-            // 财政详细构成
-            const compositionContainer = document.getElementById('finance-composition');
-            if (compositionContainer) {
-                const finance = territoryData.经济?.财政 || {};
-                
-                const lordIncome = safeNumber(finance.领主资产_月收入, 400);
-                const lordExpense = safeNumber(finance.领主资产_月支出, 135);
-                const privateIncome = safeNumber(finance.私有资产_应税收入, 960);
-                const privateTaxRate = safeNumber(finance.私有资产税率, 0.15);
-                const privateTax = safeNumber(finance.私有资产_税收, 144);
-                const special = safeNumber(finance.特殊收支, 0);
-                
-                let html = `
-                    <tr>
-                        <th>财政项目</th>
-                        <th>数值</th>
-                        <th>说明</th>
-                    </tr>
-                    <tr>
-                        <td>领主资产月收入</td>
-                        <td style="color: #28a745;">${formatCurrency(lordIncome)}</td>
-                        <td>领主所有资产的收入</td>
-                    </tr>
-                    <tr>
-                        <td>领主资产月支出</td>
-                        <td style="color: #dc3545;">${formatCurrency(lordExpense)}</td>
-                        <td>领主资产的维护费用</td>
-                    </tr>
-                    <tr>
-                        <td>私有资产应税收入</td>
-                        <td>${formatCurrency(privateIncome)}</td>
-                        <td>私有资产产生的应税收入</td>
-                    </tr>
-                    <tr>
-                        <td>私有资产税率</td>
-                        <td>${(privateTaxRate * 100).toFixed(1)}%</td>
-                        <td>对私有资产征收的税率</td>
-                    </tr>
-                    <tr>
-                        <td>私有资产税收</td>
-                        <td style="color: #28a745;">${formatCurrency(privateTax)}</td>
-                        <td>从私有资产征收的税收</td>
-                    </tr>
-                    <tr>
-                        <td>特殊收支</td>
-                        <td style="${special >= 0 ? 'color: #28a745' : 'color: #dc3545'}">${formatCurrency(special, true)}</td>
-                        <td>来自法令、事件等的特殊收支</td>
-                    </tr>
-                `;
-                
-                compositionContainer.innerHTML = html;
             }
             
             // 税收详情
@@ -2400,7 +1974,7 @@
                 warehouseContainer.innerHTML = html;
             }
             
-            // 自然资源 - 删除当前储量、每月再生、健康度
+            // 自然资源
             const naturalContainer = document.getElementById('natural-resources');
             if (naturalContainer) {
                 const resources = territoryData.资源动态 || {};
@@ -2408,30 +1982,35 @@
                 let html = `
                     <tr>
                         <th>资源类型</th>
+                        <th>储量状况</th>
                         <th>每月开采</th>
-                        <th>开采难度</th>
-                        <th>矿石品质</th>
-                        <th>预估枯竭时间</th>
                     </tr>
                 `;
                 
                 Object.entries(resources).forEach(([name, data]) => {
                     if (typeof data === 'object' && data !== null) {
+                        const current = safeNumber(data.当前储量, 0);
                         const extraction = safeNumber(data.每月开采量, 0);
-                        const difficulty = safeNumber(data.开采难度, 0) * 100;
-                        const quality = safeNumber(data.矿石品质, 0) * 100;
-                        const depletion = safeNumber(data.预估枯竭时间, 0);
                         
-                        const difficultyColor = difficulty < 30 ? '#28a745' : difficulty < 60 ? '#ffc107' : '#dc3545';
-                        const qualityColor = quality > 70 ? '#28a745' : quality > 40 ? '#ffc107' : '#dc3545';
+                        let status = '';
+                        let statusColor = '#6c757d';
+                        
+                        if (current > 5000) {
+                            status = '丰富';
+                            statusColor = '#28a745';
+                        } else if (current > 1000) {
+                            status = '一般';
+                            statusColor = '#ffc107';
+                        } else {
+                            status = '贫瘠';
+                            statusColor = '#dc3545';
+                        }
                         
                         html += `
                             <tr>
                                 <td>${name}</td>
+                                <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
                                 <td>${formatNumber(extraction)}</td>
-                                <td style="color: ${difficultyColor};">${difficulty.toFixed(0)}%</td>
-                                <td style="color: ${qualityColor};">${quality.toFixed(0)}%</td>
-                                <td>${depletion}个月</td>
                             </tr>
                         `;
                     }
@@ -2486,11 +2065,6 @@
                         <td>军事行动修正</td>
                         <td>${safeNumber(seasonEffects.军事行动修正, 0.9).toFixed(2)}</td>
                         <td>季节对军事的影响</td>
-                    </tr>
-                    <tr>
-                        <td>资源采集修正</td>
-                        <td>${safeNumber(seasonEffects.资源采集修正, 1.1).toFixed(2)}</td>
-                        <td>季节对采集的影响</td>
                     </tr>
                 `;
                 
@@ -2690,22 +2264,20 @@
                     const maxJobs = safeNumber(jobs.最大人数, 0);
                     const salary = safeNumber(jobs.月薪, 0);
                     
-                    const finance = building.财务 || {};
-                    const income = safeNumber(finance.计算_月收入, 0);
-                    const expense = safeNumber(finance.计算_月支出, 0);
-                    const profit = safeNumber(finance.计算_净收益, 0);
-                    
                     const production = building.生产配方 || {};
                     const inputs = production.投入资源 || {};
                     const outputs = production.产出资源 || {};
-                    const efficiency = safeNumber(production.生产效率, 0) * 100;
+                    const efficiency = safeNumber(production.生产效率, 0);
                     
                     const upgrade = building.升级路径 || {};
                     const nextLevel = safeNumber(upgrade.下一等级, 0);
                     const upgradeCost = safeNumber(upgrade.所需金币, 0);
                     const upgradeMaterials = upgrade.所需材料 || {};
-                    const upgradeTime = safeNumber(upgrade.所需时间, 0);
-                    const upgradeEffects = upgrade.升级效果 || {};
+                    
+                    const finance = building.财务 || {};
+                    const income = safeNumber(finance.计算_月收入, 0);
+                    const expense = safeNumber(finance.计算_月支出, 0);
+                    const profit = safeNumber(finance.计算_净收益, 0);
                     
                     const specialEffect = safeString(building.特殊效果, '无');
                     
@@ -2715,64 +2287,6 @@
                     
                     const jobRate = maxJobs > 0 ? (currentJobs / maxJobs * 100).toFixed(0) : 0;
                     const jobColor = jobRate > 80 ? '#28a745' : jobRate > 40 ? '#ffc107' : '#dc3545';
-                    
-                    // 生产配方HTML
-                    let productionHtml = '';
-                    if (Object.keys(inputs).length > 0 || Object.keys(outputs).length > 0) {
-                        productionHtml += '<div class="building-details">';
-                        productionHtml += '<h4>生产配方</h4>';
-                        
-                        if (Object.keys(inputs).length > 0) {
-                            productionHtml += '<div style="font-size: 11px; margin-bottom: 5px;"><strong>投入资源:</strong></div>';
-                            Object.entries(inputs).forEach(([res, amount]) => {
-                                productionHtml += `<div style="font-size: 11px; margin-left: 10px;">${res}: ${amount}/人/月</div>`;
-                            });
-                        }
-                        
-                        if (Object.keys(outputs).length > 0) {
-                            productionHtml += '<div style="font-size: 11px; margin-bottom: 5px;"><strong>产出资源:</strong></div>';
-                            Object.entries(outputs).forEach(([res, amount]) => {
-                                productionHtml += `<div style="font-size: 11px; margin-left: 10px;">${res}: ${amount}/人/月</div>`;
-                            });
-                        }
-                        
-                        productionHtml += `<div style="font-size: 11px; margin-top: 5px;">生产效率: ${efficiency.toFixed(0)}%</div>`;
-                        productionHtml += '</div>';
-                    }
-                    
-                    // 升级路径HTML
-                    let upgradeHtml = '';
-                    if (nextLevel > 0) {
-                        upgradeHtml += '<div class="building-details">';
-                        upgradeHtml += `<h4>升级路径 (到等级 ${nextLevel})</h4>`;
-                        upgradeHtml += `<div style="font-size: 11px;">所需金币: ${formatCurrency(upgradeCost)}</div>`;
-                        upgradeHtml += `<div style="font-size: 11px;">所需时间: ${upgradeTime}天</div>`;
-                        
-                        if (Object.keys(upgradeMaterials).length > 0) {
-                            upgradeHtml += '<div style="font-size: 11px; margin-bottom: 5px;"><strong>所需材料:</strong></div>';
-                            Object.entries(upgradeMaterials).forEach(([mat, amount]) => {
-                                upgradeHtml += `<div style="font-size: 11px; margin-left: 10px;">${mat}: ${amount}</div>`;
-                            });
-                        }
-                        
-                        if (upgradeEffects.基础收入增加 || upgradeEffects.最大岗位增加 || upgradeEffects.生产效率提升) {
-                            upgradeHtml += '<div style="font-size: 11px; margin-top: 5px;"><strong>升级效果:</strong></div>';
-                            if (upgradeEffects.基础收入增加) {
-                                upgradeHtml += `<div style="font-size: 11px; margin-left: 10px;">基础收入增加: ${formatCurrency(upgradeEffects.基础收入增加)}</div>`;
-                            }
-                            if (upgradeEffects.最大岗位增加) {
-                                upgradeHtml += `<div style="font-size: 11px; margin-left: 10px;">最大岗位增加: ${upgradeEffects.最大岗位增加}人</div>`;
-                            }
-                            if (upgradeEffects.生产效率提升) {
-                                upgradeHtml += `<div style="font-size: 11px; margin-left: 10px;">生产效率提升: ${(upgradeEffects.生产效率提升 * 100).toFixed(0)}%</div>`;
-                            }
-                            if (upgradeEffects.新功能解锁) {
-                                upgradeHtml += `<div style="font-size: 11px; margin-left: 10px;">新功能: ${upgradeEffects.新功能解锁}</div>`;
-                            }
-                        }
-                        
-                        upgradeHtml += '</div>';
-                    }
                     
                     html += `
                         <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
@@ -2793,7 +2307,7 @@
                                 </div>
                             </div>
                             
-                            <table style="width: 100%; font-size: 12px;">
+                            <table style="width: 100%; font-size: 12px; margin-bottom: 10px;">
                                 <tr>
                                     <td style="width: 33%; padding: 5px;">
                                         <div style="font-weight: bold; margin-bottom: 3px;">岗位情况</div>
@@ -2824,11 +2338,51 @@
                                 </tr>
                             </table>
                             
-                            ${productionHtml}
-                            ${upgradeHtml}
+                            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                                <div style="font-weight: bold; margin-bottom: 5px;">生产配方</div>
+                                <div style="display: flex; font-size: 11px;">
+                                    <div style="flex: 1; padding-right: 10px;">
+                                        <div style="font-weight: bold; color: #dc3545;">投入资源</div>
+                                        ${Object.keys(inputs).length > 0 ? 
+                                            Object.entries(inputs).map(([res, amount]) => 
+                                                `<div>${res}: ${amount}/人/月</div>`
+                                            ).join('') : 
+                                            '<div>无</div>'
+                                        }
+                                    </div>
+                                    <div style="flex: 1; padding-left: 10px; border-left: 1px solid #eee;">
+                                        <div style="font-weight: bold; color: #28a745;">产出资源</div>
+                                        ${Object.keys(outputs).length > 0 ? 
+                                            Object.entries(outputs).map(([res, amount]) => 
+                                                `<div>${res}: ${amount}/人/月</div>`
+                                            ).join('') : 
+                                            '<div>无</div>'
+                                        }
+                                    </div>
+                                </div>
+                                <div style="margin-top: 5px; font-size: 11px;">
+                                    生产效率: ${(efficiency * 100).toFixed(0)}%
+                                </div>
+                            </div>
                             
-                            <div style="font-size: 11px; margin-top: 10px; color: #4A3728; font-style: italic;">
-                                <strong>特殊效果:</strong> ${specialEffect}
+                            ${nextLevel > 0 ? `
+                                <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                                    <div style="font-weight: bold; margin-bottom: 5px;">升级信息 (→等级${nextLevel})</div>
+                                    <div style="font-size: 11px;">
+                                        <div>所需金币: ${formatCurrency(upgradeCost)}</div>
+                                        ${Object.keys(upgradeMaterials).length > 0 ? 
+                                            '<div>所需材料: ' + Object.entries(upgradeMaterials).map(([mat, amount]) => 
+                                                `${mat}: ${amount}`
+                                            ).join(', ') + '</div>' : 
+                                            ''
+                                        }
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                                <div style="font-weight: bold; margin-bottom: 3px;">特殊效果</div>
+                                <div style="font-size: 11px; color: #4A3728;">${specialEffect}</div>
                             </div>
                         </div>
                     `;
@@ -2854,16 +2408,9 @@
             Object.entries(techs).forEach(([key, tech]) => {
                 if (typeof tech === 'object' && tech !== null) {
                     const name = safeString(tech.名称, '未知科技');
-                    const category = safeString(tech.类别, '未知');
                     const status = safeString(tech.研发状态, '未研发');
                     const progress = safeNumber(tech.当前进度, 0);
-                    const description = safeString(tech.效果描述, '');
-                    
-                    const cost = tech.研发成本 || {};
-                    const costGold = safeNumber(cost.金币, 0);
-                    const costTime = safeNumber(cost.时间, 0);
-                    const costPersonnel = safeNumber(cost.人员, 0);
-                    
+                    const effectDesc = safeString(tech.效果描述, '无');
                     const effects = tech.具体效果 || {};
                     const economicEffects = effects.经济效果 || {};
                     const militaryEffects = effects.军事效果 || {};
@@ -2885,20 +2432,15 @@
                     }
                     
                     html += `
-                        <div class="tech-card">
+                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <div>
-                                    <span style="font-weight: bold; font-size: 13px;">${name}</span>
-                                    <span style="font-size: 11px; margin-left: 8px; color: #4A3728;">
-                                        类别: ${category}
-                                    </span>
-                                </div>
+                                <span style="font-weight: bold; font-size: 13px;">${name}</span>
                                 <span class="tag" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
                                     ${statusText}
                                 </span>
                             </div>
                             
-                            <div style="margin-top: 5px;">
+                            <div style="margin-top: 5px; margin-bottom: 10px;">
                                 <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
                                     <span>研发进度</span>
                                     <span>${progress}%</span>
@@ -2908,42 +2450,32 @@
                                 </div>
                             </div>
                             
-                            <div style="font-size: 11px; margin-top: 10px; color: #4A3728;">
-                                <strong>效果描述:</strong> ${description}
+                            <div style="margin-bottom: 8px; font-size: 11px; color: #4A3728;">
+                                ${effectDesc}
                             </div>
                             
-                            <div style="font-size: 11px; margin-top: 10px;">
-                                <strong>研发成本:</strong> ${formatCurrency(costGold)} | ${costTime}天 | ${costPersonnel}人
-                            </div>
-                            
-                            <div class="building-details" style="margin-top: 10px;">
-                                <h4>具体效果</h4>
-                                ${economicEffects.收入加成 || economicEffects.效率提升 || economicEffects.成本降低 ? `
-                                <div style="font-size: 11px; margin-bottom: 5px;"><strong>经济效果:</strong></div>
-                                <div style="font-size: 11px; margin-left: 10px;">
-                                    ${economicEffects.收入加成 ? `收入加成: ${(economicEffects.收入加成 * 100).toFixed(0)}%<br>` : ''}
-                                    ${economicEffects.效率提升 ? `效率提升: ${(economicEffects.效率提升 * 100).toFixed(0)}%<br>` : ''}
-                                    ${economicEffects.成本降低 ? `成本降低: ${(economicEffects.成本降低 * 100).toFixed(0)}%` : ''}
+                            <div style="display: flex; font-size: 11px; border-top: 1px solid #eee; padding-top: 8px;">
+                                <div style="flex: 1; padding-right: 10px;">
+                                    <div style="font-weight: bold; color: #28a745; margin-bottom: 3px;">经济效果</div>
+                                    ${economicEffects.收入加成 ? `<div>收入加成: +${(economicEffects.收入加成 * 100).toFixed(0)}%</div>` : ''}
+                                    ${economicEffects.效率提升 ? `<div>效率提升: +${(economicEffects.效率提升 * 100).toFixed(0)}%</div>` : ''}
+                                    ${economicEffects.成本降低 ? `<div>成本降低: ${(economicEffects.成本降低 * 100).toFixed(0)}%</div>` : ''}
+                                    ${!economicEffects.收入加成 && !economicEffects.效率提升 && !economicEffects.成本降低 ? '<div>无</div>' : ''}
                                 </div>
-                                ` : ''}
-                                
-                                ${militaryEffects.战力提升 || militaryEffects.训练效率 || militaryEffects.装备质量 ? `
-                                <div style="font-size: 11px; margin-top: 5px;"><strong>军事效果:</strong></div>
-                                <div style="font-size: 11px; margin-left: 10px;">
-                                    ${militaryEffects.战力提升 ? `战力提升: ${(militaryEffects.战力提升 * 100).toFixed(0)}%<br>` : ''}
-                                    ${militaryEffects.训练效率 ? `训练效率: ${(militaryEffects.训练效率 * 100).toFixed(0)}%<br>` : ''}
-                                    ${militaryEffects.装备质量 ? `装备质量: ${(militaryEffects.装备质量 * 100).toFixed(0)}%` : ''}
+                                <div style="flex: 1; padding: 0 10px; border-left: 1px solid #eee; border-right: 1px solid #eee;">
+                                    <div style="font-weight: bold; color: #dc3545; margin-bottom: 3px;">军事效果</div>
+                                    ${militaryEffects.战力提升 ? `<div>战力提升: +${(militaryEffects.战力提升 * 100).toFixed(0)}%</div>` : ''}
+                                    ${militaryEffects.训练效率 ? `<div>训练效率: +${(militaryEffects.训练效率 * 100).toFixed(0)}%</div>` : ''}
+                                    ${militaryEffects.装备质量 ? `<div>装备质量: +${(militaryEffects.装备质量 * 100).toFixed(0)}%</div>` : ''}
+                                    ${!militaryEffects.战力提升 && !militaryEffects.训练效率 && !militaryEffects.装备质量 ? '<div>无</div>' : ''}
                                 </div>
-                                ` : ''}
-                                
-                                ${socialEffects.民心影响 || socialEffects.治安影响 || socialEffects.人口影响 ? `
-                                <div style="font-size: 11px; margin-top: 5px;"><strong>社会效果:</strong></div>
-                                <div style="font-size: 11px; margin-left: 10px;">
-                                    ${socialEffects.民心影响 ? `民心影响: ${socialEffects.民心影响}<br>` : ''}
-                                    ${socialEffects.治安影响 ? `治安影响: ${socialEffects.治安影响}<br>` : ''}
-                                    ${socialEffects.人口影响 ? `人口影响: ${(socialEffects.人口影响 * 100).toFixed(2)}%` : ''}
+                                <div style="flex: 1; padding-left: 10px;">
+                                    <div style="font-weight: bold; color: #ffc107; margin-bottom: 3px;">社会效果</div>
+                                    ${socialEffects.民心影响 ? `<div>民心: ${socialEffects.民心影响 >= 0 ? '+' : ''}${socialEffects.民心影响}</div>` : ''}
+                                    ${socialEffects.治安影响 ? `<div>治安: ${socialEffects.治安影响 >= 0 ? '+' : ''}${socialEffects.治安影响}</div>` : ''}
+                                    ${socialEffects.人口影响 ? `<div>人口增长: ${socialEffects.人口影响 >= 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%</div>` : ''}
+                                    ${!socialEffects.民心影响 && !socialEffects.治安影响 && !socialEffects.人口影响 ? '<div>无</div>' : ''}
                                 </div>
-                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -2957,132 +2489,121 @@
             container.innerHTML = html;
         }
 
-        // 加载项目详情
-        function loadProjectsDetails() {
-            const container = document.getElementById('projects-list');
-            if (!container) return;
-            
-            const projects = territoryData.项目 || {};
-            
-            const projectName = safeString(projects.当前建设项目, '无');
-            const progress = safeNumber(projects.项目进度, 0);
-            const resources = projects.项目所需资源 || {};
-            
-            let html = '';
-            
-            if (projectName !== '无') {
-                html += `
-                    <div class="project-card">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <div>
-                                <span style="font-weight: bold; font-size: 13px;">${projectName}</span>
-                            </div>
-                            <span class="tag" style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
-                                进行中
-                            </span>
-                        </div>
-                        
-                        <div style="margin-top: 5px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
-                                <span>项目进度</span>
+        // 加载政务详情（项目和法令）
+        function loadAffairsDetails() {
+            // 项目详情
+            const projectContainer = document.getElementById('project-details');
+            if (projectContainer) {
+                const projects = territoryData.项目 || {};
+                
+                const currentProject = safeString(projects.当前建设项目, '无');
+                const progress = safeNumber(projects.项目进度, 0);
+                const resources = projects.项目所需资源 || {};
+                
+                let html = `
+                    <tr>
+                        <th>项目</th>
+                        <th>状态</th>
+                    </tr>
+                    <tr>
+                        <td>当前项目</td>
+                        <td>${currentProject}</td>
+                    </tr>
+                    <tr>
+                        <td>项目进度</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 <span>${progress}%</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${progress}%"></div>
+                                </div>
                             </div>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: ${progress}%; background: #ffc107;"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="building-details" style="margin-top: 10px;">
-                            <h4>所需资源</h4>
-                            <div style="font-size: 11px;">
-                                ${resources.金币 ? `<div>金币: ${formatCurrency(resources.金币)}</div>` : ''}
-                                ${resources.木材 ? `<div>木材: ${resources.木材}方</div>` : ''}
-                                ${resources.石材 ? `<div>石材: ${resources.石材}方</div>` : ''}
-                                ${resources.铁矿 ? `<div>铁矿: ${resources.铁矿}斤</div>` : ''}
-                            </div>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
                 `;
-            } else {
-                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">当前无建设项目</div>';
-            }
-            
-            container.innerHTML = html;
-        }
-
-        // 加载法令详情
-        function loadDecreesDetails() {
-            const container = document.getElementById('decrees-list');
-            if (!container) return;
-            
-            const decrees = territoryData.法令 || {};
-            
-            let html = '';
-            
-            Object.entries(decrees).forEach(([key, decree]) => {
-                if (typeof decree === 'object' && decree !== null) {
-                    const name = safeString(decree.名称, '未知法令');
-                    const status = safeBoolean(decree.生效状态, false);
-                    const effectiveTime = safeString(decree.生效时间, '');
-                    const expiration = safeString(decree.失效条件, '');
-                    
-                    const economicEffects = decree.经济效果 || {};
-                    const socialEffects = decree.社会效果 || {};
-                    
-                    const statusColor = status ? '#28a745' : '#dc3545';
-                    const statusText = status ? '生效中' : '已失效';
-                    
+                
+                if (currentProject !== '无') {
                     html += `
-                        <div class="decree-card">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <div>
-                                    <span style="font-weight: bold; font-size: 13px;">${name}</span>
-                                </div>
-                                <span class="tag" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
-                                    ${statusText}
-                                </span>
-                            </div>
-                            
-                            <div style="font-size: 11px; color: #4A3728; margin-bottom: 5px;">
-                                <strong>生效时间:</strong> ${effectiveTime}
-                            </div>
-                            
-                            <div style="font-size: 11px; color: #4A3728; margin-bottom: 10px;">
-                                <strong>失效条件:</strong> ${expiration}
-                            </div>
-                            
-                            <div class="building-details">
-                                <h4>法令效果</h4>
-                                ${economicEffects.税率修正 || economicEffects.专项税率 || economicEffects.固定收入 || economicEffects.固定支出 || economicEffects.效率加成 ? `
-                                <div style="font-size: 11px; margin-bottom: 5px;"><strong>经济效果:</strong></div>
-                                <div style="font-size: 11px; margin-left: 10px;">
-                                    ${economicEffects.税率修正 ? `税率修正: ${economicEffects.税率修正 > 0 ? '+' : ''}${(economicEffects.税率修正 * 100).toFixed(1)}%<br>` : ''}
-                                    ${economicEffects.专项税率 ? `专项税率: ${(economicEffects.专项税率 * 100).toFixed(1)}%<br>` : ''}
-                                    ${economicEffects.固定收入 ? `固定收入: ${formatCurrency(economicEffects.固定收入)}<br>` : ''}
-                                    ${economicEffects.固定支出 ? `固定支出: ${formatCurrency(economicEffects.固定支出)}<br>` : ''}
-                                    ${economicEffects.效率加成 ? `效率加成: ${(economicEffects.效率加成 * 100).toFixed(1)}%` : ''}
-                                </div>
-                                ` : '无经济效果'}
-                                
-                                ${socialEffects.民心影响 || socialEffects.治安影响 || socialEffects.人口影响 ? `
-                                <div style="font-size: 11px; margin-top: 5px;"><strong>社会效果:</strong></div>
-                                <div style="font-size: 11px; margin-left: 10px;">
-                                    ${socialEffects.民心影响 ? `民心影响: ${socialEffects.民心影响 > 0 ? '+' : ''}${socialEffects.民心影响}<br>` : ''}
-                                    ${socialEffects.治安影响 ? `治安影响: ${socialEffects.治安影响 > 0 ? '+' : ''}${socialEffects.治安影响}<br>` : ''}
-                                    ${socialEffects.人口影响 ? `人口影响: ${socialEffects.人口影响 > 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%` : ''}
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
+                        <tr>
+                            <td colspan="2" style="background: #f8f9fa; font-weight: bold;">所需资源</td>
+                        </tr>
                     `;
+                    
+                    Object.entries(resources).forEach(([resource, amount]) => {
+                        if (safeNumber(amount, 0) > 0) {
+                            html += `
+                                <tr>
+                                    <td>${resource}</td>
+                                    <td>${formatNumber(amount)}</td>
+                                </tr>
+                            `;
+                        }
+                    });
                 }
-            });
-            
-            if (html === '') {
-                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无法令数据</div>';
+                
+                projectContainer.innerHTML = html;
             }
             
-            container.innerHTML = html;
+            // 法令列表
+            const decreeContainer = document.getElementById('decree-list');
+            if (decreeContainer) {
+                const decrees = territoryData.法令 || {};
+                
+                let html = '';
+                
+                Object.entries(decrees).forEach(([key, decree]) => {
+                    if (typeof decree === 'object' && decree !== null) {
+                        const name = safeString(decree.名称, '未知法令');
+                        const active = decree.生效状态 === true;
+                        const activeTime = safeString(decree.生效时间, '未知');
+                        const economicEffects = decree.经济效果 || {};
+                        const socialEffects = decree.社会效果 || {};
+                        
+                        const activeColor = active ? '#28a745' : '#dc3545';
+                        const activeText = active ? '生效中' : '已失效';
+                        
+                        html += `
+                            <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: bold; font-size: 13px;">${name}</span>
+                                    <span class="tag" style="background: ${activeColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                                        ${activeText}
+                                    </span>
+                                </div>
+                                
+                                <div style="font-size: 11px; color: #6c757d; margin-bottom: 8px;">
+                                    生效时间: ${activeTime}
+                                </div>
+                                
+                                <div style="display: flex; font-size: 11px; border-top: 1px solid #eee; padding-top: 8px;">
+                                    <div style="flex: 1; padding-right: 10px;">
+                                        <div style="font-weight: bold; color: #28a745; margin-bottom: 3px;">经济效果</div>
+                                        ${economicEffects.税率修正 ? `<div>税率修正: ${economicEffects.税率修正 >= 0 ? '+' : ''}${(economicEffects.税率修正 * 100).toFixed(1)}%</div>` : ''}
+                                        ${economicEffects.专项税率 ? `<div>专项税率: ${(economicEffects.专项税率 * 100).toFixed(1)}%</div>` : ''}
+                                        ${economicEffects.固定收入 ? `<div>固定收入: ${formatCurrency(economicEffects.固定收入)}</div>` : ''}
+                                        ${economicEffects.固定支出 ? `<div>固定支出: ${formatCurrency(economicEffects.固定支出)}</div>` : ''}
+                                        ${economicEffects.效率加成 ? `<div>效率加成: +${(economicEffects.效率加成 * 100).toFixed(1)}%</div>` : ''}
+                                        ${!economicEffects.税率修正 && !economicEffects.专项税率 && !economicEffects.固定收入 && !economicEffects.固定支出 && !economicEffects.效率加成 ? '<div>无</div>' : ''}
+                                    </div>
+                                    <div style="flex: 1; padding-left: 10px; border-left: 1px solid #eee;">
+                                        <div style="font-weight: bold; color: #ffc107; margin-bottom: 3px;">社会效果</div>
+                                        ${socialEffects.民心影响 ? `<div>民心影响: ${socialEffects.民心影响 >= 0 ? '+' : ''}${socialEffects.民心影响}</div>` : ''}
+                                        ${socialEffects.治安影响 ? `<div>治安影响: ${socialEffects.治安影响 >= 0 ? '+' : ''}${socialEffects.治安影响}</div>` : ''}
+                                        ${socialEffects.人口影响 ? `<div>人口影响: ${socialEffects.人口影响 >= 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%</div>` : ''}
+                                        ${!socialEffects.民心影响 && !socialEffects.治安影响 && !socialEffects.人口影响 ? '<div>无</div>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                if (html === '') {
+                    html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无法令数据</div>';
+                }
+                
+                decreeContainer.innerHTML = html;
+            }
         }
 
         // 加载系统详情
@@ -3161,7 +2682,7 @@
                     <tr>
                         <td>健康状态</td>
                         <td>${health}</td>
-                        <td></td>
+                        <td>领主健康状况</td>
                     </tr>
                     <tr>
                         <td>个人战力</td>
@@ -3444,13 +2965,6 @@
             if (num > 70) return '#28a745';
             if (num > 40) return '#ffc107';
             return '#dc3545';
-        }
-        
-        function safeBoolean(value, defaultValue = false) {
-            if (value === undefined || value === null) {
-                return defaultValue;
-            }
-            return Boolean(value);
         }
         
         // 初始化
