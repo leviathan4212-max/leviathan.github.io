@@ -1739,6 +1739,602 @@
                 indicatorsContainer.innerHTML = html;
             }
         }
+
+        // 加载资源详情
+        function loadResourcesDetails() {
+            // 仓库物资
+            const warehouseContainer = document.getElementById('warehouse-details');
+            if (warehouseContainer) {
+                const warehouse = territoryData.仓库 || {};
+                
+                let html = `
+                    <tr>
+                        <th>资源</th>
+                        <th>当前储量</th>
+                        <th>安全储量</th>
+                        <th>状态</th>
+                        <th>单位</th>
+                    </tr>
+                `;
+                
+                Object.entries(warehouse).forEach(([key, item]) => {
+                    if (typeof item === 'object' && item !== null) {
+                        const current = safeNumber(item.当前储量, 0);
+                        const safe = safeNumber(item.安全储量, 0);
+                        const unit = safeString(item.单位, '');
+                        const name = safeString(item.名称, '未知');
+                        const status = current >= safe ? '充足' : '不足';
+                        const statusColor = current >= safe ? '#28a745' : '#dc3545';
+                        
+                        html += `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${formatNumber(current)}</td>
+                                <td>${formatNumber(safe)}</td>
+                                <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
+                                <td>${unit}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                warehouseContainer.innerHTML = html;
+            }
+            
+            // 自然资源
+            const naturalContainer = document.getElementById('natural-resources');
+            if (naturalContainer) {
+                const resources = territoryData.资源动态 || {};
+                
+                let html = `
+                    <tr>
+                        <th>资源类型</th>
+                        <th>当前储量</th>
+                        <th>每月再生</th>
+                        <th>每月开采</th>
+                        <th>健康度</th>
+                    </tr>
+                `;
+                
+                Object.entries(resources).forEach(([name, data]) => {
+                    if (typeof data === 'object' && data !== null) {
+                        const current = safeNumber(data.当前储量, 0);
+                        const regen = safeNumber(data.每月再生量, 0);
+                        const extraction = safeNumber(data.每月开采量, 0);
+                        const health = safeNumber(data.生态健康度, 0) * 100;
+                        
+                        const healthColor = health > 70 ? '#28a745' : health > 40 ? '#ffc107' : '#dc3545';
+                        
+                        html += `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${formatNumber(current)}</td>
+                                <td>${formatNumber(regen)}</td>
+                                <td>${formatNumber(extraction)}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="color: ${healthColor};">${health.toFixed(0)}%</span>
+                                        <div class="progress" style="flex: 1;">
+                                            <div class="progress-bar" style="width: ${health}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                naturalContainer.innerHTML = html;
+            }
+            
+            // 环境状况
+            const environmentContainer = document.getElementById('environment-details');
+            if (environmentContainer) {
+                const environment = territoryData.环境 || {};
+                const seasonEffects = environment.季节影响 || {};
+                
+                let html = `
+                    <tr>
+                        <th>指标</th>
+                        <th>数值</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr>
+                        <td>天气状况</td>
+                        <td>${safeString(environment.天气状况, '晴朗')}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>温度</td>
+                        <td>${safeNumber(environment.温度, 15)}°C</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>降水</td>
+                        <td>${safeString(environment.降水, '适中')}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>自然灾害风险</td>
+                        <td>${(safeNumber(environment.自然灾害风险, 0.1) * 100).toFixed(1)}%</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>农业产出修正</td>
+                        <td>${safeNumber(seasonEffects.农业产出修正, 1.2).toFixed(2)}</td>
+                        <td>季节对农业的影响</td>
+                    </tr>
+                    <tr>
+                        <td>商业活动修正</td>
+                        <td>${safeNumber(seasonEffects.商业活动修正, 1.0).toFixed(2)}</td>
+                        <td>季节对商业的影响</td>
+                    </tr>
+                    <tr>
+                        <td>资源采集修正</td>
+                        <td>${safeNumber(seasonEffects.资源采集修正, 1.1).toFixed(2)}</td>
+                        <td>季节对采集的影响</td>
+                    </tr>
+                `;
+                
+                environmentContainer.innerHTML = html;
+            }
+        }
+
+        // 加载军事详情
+        function loadMilitaryDetails() {
+            // 兵力状况
+            const militaryContainer = document.getElementById('military-details');
+            if (militaryContainer) {
+                const military = territoryData.军事 || {};
+                const troops = military.兵力 || {};
+                const ratings = military.战力评级 || {};
+                
+                let html = `
+                    <tr>
+                        <th>部队类型</th>
+                        <th>数量</th>
+                        <th>状态</th>
+                    </tr>
+                    <tr>
+                        <td>常备军</td>
+                        <td>${safeNumber(troops.常备军, 80)}人</td>
+                        <td>常规防御力量</td>
+                    </tr>
+                    <tr>
+                        <td>民兵</td>
+                        <td>${safeNumber(troops.民兵, 200)}人</td>
+                        <td>后备力量</td>
+                    </tr>
+                    <tr>
+                        <td>精锐部队</td>
+                        <td>${safeNumber(troops.精锐部队, 0)}人</td>
+                        <td>核心战力</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="background: #f8f9fa; font-weight: bold;">战力评级</td>
+                    </tr>
+                    <tr>
+                        <td>总评级</td>
+                        <td style="font-weight: bold; color: #8B6914;">${safeString(ratings.总评级, 'D')}</td>
+                        <td>综合战力评价</td>
+                    </tr>
+                    <tr>
+                        <td>领主战力</td>
+                        <td style="font-weight: bold;">${safeString(ratings.领主战力, 'B')}</td>
+                        <td>领主个人战力</td>
+                    </tr>
+                    <tr>
+                        <td>军队战力</td>
+                        <td style="font-weight: bold;">${safeString(ratings.军队战力, 'E')}</td>
+                        <td>军队整体战力</td>
+                    </tr>
+                    <tr>
+                        <td>防御评级</td>
+                        <td style="font-weight: bold;">${safeString(ratings.防御评级, 'D+')}</td>
+                        <td>防御设施评级</td>
+                    </tr>
+                `;
+                
+                militaryContainer.innerHTML = html;
+            }
+            
+            // 装备状态
+            const equipmentContainer = document.getElementById('equipment-details');
+            if (equipmentContainer) {
+                const equipment = territoryData.军事?.装备状态 || {};
+                
+                const equipmentRate = safeNumber(equipment.装备完整率, 0.65) * 100;
+                const trainingLevel = safeNumber(equipment.训练水平, 0.5) * 100;
+                const morale = safeNumber(equipment.士气, 70);
+                
+                const equipmentColor = equipmentRate > 70 ? '#28a745' : equipmentRate > 40 ? '#ffc107' : '#dc3545';
+                const trainingColor = trainingLevel > 70 ? '#28a745' : trainingLevel > 40 ? '#ffc107' : '#dc3545';
+                const moraleColor = getMoraleColor(morale);
+                
+                let html = `
+                    <tr>
+                        <th>指标</th>
+                        <th>数值</th>
+                        <th>状态</th>
+                    </tr>
+                    <tr>
+                        <td>装备完整率</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="color: ${equipmentColor};">${equipmentRate.toFixed(0)}%</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${equipmentRate}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${equipmentRate > 70 ? '良好' : equipmentRate > 40 ? '一般' : '较差'}</td>
+                    </tr>
+                    <tr>
+                        <td>训练水平</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="color: ${trainingColor};">${trainingLevel.toFixed(0)}%</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${trainingLevel}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${trainingLevel > 70 ? '精锐' : trainingLevel > 40 ? '合格' : '新兵'}</td>
+                    </tr>
+                    <tr>
+                        <td>军队士气</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="color: ${moraleColor};">${morale}/100</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${morale}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${morale > 70 ? '高昂' : morale > 40 ? '一般' : '低落'}</td>
+                    </tr>
+                `;
+                
+                equipmentContainer.innerHTML = html;
+            }
+            
+            // 防御设施
+            const defenseContainer = document.getElementById('defense-details');
+            if (defenseContainer) {
+                const defense = territoryData.军事?.防御设施 || {};
+                
+                const wallIntegrity = safeNumber(defense.城墙完整度, 0.7) * 100;
+                const towers = safeNumber(defense.瞭望塔数量, 2);
+                const gates = safeString(defense.城门状态, '完好');
+                const moat = safeString(defense.护城河, '无');
+                
+                const wallColor = wallIntegrity > 80 ? '#28a745' : wallIntegrity > 50 ? '#ffc107' : '#dc3545';
+                const gateColor = gates.includes('完好') ? '#28a745' : gates.includes('受损') ? '#ffc107' : '#dc3545';
+                
+                let html = `
+                    <tr>
+                        <th>设施</th>
+                        <th>状态</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr>
+                        <td>城墙完整度</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="color: ${wallColor};">${wallIntegrity.toFixed(0)}%</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${wallIntegrity}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${wallIntegrity > 80 ? '坚固' : wallIntegrity > 50 ? '一般' : '需要维修'}</td>
+                    </tr>
+                    <tr>
+                        <td>瞭望塔数量</td>
+                        <td>${towers}座</td>
+                        <td>${towers > 3 ? '充足' : towers > 1 ? '基本' : '不足'}</td>
+                    </tr>
+                    <tr>
+                        <td>城门状态</td>
+                        <td style="color: ${gateColor}; font-weight: bold;">${gates}</td>
+                        <td>${gates.includes('完好') ? '防御正常' : '需要关注'}</td>
+                    </tr>
+                    <tr>
+                        <td>护城河</td>
+                        <td>${moat}</td>
+                        <td>${moat === '无' ? '需考虑建设' : '提供额外防御'}</td>
+                    </tr>
+                `;
+                
+                defenseContainer.innerHTML = html;
+            }
+        }
+
+        // 加载建筑详情
+        function loadBuildingsDetails() {
+            const container = document.getElementById('buildings-list');
+            if (!container) return;
+            
+            const buildings = territoryData.建筑 || {};
+            
+            let html = '';
+            
+            Object.entries(buildings).forEach(([key, building]) => {
+                if (typeof building === 'object' && building !== null) {
+                    const name = safeString(building.名称, '未知建筑');
+                    const type = safeString(building.类型, '未知');
+                    const property = safeString(building.产权, '未知');
+                    const level = safeNumber(building.等级, 1);
+                    const status = safeString(building.状态, '未知');
+                    
+                    const jobs = building.岗位 || {};
+                    const currentJobs = safeNumber(jobs.当前人数, 0);
+                    const maxJobs = safeNumber(jobs.最大人数, 0);
+                    const salary = safeNumber(jobs.月薪, 0);
+                    
+                    const finance = building.财务 || {};
+                    const income = safeNumber(finance.计算_月收入, 0);
+                    const expense = safeNumber(finance.计算_月支出, 0);
+                    const profit = safeNumber(finance.计算_净收益, 0);
+                    
+                    const propertyColor = property === 'lord' ? '#28a745' : property === 'private' ? '#ffc107' : '#6c757d';
+                    const statusColor = status.includes('正常') ? '#28a745' : status.includes('停止') ? '#dc3545' : '#ffc107';
+                    const profitColor = profit >= 0 ? '#28a745' : '#dc3545';
+                    
+                    const jobRate = maxJobs > 0 ? (currentJobs / maxJobs * 100).toFixed(0) : 0;
+                    const jobColor = jobRate > 80 ? '#28a745' : jobRate > 40 ? '#ffc107' : '#dc3545';
+                    
+                    html += `
+                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <div>
+                                    <span style="font-weight: bold; font-size: 14px;">${name}</span>
+                                    <span style="font-size: 12px; margin-left: 8px;">
+                                        <span class="tag" style="background: ${propertyColor}; color: white; padding: 2px 6px; border-radius: 10px;">
+                                            ${property === 'lord' ? '领主所有' : '私人所有'}
+                                        </span>
+                                        <span class="tag" style="background: ${statusColor}; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+                                            ${status}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div style="font-size: 12px; color: #4A3728;">
+                                    等级: ${level} | 类型: ${type}
+                                </div>
+                            </div>
+                            
+                            <table style="width: 100%; font-size: 12px;">
+                                <tr>
+                                    <td style="width: 33%; padding: 5px;">
+                                        <div style="font-weight: bold; margin-bottom: 3px;">岗位情况</div>
+                                        <div>
+                                            就业: ${currentJobs}/${maxJobs}人
+                                            <div class="progress" style="margin-top: 2px;">
+                                                <div class="progress-bar" style="width: ${jobRate}%; background: ${jobColor};"></div>
+                                            </div>
+                                            <div style="font-size: 11px; color: #6c757d;">平均月薪: ${salary}金币</div>
+                                        </div>
+                                    </td>
+                                    <td style="width: 33%; padding: 5px; border-left: 1px solid #eee;">
+                                        <div style="font-weight: bold; margin-bottom: 3px;">财务状况</div>
+                                        <div>
+                                            <div>收入: <span style="color: #28a745;">${formatCurrency(income)}</span></div>
+                                            <div>支出: <span style="color: #dc3545;">${formatCurrency(expense)}</span></div>
+                                            <div>净利: <span style="color: ${profitColor}; font-weight: bold;">${formatCurrency(profit, true)}</span></div>
+                                        </div>
+                                    </td>
+                                    <td style="width: 34%; padding: 5px; border-left: 1px solid #eee;">
+                                        <div style="font-weight: bold; margin-bottom: 3px;">运营状态</div>
+                                        <div style="font-size: 11px;">
+                                            <div>雇佣率: ${jobRate}%</div>
+                                            <div>盈利能力: ${profit >= 0 ? '盈利' : '亏损'}</div>
+                                            <div>人均产值: ${currentJobs > 0 ? formatCurrency(income / currentJobs) : 'N/A'}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (html === '') {
+                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无建筑数据</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // 加载科技详情
+        function loadTechnologyDetails() {
+            const container = document.getElementById('technology-list');
+            if (!container) return;
+            
+            const techs = territoryData.科技 || {};
+            
+            let html = '';
+            
+            Object.entries(techs).forEach(([key, tech]) => {
+                if (typeof tech === 'object' && tech !== null) {
+                    const name = safeString(tech.名称, '未知科技');
+                    const status = safeString(tech.研发状态, '未研发');
+                    const progress = safeNumber(tech.当前进度, 0);
+                    
+                    let statusColor, statusText;
+                    switch(status) {
+                        case '已研发':
+                            statusColor = '#28a745';
+                            statusText = '已完成';
+                            break;
+                        case '研发中':
+                            statusColor = '#ffc107';
+                            statusText = '进行中';
+                            break;
+                        default:
+                            statusColor = '#6c757d';
+                            statusText = '未开始';
+                    }
+                    
+                    html += `
+                        <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: bold; font-size: 13px;">${name}</span>
+                                <span class="tag" style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                                    ${statusText}
+                                </span>
+                            </div>
+                            
+                            <div style="margin-top: 5px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+                                    <span>研发进度</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${progress}%; background: ${statusColor};"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (html === '') {
+                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无科技数据</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // 加载系统详情
+        function loadSystemDetails() {
+            // 系统设置
+            const systemContainer = document.getElementById('system-details');
+            if (systemContainer) {
+                const system = territoryData.System || {};
+                
+                let html = `
+                    <tr>
+                        <th>设置项</th>
+                        <th>值</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr>
+                        <td>当前游戏时间</td>
+                        <td>${safeString(system.当前游戏时间, '第1年 1月')}</td>
+                        <td>游戏内时间</td>
+                    </tr>
+                    <tr>
+                        <td>当前季节</td>
+                        <td>${safeString(system.当前季节, '春季')}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>上次结算时间</td>
+                        <td>${safeString(system.上次结算时间, '第1年 1月')}</td>
+                        <td>最后一次月度结算</td>
+                    </tr>
+                    <tr>
+                        <td>自动结算开关</td>
+                        <td>${system.自动结算开关 ? '开启' : '关闭'}</td>
+                        <td>自动执行月度结算</td>
+                    </tr>
+                    <tr>
+                        <td>数据更新</td>
+                        <td>${lastUpdate ? lastUpdate.toLocaleString() : '从未'}</td>
+                        <td>最后一次数据更新</td>
+                    </tr>
+                    <tr>
+                        <td>自动刷新</td>
+                        <td>${autoRefreshEnabled ? '开启' : '关闭'}</td>
+                        <td>自动刷新数据</td>
+                    </tr>
+                `;
+                
+                systemContainer.innerHTML = html;
+            }
+            
+            // 领主信息
+            const lordContainer = document.getElementById('lord-details');
+            if (lordContainer) {
+                const character = territoryData.Character?.领主 || {};
+                
+                const lordName = safeString(character.姓名, '艾丹');
+                const title = safeString(character.称号, '边境守护者');
+                const combat = safeString(character.个人战力, 'B');
+                const management = safeNumber(character.管理能力, 65);
+                const military = safeNumber(character.军事能力, 70);
+                const diplomacy = safeNumber(character.外交能力, 55);
+                const knowledge = safeNumber(character.知识水平, 60);
+                
+                let html = `
+                    <tr>
+                        <th>属性</th>
+                        <th>数值</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr>
+                        <td>姓名</td>
+                        <td style="font-weight: bold;">${lordName}</td>
+                        <td>${title}</td>
+                    </tr>
+                    <tr>
+                        <td>个人战力</td>
+                        <td style="font-weight: bold; color: #8B6914;">${combat}</td>
+                        <td>个人战斗能力评级</td>
+                    </tr>
+                    <tr>
+                        <td>管理能力</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${management}/100</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${management}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>领地管理能力</td>
+                    </tr>
+                    <tr>
+                        <td>军事能力</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${military}/100</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${military}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>军事指挥能力</td>
+                    </tr>
+                    <tr>
+                        <td>外交能力</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${diplomacy}/100</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${diplomacy}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>外交谈判能力</td>
+                    </tr>
+                    <tr>
+                        <td>知识水平</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${knowledge}/100</span>
+                                <div class="progress" style="flex: 1;">
+                                    <div class="progress-bar" style="width: ${knowledge}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>文化知识水平</td>
+                    </tr>
+                `;
+                
+                lordContainer.innerHTML = html;
+            }
+        }
         
         // 刷新数据
         async function refreshData() {
