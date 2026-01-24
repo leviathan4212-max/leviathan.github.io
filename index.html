@@ -32,12 +32,18 @@
             background: #F5E6C8 !important;
         }
         
-        /* 标题 */
+        /* 标题和领主按钮 */
         .panel-header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 15px 10px;
             margin-bottom: 15px;
             border-bottom: 2px solid #8B6914;
+        }
+        
+        .header-left {
+            flex: 1;
         }
         
         .panel-title {
@@ -49,6 +55,75 @@
         .panel-subtitle {
             color: #8B6914;
             font-size: 12px;
+        }
+        
+        .lord-button {
+            padding: 8px 15px;
+            background: #8B6914;
+            color: #F5E6C8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .lord-button:hover {
+            background: #725811;
+            transform: translateY(-2px);
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: #F5E6C8;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            border: 3px solid #8B6914;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8B6914;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            color: #2C1810;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #8B6914;
+            cursor: pointer;
+            padding: 5px;
         }
         
         /* 控制按钮 */
@@ -111,6 +186,41 @@
             color: #4A3728;
         }
         
+        /* 选项卡导航 - 更新顺序 */
+        .tab-nav {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #8B6914;
+            background: rgba(232, 212, 168, 0.3);
+        }
+        
+        .tab-btn {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            color: #4A3728;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-btn.active {
+            color: #2C1810;
+            font-weight: bold;
+            border-bottom: 2px solid #8B6914;
+            background: rgba(139, 105, 20, 0.1);
+        }
+        
+        /* 选项卡内容 */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         /* 章节样式 */
         .section {
             margin-bottom: 15px;
@@ -142,7 +252,7 @@
         
         .section-content {
             padding: 10px;
-            display: block; /* 默认显示所有内容 */
+            display: block;
         }
         
         /* 数据表格 */
@@ -169,56 +279,215 @@
             background: rgba(245, 230, 200, 0.5);
         }
         
-        /* 选项卡导航 */
-        .tab-nav {
-            display: flex;
-            overflow-x: auto;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #8B6914;
-            background: rgba(232, 212, 168, 0.3);
+        /* 建筑网格样式 */
+        .building-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
-        .tab-btn {
-            padding: 8px 15px;
-            border: none;
-            background: transparent;
-            color: #4A3728;
-            cursor: pointer;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
+        .building-category {
+            margin-bottom: 25px;
         }
         
-        .tab-btn.active {
-            color: #2C1810;
+        .category-title {
+            font-size: 16px;
             font-weight: bold;
+            color: #2C1810;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
             border-bottom: 2px solid #8B6914;
-            background: rgba(139, 105, 20, 0.1);
         }
         
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .quick-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .control-btn {
-                min-width: 100px;
-            }
+        .building-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #8B6914;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
         }
         
-        @media (max-width: 480px) {
-            .quick-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .tab-nav {
-                flex-wrap: wrap;
-            }
-            
-            .tab-btn {
-                flex: 1;
-                text-align: center;
-            }
+        .building-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.2);
+        }
+        
+        .building-emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .building-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2C1810;
+        }
+        
+        .building-location {
+            font-size: 12px;
+            color: #8B6914;
+            margin-bottom: 5px;
+        }
+        
+        .building-status {
+            font-size: 11px;
+            color: #4A3728;
+        }
+        
+        .profit-indicator {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .profit-positive {
+            color: #28a745;
+        }
+        
+        .profit-negative {
+            color: #dc3545;
+        }
+        
+        .profit-neutral {
+            color: #6c757d;
+        }
+        
+        /* 角色网格样式 - 宽高比调整为宽度远大于高度 */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .character-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #8B6914;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            min-height: 80px;
+            height: 80px; /* 固定高度，宽度自适应 */
+        }
+        
+        .character-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.2);
+        }
+        
+        .character-avatar {
+            font-size: 40px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .character-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .character-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #2C1810;
+        }
+        
+        .character-title {
+            font-size: 12px;
+            color: #8B6914;
+            margin-bottom: 5px;
+        }
+        
+        .character-location {
+            font-size: 11px;
+            color: #4A3728;
+            margin-bottom: 5px;
+        }
+        
+        .character-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+        }
+        
+        .stat-love, .stat-loyalty {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        /* 法令网格样式 */
+        .decree-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .decree-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #8B6914;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 100px;
+        }
+        
+        .decree-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.2);
+        }
+        
+        .decree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .decree-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2C1810;
+        }
+        
+        .decree-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .decree-time {
+            font-size: 12px;
+            color: #8B6914;
+            margin-bottom: 10px;
+        }
+        
+        .decree-effects {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+        }
+        
+        .effect-economy, .effect-social {
+            flex: 1;
+        }
+        
+        .effect-title {
+            font-weight: bold;
+            margin-bottom: 3px;
         }
         
         /* 进度条 */
@@ -274,6 +543,55 @@
             color: #856404;
         }
         
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .control-btn {
+                min-width: 100px;
+            }
+            
+            .building-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .character-grid, .decree-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .character-card {
+                min-height: 70px;
+                height: 70px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-nav {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                flex: 1;
+                text-align: center;
+                min-width: 80px;
+            }
+            
+            .building-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .character-card {
+                min-height: 60px;
+                height: 60px;
+            }
+        }
+        
         /* 底部信息 */
         .footer {
             margin-top: 20px;
@@ -284,30 +602,113 @@
             border-top: 1px solid rgba(139, 105, 20, 0.3);
         }
 
-        /* 调试面板样式 */
-        .debug-panel {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
+        /* 模态框内部内容样式 */
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section-title {
+            font-size: 18px;
+            color: #2C1810;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #8B6914;
+        }
+        
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .modal-info-item {
+            margin-bottom: 8px;
+        }
+        
+        .modal-label {
+            font-weight: bold;
+            color: #4A3728;
+            margin-right: 5px;
+        }
+        
+        .modal-value {
+            color: #2C1810;
+        }
+        
+        /* 建筑详情模态框特定样式 */
+        .building-detail-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            border: 1px solid rgba(139, 105, 20, 0.3);
+        }
+        
+        .building-finance-table {
+            width: 100%;
+            font-size: 12px;
+        }
+        
+        .building-finance-table td {
+            padding: 5px;
+            border-bottom: 1px solid rgba(139, 105, 20, 0.1);
+        }
+        
+        /* 角色详情模态框特定样式 */
+        .character-detail-avatar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .character-avatar-large {
+            font-size: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .ability-radar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .ability-item {
+            text-align: center;
             padding: 10px;
-            margin-top: 10px;
+            background: rgba(232, 212, 168, 0.3);
+            border-radius: 5px;
+        }
+        
+        .ability-name {
             font-size: 11px;
-            max-height: 200px;
-            overflow-y: auto;
+            color: #4A3728;
+            margin-bottom: 5px;
         }
         
-        .debug-item {
-            padding: 2px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .debug-key {
+        .ability-value {
+            font-size: 16px;
             font-weight: bold;
             color: #2C1810;
         }
         
-        .debug-value {
-            color: #6c757d;
+        /* 法令详情模态框特定样式 */
+        .decree-effect-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .decree-effect-category {
+            padding: 10px;
+            background: rgba(232, 212, 168, 0.3);
+            border-radius: 5px;
+        }
+        
+        .effect-category-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2C1810;
         }
         
         /* 加载动画 */
@@ -329,11 +730,68 @@
     </style>
 </head>
 <body>
+    <!-- 领主信息模态框 -->
+    <div class="modal-overlay" id="lord-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="lord-modal-title">领主信息</h2>
+                <button class="close-button" onclick="closeModal('lord-modal')">×</button>
+            </div>
+            <div id="lord-modal-content">
+                <!-- 内容将动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 建筑详情模态框 -->
+    <div class="modal-overlay" id="building-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="building-modal-title">建筑详情</h2>
+                <button class="close-button" onclick="closeModal('building-modal')">×</button>
+            </div>
+            <div id="building-modal-content">
+                <!-- 内容将动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 角色详情模态框 -->
+    <div class="modal-overlay" id="character-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="character-modal-title">角色详情</h2>
+                <button class="close-button" onclick="closeModal('character-modal')">×</button>
+            </div>
+            <div id="character-modal-content">
+                <!-- 内容将动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 法令详情模态框 -->
+    <div class="modal-overlay" id="decree-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="decree-modal-title">法令详情</h2>
+                <button class="close-button" onclick="closeModal('decree-modal')">×</button>
+            </div>
+            <div id="decree-modal-content">
+                <!-- 内容将动态生成 -->
+            </div>
+        </div>
+    </div>
+    
     <div class="territory-panel">
-        <!-- 标题 -->
+        <!-- 标题和领主按钮 -->
         <div class="panel-header">
-            <h1 class="panel-title">🏰 领地状态面板</h1>
-            <div class="panel-subtitle">版本: 3.0 | 最后更新: <span id="last-update">刚刚</span></div>
+            <div class="header-left">
+                <h1 class="panel-title">🏰 领地状态面板</h1>
+                <div class="panel-subtitle">版本: 3.0 | 最后更新: <span id="last-update">刚刚</span></div>
+            </div>
+            <button class="lord-button" onclick="openLordModal()">
+                👑 <span id="lord-name">领主</span>
+            </button>
         </div>
         
         <!-- 控制栏 -->
@@ -350,21 +808,22 @@
             <!-- 动态生成 -->
         </div>
         
-        <!-- 选项卡导航 -->
+        <!-- 选项卡导航 - 重新排序 -->
         <div class="tab-nav" id="tab-nav">
             <button class="tab-btn active" onclick="switchTab('overview')">概览</button>
-            <button class="tab-btn" onclick="switchTab('population')">人口</button>
             <button class="tab-btn" onclick="switchTab('economy')">经济</button>
-            <button class="tab-btn" onclick="switchTab('resources')">资源</button>
+            <button class="tab-btn" onclick="switchTab('population')">人口</button>
             <button class="tab-btn" onclick="switchTab('military')">军事</button>
             <button class="tab-btn" onclick="switchTab('buildings')">建筑</button>
+            <button class="tab-btn" onclick="switchTab('resources')">资源</button>
             <button class="tab-btn" onclick="switchTab('technology')">科技</button>
-            <button class="tab-btn" onclick="switchTab('affairs')">政务</button>
+            <button class="tab-btn" onclick="switchTab('decrees')">法令</button>
+            <button class="tab-btn" onclick="switchTab('characters')">角色</button>
             <button class="tab-btn" onclick="switchTab('system')">系统</button>
         </div>
         
         <!-- 概览选项卡 -->
-        <div class="tab-content" id="tab-overview" style="display: block;">
+        <div class="tab-content active" id="tab-overview">
             <!-- 基础信息 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -418,8 +877,50 @@
             </div>
         </div>
         
+        <!-- 经济选项卡 -->
+        <div class="tab-content" id="tab-economy">
+            <!-- 财政状况 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">💰 财政状况</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <table class="data-table" id="finance-details">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 税收体系 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">🏛️ 税收体系</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <table class="data-table" id="tax-details">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 物价指数 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">📊 物价指数</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <table class="data-table" id="price-index">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        
         <!-- 人口选项卡 -->
-        <div class="tab-content" id="tab-population" style="display: none;">
+        <div class="tab-content" id="tab-population">
             <!-- 年龄结构 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -473,93 +974,8 @@
             </div>
         </div>
         
-        <!-- 经济选项卡 -->
-        <div class="tab-content" id="tab-economy" style="display: none;">
-            <!-- 财政状况 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">💰 财政状况</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="finance-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 税收体系 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🏛️ 税收体系</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="tax-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 物价指数 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">📊 物价指数</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="price-index">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 资源选项卡 -->
-        <div class="tab-content" id="tab-resources" style="display: none;">
-            <!-- 仓库物资 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🏪 仓库物资</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <div id="resource-warnings"></div>
-                    <table class="data-table" id="warehouse-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 自然资源 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🌳 自然资源</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="natural-resources">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 环境状况 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🌤️ 环境状况</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="environment-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-        </div>
-        
         <!-- 军事选项卡 -->
-        <div class="tab-content" id="tab-military" style="display: none;">
+        <div class="tab-content" id="tab-military">
             <!-- 兵力状况 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -601,23 +1017,65 @@
         </div>
         
         <!-- 建筑选项卡 -->
-        <div class="tab-content" id="tab-buildings" style="display: none;">
-            <!-- 建筑列表 -->
+        <div class="tab-content" id="tab-buildings">
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
                     <div class="section-title">🏛️ 建筑设施</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
-                    <div id="buildings-list">
-                        <!-- 动态生成 -->
+                    <div id="buildings-content">
+                        <!-- 建筑将按分类动态生成 -->
                     </div>
                 </div>
             </div>
         </div>
         
+        <!-- 资源选项卡 -->
+        <div class="tab-content" id="tab-resources">
+            <!-- 仓库物资 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">🏪 仓库物资</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <div id="resource-warnings"></div>
+                    <table class="data-table" id="warehouse-details">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 自然资源 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">🌳 自然资源</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <table class="data-table" id="natural-resources">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 环境状况 -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">🌤️ 环境状况</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <table class="data-table" id="environment-details">
+                        <!-- 动态生成 -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        
         <!-- 科技选项卡 -->
-        <div class="tab-content" id="tab-technology" style="display: none;">
+        <div class="tab-content" id="tab-technology">
             <!-- 科技研发 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -632,37 +1090,38 @@
             </div>
         </div>
         
-        <!-- 政务选项卡 -->
-        <div class="tab-content" id="tab-affairs" style="display: none;">
-            <!-- 当前项目 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">🏗️ 当前项目</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="project-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 现行法令 -->
+        <!-- 法令选项卡 -->
+        <div class="tab-content" id="tab-decrees">
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
                     <div class="section-title">📜 现行法令</div>
                     <div class="section-toggle">▼</div>
                 </div>
                 <div class="section-content">
-                    <div id="decree-list">
-                        <!-- 动态生成 -->
+                    <div id="decrees-content">
+                        <!-- 法令卡片将动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 角色选项卡 -->
+        <div class="tab-content" id="tab-characters">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <div class="section-title">👥 领地角色</div>
+                    <div class="section-toggle">▼</div>
+                </div>
+                <div class="section-content">
+                    <div id="characters-content">
+                        <!-- 角色卡片将动态生成 -->
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- 系统选项卡 -->
-        <div class="tab-content" id="tab-system" style="display: none;">
+        <div class="tab-content" id="tab-system">
             <!-- 系统设置 -->
             <div class="section">
                 <div class="section-header" onclick="toggleSection(this)">
@@ -671,19 +1130,6 @@
                 </div>
                 <div class="section-content">
                     <table class="data-table" id="system-details">
-                        <!-- 动态生成 -->
-                    </table>
-                </div>
-            </div>
-            
-            <!-- 领主信息 -->
-            <div class="section">
-                <div class="section-header" onclick="toggleSection(this)">
-                    <div class="section-title">👑 领主信息</div>
-                    <div class="section-toggle">▼</div>
-                </div>
-                <div class="section-content">
-                    <table class="data-table" id="lord-details">
                         <!-- 动态生成 -->
                     </table>
                 </div>
@@ -742,15 +1188,12 @@
         let autoRefreshInterval = null;
         let debugMode = false;
         
-        // 统一的数据提取函数 - 修复年龄结构问题
+        // 统一的数据提取函数
         function extractMVUValue(data) {
             if (data === undefined || data === null) return null;
             
-            console.log('提取数据:', data, '类型:', typeof data);
-            
             // 如果是数组，检查格式
             if (Array.isArray(data)) {
-                console.log('数据是数组，长度:', data.length);
                 // MVU常见格式：[值, 描述] 或 [值]
                 if (data.length >= 1) {
                     // 递归处理数组中的第一个元素
@@ -761,16 +1204,12 @@
             
             // 如果是对象，检查常见属性
             if (typeof data === 'object') {
-                console.log('数据是对象，键:', Object.keys(data));
                 // 尝试获取常见的数值属性
                 if (data.value !== undefined) return data.value;
                 if (data.值 !== undefined) return data.值;
                 if (data.数量 !== undefined) return data.数量;
                 if (data.count !== undefined) return data.count;
                 if (data.Value !== undefined) return data.Value;
-                
-                // 如果是包含数字的对象，直接返回
-                if (typeof data === 'number') return data;
                 
                 // 如果对象只有一个键值对，且值是数字，返回该值
                 const keys = Object.keys(data);
@@ -798,17 +1237,13 @@
         // 改进的数据转换函数
         function convertMVUData(data, path = '') {
             if (!data || typeof data !== 'object') {
-                console.log(`路径 ${path}: 非对象数据:`, data);
                 return data;
             }
-            
-            console.log(`转换路径 ${path}, 类型:`, Array.isArray(data) ? '数组' : '对象', '数据:', data);
             
             // 处理数组
             if (Array.isArray(data)) {
                 // 检查是否是 [值, 描述] 格式
                 if (data.length === 2 && typeof data[1] === 'string') {
-                    console.log(`路径 ${path}: 提取 [值, 描述] 格式的值:`, data[0]);
                     return data[0];
                 }
                 // 处理数组中的每个元素
@@ -849,19 +1284,16 @@
         async function fetchFromMVU() {
             try {
                 showLoading(true);
-                console.log('开始从MVU获取数据...');
                 
                 let mvuData = null;
                 
                 // 方法1：使用getVariables
                 if (typeof getVariables === 'function') {
-                    console.log('使用 getVariables()');
                     try {
                         mvuData = getVariables({
                             type: 'message',
                             message_id: getCurrentMessageId?.() || 'current'
                         });
-                        console.log('getVariables 返回的原始数据:', mvuData);
                     } catch (e) {
                         console.error('getVariables 错误:', e);
                     }
@@ -869,7 +1301,6 @@
                 
                 // 方法2：尝试window.getVariables
                 if (!mvuData && typeof window.getVariables === 'function') {
-                    console.log('使用 window.getVariables()');
                     try {
                         mvuData = await window.getVariables({
                             type: 'message',
@@ -882,79 +1313,46 @@
                 
                 // 处理获取到的数据
                 if (mvuData) {
-                    console.log('原始MVU数据:', mvuData);
-                    
                     // 从stat_data中提取Territory数据
                     if (mvuData.stat_data) {
-                        console.log('找到 stat_data');
-                        console.log('stat_data结构:', mvuData.stat_data);
-                        
                         if (mvuData.stat_data.Territory) {
-                            console.log('找到 Territory 数据');
                             // 对数据进行转换
                             territoryData = convertMVUData(mvuData.stat_data.Territory, 'Territory');
-                            
-                            // 特别处理年龄结构数据
-                            if (territoryData.人口 && territoryData.人口.年龄结构) {
-                                console.log('年龄结构原始数据:', territoryData.人口.年龄结构);
-                                console.log('年龄结构类型:', typeof territoryData.人口.年龄结构);
-                                
-                                // 遍历年龄结构的每个键，确保值是数字
-                                const ageStructure = territoryData.人口.年龄结构;
-                                for (const [ageKey, ageValue] of Object.entries(ageStructure)) {
-                                    console.log(`年龄组 ${ageKey}:`, ageValue, '类型:', typeof ageValue);
-                                    
-                                    // 使用统一的提取函数
-                                    const extractedValue = extractMVUValue(ageValue);
-                                    console.log(`提取后的值:`, extractedValue);
-                                    
-                                    if (extractedValue !== null && extractedValue !== undefined) {
-                                        ageStructure[ageKey] = extractedValue;
-                                    }
-                                }
-                            }
                         } else {
-                            console.warn('stat_data 中没有 Territory 数据');
                             territoryData = convertMVUData(mvuData.stat_data, 'stat_data');
                         }
                     } else if (mvuData.Territory) {
                         // 直接处理Territory数据
-                        console.log('直接找到 Territory 数据');
                         territoryData = convertMVUData(mvuData.Territory, 'Territory');
                     } else {
-                        console.warn('MVU数据中没有找到领地数据，使用默认数据');
                         territoryData = getDefaultData();
                     }
                 } else {
-                    console.log('无法从MVU获取数据，使用缓存或默认数据');
                     const storedData = localStorage.getItem('territoryData');
                     if (storedData) {
                         territoryData = JSON.parse(storedData);
-                        console.log('使用localStorage缓存数据');
                     } else {
                         territoryData = getDefaultData();
-                        console.log('使用默认数据');
                     }
                 }
                 
                 // 验证数据
                 if (!territoryData || !territoryData.人口) {
-                    console.warn('领地数据不完整，使用默认数据');
                     territoryData = getDefaultData();
                 }
                 
-                console.log('最终领地数据:', territoryData);
-                
-                // 特别打印年龄结构用于调试
-                if (territoryData.人口 && territoryData.人口.年龄结构) {
-                    console.log('最终年龄结构数据:');
-                    for (const [key, value] of Object.entries(territoryData.人口.年龄结构)) {
-                        console.log(`  ${key}:`, value, '类型:', typeof value);
-                    }
+                // 添加示例角色数据（如果不存在）
+                if (!territoryData.角色) {
+                    territoryData.角色 = getExampleCharacters();
                 }
                 
                 lastUpdate = new Date();
                 document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
+                
+                // 更新领主名字
+                if (territoryData.Lord && territoryData.Lord.姓名) {
+                    document.getElementById('lord-name').textContent = extractMVUValue(territoryData.Lord.姓名) || '领主';
+                }
                 
                 updateUI();
                 localStorage.setItem('territoryData', JSON.stringify(territoryData));
@@ -973,255 +1371,626 @@
         function getDefaultData() {
             return {
                 基本信息: {
-                    名称: "北境边境领",
-                    面积: 85,
-                    地形: "丘陵与森林",
-                    发展阶段: "初建"
+                    名称: ["北境边境领", "领地名"],
+                    面积: [85, "平方里"],
+                    地形: ["丘陵与森林", "主要地形特征"],
+                    发展阶段: ["初建", "据点/领镇/领城/邦域/王领/帝都"]
                 },
                 人口: {
-                    总人口: 1250,
+                    总人口: [1250, "总人口数"],
                     种族构成: {
-                        人类: { 数量: 900, 地位: "主导", 特殊能力: "适应性强，学习能力快" },
-                        矮人: { 数量: 150, 地位: "平等", 特殊能力: "地下视觉，锻造与石工专精" },
-                        半精灵: { 数量: 100, 地位: "平等", 特殊能力: "自然亲和，弓箭与追踪专精" },
-                        哥布林: { 数量: 50, 地位: "奴隶", 特殊能力: "夜视，敏捷，小型工程" },
-                        兽人: { 数量: 30, 地位: "受限制", 特殊能力: "力量强大，耐力超常" }
+                        人类: {
+                            数量: [900, "人口数"],
+                            地位: ["主导", "主导种族，掌握政治经济权力"],
+                            特殊能力: ["适应性强，学习能力快", "能力描述"],
+                            忠诚度: {
+                                数值: [70, "对领主统治的忠诚度"],
+                                状态: ["忠诚", "叛离/抗拒/顺从/忠诚/狂热"]
+                            }
+                        },
+                        矮人: {
+                            数量: [150, "人口数"],
+                            地位: ["平等", "享有平等权利的手工业者"],
+                            特殊能力: ["地下视觉，锻造与石工专精", "矮人传统技艺"],
+                            忠诚度: {
+                                数值: [65, "对领主统治的忠诚度"],
+                                状态: ["顺从", "叛离/抗拒/顺从/忠诚/狂热"]
+                            }
+                        },
+                        半精灵: {
+                            数量: [100, "人口数"],
+                            地位: ["平等", "享有平等权利，但社会融合度较低"],
+                            特殊能力: ["自然亲和，弓箭与追踪专精", "精灵血统带来的天赋"],
+                            忠诚度: {
+                                数值: [65, "对领主统治的忠诚度"],
+                                状态: ["顺从", "叛离/抗拒/顺从/忠诚/狂热"]
+                            }
+                        },
+                        哥布林: {
+                            数量: [50, "人口数"],
+                            地位: ["奴隶", "战俘或奴役，无公民权利"],
+                            特殊能力: ["夜视，敏捷，小型工程", "适合地下和夜间工作"],
+                            忠诚度: {
+                                数值: [65, "对领主统治的忠诚度"],
+                                状态: ["顺从", "叛离/抗拒/顺从/忠诚/狂热"]
+                            }
+                        },
+                        兽人: {
+                            数量: [30, "人口数"],
+                            地位: ["受限制", "允许居住但限制活动，需特别许可"],
+                            特殊能力: ["力量强大，耐力超常", "适合重体力劳动和战斗"],
+                            忠诚度: {
+                                数值: [65, "对领主统治的忠诚度"],
+                                状态: ["顺从", "叛离/抗拒/顺从/忠诚/狂热"]
+                            }
+                        }
                     },
                     年龄结构: {
-                        儿童_0_14: 250,
-                        青年_15_35: 600,
-                        中年_36_60: 300,
-                        老年_60_: 100
+                        儿童_0_14: [250, "人数"],
+                        青年_15_35: [600, "人数"],
+                        中年_36_60: [300, "人数"],
+                        老年_60_: [100, "人数"]
                     },
                     职业分布: {
-                        农民: { 人数: 700, 月贡献: 15, 平均薪资: 2, 满意度: 65 },
-                        工匠: { 人数: 120, 月贡献: 25, 平均薪资: 5, 满意度: 70 },
-                        商人: { 人数: 60, 月贡献: 30, 平均薪资: 8, 满意度: 75 },
-                        官员: { 人数: 15, 月贡献: -10, 平均薪资: 10, 满意度: 80 },
-                        士兵: { 人数: 80, 月贡献: -20, 平均薪资: 6, 满意度: 70 },
-                        学者: { 人数: 10, 月贡献: 5, 平均薪资: 7, 满意度: 85 },
-                        无业: { 人数: 265, 月贡献: 0, 平均薪资: 0, 满意度: 40 }
+                        农民: {
+                            人数: [700, "农业人口"],
+                            月贡献: [15, "人均月农业产出价值"],
+                            平均薪资: [2, "金币/月"],
+                            满意度: [65, "0-100"]
+                        },
+                        工匠: {
+                            人数: [120, "手工业者"],
+                            月贡献: [25, "人均月手工业产值"],
+                            平均薪资: [5, "金币/月"],
+                            满意度: [70, "0-100"]
+                        },
+                        商人: {
+                            人数: [60, "商业人口"],
+                            月贡献: [30, "人均月商业交易额"],
+                            平均薪资: [8, "金币/月"],
+                            满意度: [75, "0-100"]
+                        },
+                        官员: {
+                            人数: [15, "行政管理人员"],
+                            月贡献: [-10, "人均月俸禄支出"],
+                            平均薪资: [10, "金币/月"],
+                            满意度: [80, "0-100"]
+                        },
+                        士兵: {
+                            人数: [80, "常备军"],
+                            月贡献: [-20, "人均月军饷支出"],
+                            平均薪资: [6, "金币/月"],
+                            满意度: [70, "0-100"]
+                        },
+                        学者: {
+                            人数: [10, "学者、教师等"],
+                            月贡献: [5, "人均月文化产值"],
+                            平均薪资: [7, "金币/月"],
+                            满意度: [85, "0-100"]
+                        },
+                        无业: {
+                            人数: [265, "无固定职业者"],
+                            月贡献: [0, "无经济贡献"],
+                            平均薪资: [0, "金币/月"],
+                            满意度: [40, "0-100"]
+                        }
                     },
                     满意度维度: {
-                        食物满意度: 70,
-                        住房满意度: 60,
-                        安全满意度: 65,
-                        娱乐满意度: 50,
-                        税收满意度: 55,
-                        工作满意度: 65,
-                        教育满意度: 40,
-                        医疗满意度: 45
+                        食物满意度: [70, "0-100"],
+                        住房满意度: [60, "0-100"],
+                        安全满意度: [65, "0-100"],
+                        娱乐满意度: [50, "0-100"],
+                        税收满意度: [55, "0-100"],
+                        工作满意度: [65, "0-100"],
+                        教育满意度: [40, "0-100"],
+                        医疗满意度: [45, "0-100"]
                     },
-                    人口增长率: 0.008
+                    人口增长率: [0.008, "每月自然增长率"]
                 },
                 经济: {
                     财政: {
-                        库存金币: 2500,
-                        月总收入: 1850,
-                        月总支出: 1670,
-                        月净收入: 180,
-                        收支状态: "📈盈余"
+                        库存金币: [2500, "当前国库资金"],
+                        领主资产_月收入: [0, "领主所有资产产生的月收入(自动计算)"],
+                        领主资产_月支出: [0, "领主所有资产的月支出(自动计算)"],
+                        私有资产_应税收入: [0, "私有资产产生的应税收入(自动计算)"],
+                        私有资产税率: [0.15, "对私有资产征收的税率(0-1)"],
+                        私有资产_税收: [0, "从私有资产征收的税收(自动计算)"],
+                        特殊收支: [0, "来自法令、事件等的特殊收支"],
+                        月总收入: [0, "月总收入 = 领主资产收入 + 私有资产税收 + 特殊收支(自动计算)"],
+                        月总支出: [0, "月总支出 = 领主资产支出 + 特殊支出(自动计算)"],
+                        月净收入: [0, "月净收入 = 总收入 - 总支出(自动计算)"],
+                        收支状态: ["", "📈盈余/📉亏损/⚖️平衡"]
                     },
                     公共税率: {
-                        农业税: 0.10,
-                        商业税: 0.15,
-                        工业税: 0.12,
-                        个人所得税: 0.05
+                        农业税: [0.10, "农业税率(0-1)"],
+                        商业税: [0.15, "商业税率(0-1)"],
+                        工业税: [0.12, "手工业税率(0-1)"],
+                        个人所得税: [0.05, "平民所得税率(0-1)"]
                     },
                     物价指数: {
-                        粮食单价: 0.4,
-                        木材单价: 1.8,
-                        石材单价: 2.5,
-                        铁矿单价: 3.0,
-                        武器单价: 15,
-                        工具单价: 8
+                        粮食单价: [0.4, "每担粮食价格(金币)"],
+                        木材单价: [1.8, "每方木材价格(金币)"],
+                        石材单价: [2.5, "每方石材价格(金币)"],
+                        铁矿单价: [3.0, "每斤铁矿石价格(金币)"],
+                        武器单价: [15, "每把基础武器价格(金币)"],
+                        工具单价: [8, "每件基础工具价格(金币)"]
                     }
                 },
                 仓库: {
                     res_food_grain: {
-                        名称: "粮食",
-                        当前储量: 6500,
-                        安全储量: 3750,
-                        单位: "担",
-                        市场价格: 0.4
+                        id: ["res_food_grain", "ID"],
+                        名称: ["粮食", "名"],
+                        类别: ["食物", "类"],
+                        当前储量: [6500, "量"],
+                        单位: ["担", "单位"],
+                        安全储量: [3750, "3个月口粮"],
+                        市场价格: [0.4, "金币/担"],
+                        描述: ["基础谷物，领地生存之本。", "述"]
                     },
                     res_material_wood: {
-                        名称: "木材",
-                        当前储量: 900,
-                        安全储量: 300,
-                        单位: "方",
-                        市场价格: 1.8
+                        id: ["res_material_wood", "ID"],
+                        名称: ["木材", "名"],
+                        类别: ["材料", "类"],
+                        当前储量: [900, "量"],
+                        单位: ["方", "单位"],
+                        安全储量: [300, "基础建设储备"],
+                        市场价格: [1.8, "金币/方"],
+                        描述: ["用于建筑、工具和燃料。", "述"]
                     },
                     res_material_stone: {
-                        名称: "石材",
-                        当前储量: 500,
-                        安全储量: 200,
-                        单位: "方",
-                        市场价格: 2.5
+                        id: ["res_material_stone", "ID"],
+                        名称: ["石材", "名"],
+                        类别: ["材料", "类"],
+                        当前储量: [500, "量"],
+                        单位: ["方", "单位"],
+                        安全储量: [200, "防御工事储备"],
+                        市场价格: [2.5, "金币/方"],
+                        描述: ["用于建筑和城墙。", "述"]
                     },
                     res_material_iron: {
-                        名称: "铁矿",
-                        当前储量: 300,
-                        安全储量: 100,
-                        单位: "斤",
-                        市场价格: 3.0
+                        id: ["res_material_iron", "ID"],
+                        名称: ["铁矿", "名"],
+                        类别: ["材料", "类"],
+                        当前储量: [300, "量"],
+                        单位: ["斤", "单位"],
+                        安全储量: [100, "武器装备储备"],
+                        市场价格: [3.0, "金币/斤"],
+                        描述: ["用于锻造武器和工具。", "述"]
+                    },
+                    item_weapon_spear: {
+                        id: ["item_weapon_spear", "ID"],
+                        名称: ["长矛", "名"],
+                        类别: ["武器", "类"],
+                        当前储量: [30, "量"],
+                        单位: ["把", "单位"],
+                        安全储量: [50, "基础武装储备"],
+                        市场价格: [12, "金币/把"],
+                        描述: ["标准步兵武器，易于生产。", "述"]
+                    },
+                    item_tool_hammer: {
+                        id: ["item_tool_hammer", "ID"],
+                        名称: ["铁锤", "名"],
+                        类别: ["工具", "类"],
+                        当前储量: [40, "量"],
+                        单位: ["把", "单位"],
+                        安全储量: [30, "基础工具储备"],
+                        市场价格: [8, "金币/把"],
+                        描述: ["基础工具，用于建设和维修。", "述"]
                     }
-                },
-                资源动态: {
-                    森林: {
-                        当前储量: 12000,
-                        每月开采量: 150
-                    },
-                    铁矿脉: {
-                        当前储量: 5000,
-                        每月开采量: 50
-                    },
-                    石矿: {
-                        当前储量: 8000,
-                        每月开采量: 40
-                    }
-                },
-                军事: {
-                    兵力: {
-                        常备军: 80,
-                        民兵: 200,
-                        精锐部队: 0
-                    },
-                    战力评级: {
-                        总评级: "D",
-                        领主战力: "B",
-                        军队战力: "E",
-                        防御评级: "D+"
-                    },
-                    装备状态: {
-                        装备完整率: 0.65,
-                        训练水平: 0.5,
-                        士气: 70
-                    },
-                    防御设施: {
-                        城墙完整度: 0.7,
-                        瞭望塔数量: 2,
-                        城门状态: "完好",
-                        护城河: "无"
-                    }
-                },
-                状态: {
-                    居民状态: {
-                        生活水平: "温饱",
-                        治安状况: 65,
-                        民心指数: 70,
-                        当前事件: "暂无",
-                        流行病风险: 0.1,
-                        犯罪率: 0.05
-                    },
-                    威胁状态: {
-                        威胁等级: "警戒",
-                        主要魔物: "哥布林团伙",
-                        预计下次袭击: "1-3个月内"
-                    }
-                },
-                环境: {
-                    季节影响: {
-                        农业产出修正: 1.2,
-                        商业活动修正: 1.0,
-                        军事行动修正: 0.9,
-                        资源采集修正: 1.1
-                    },
-                    天气状况: "晴朗",
-                    自然灾害风险: 0.1,
-                    温度: 15,
-                    降水: "适中"
                 },
                 建筑: {
                     building_blacksmith: {
-                        名称: "铁匠铺",
-                        类型: "生产",
-                        产权: "private",
-                        等级: 1,
-                        状态: "正常运营",
-                        岗位: {
-                            当前人数: 4,
-                            最大人数: 8,
-                            月薪: 4
-                        },
-                        财务: {
-                            计算_月收入: 120,
-                            计算_月支出: 46,
-                            计算_净收益: 74
-                        },
-                        特殊效果: "生产武器和工具，提升军队装备完整率。"
-                    }
-                },
-                科技: {
-                    tech_basic_agriculture: {
-                        名称: "基础农业技术",
-                        研发状态: "已研发",
-                        当前进度: 100,
-                        效果描述: "提高粮食产量和农业效率。",
-                        具体效果: {
-                            经济效果: {
-                                收入加成: 0.1,
-                                效率提升: 0.15,
-                                成本降低: 0.05
+                        id: ["building_blacksmith", "ID"],
+                        名称: ["铁锤与砧铁匠铺", "名"],
+                        类型: ["生产", "类"],
+                        产权: ["private", "私有"],
+                        位置: ["C4", "地图坐标：C4"],
+                        等级: [2, "级"],
+                        状态: ["正常运营", "态"],
+                        人员配置: {
+                            管理者: {
+                                当前人数: [1, "铁匠大师杜尔金"],
+                                最大人数: [1, ""],
+                                月薪: [20, "金币/月"]
                             },
-                            军事效果: {
-                                战力提升: 0,
-                                训练效率: 0,
-                                装备质量: 0
+                            工匠: {
+                                当前人数: [3, "熟练铁匠"],
+                                最大人数: [4, ""],
+                                月薪: [10, "金币/月"]
                             },
-                            社会效果: {
-                                民心影响: 5,
-                                治安影响: 2,
-                                人口影响: 0.01
+                            工人: {
+                                当前人数: [1, "助手"],
+                                最大人数: [2, ""],
+                                月薪: [5, "金币/月"]
+                            },
+                            学徒: {
+                                当前人数: [2, "学徒"],
+                                最大人数: [4, ""],
+                                月薪: [3, "金币/月"]
+                            },
+                            守卫: {
+                                当前人数: [0, "无"],
+                                最大人数: [0, ""],
+                                月薪: [6, "金币/月"]
+                            },
+                            总当前人数: [7, "1+3+1+2"],
+                            总最大人数: [11, "1+4+2+4"],
+                            总月薪: [61, "1×20 + 3×10 + 1×5 + 2×3"],
+                            空闲岗位: [4, "可再雇佣4人"]
+                        },
+                        经济模型: {
+                            通用财务: {
+                                维护费: [20, "每月基础维护费用"],
+                                月总支出: [81, "维护费20 + 人员总月薪61"]
+                            },
+                            生产效率: [1.0, "当前生产效率系数"],
+                            生产型: {
+                                适用: [true, "是生产型建筑"],
+                                原材料消耗: {
+                                    res_material_iron: [60, "每月消耗铁矿斤数"],
+                                    res_material_wood: [30, "每月消耗木材方数"]
+                                },
+                                产品产出: {
+                                    item_weapon_spear: [12, "每月生产长矛数量"],
+                                    item_tool_hammer: [25, "每月生产铁锤数量"]
+                                },
+                                原材料成本: [0, "待计算"],
+                                产品价值: [0, "待计算"],
+                                月毛收入: [0, "待计算"]
+                            },
+                            财务汇总: {
+                                月毛收入: [0, "待计算"],
+                                月总支出: [81, "继承"],
+                                月净收益: [0, "待计算"],
+                                收支状态: ["", "待计算"]
                             }
-                        }
-                    }
-                },
-                项目: {
-                    当前建设项目: "无",
-                    项目进度: 0,
-                    项目所需资源: {
-                        金币: 0,
-                        木材: 0,
-                        石材: 0,
-                        铁矿: 0
+                        },
+                        升级: {
+                            可升级: [true, "可升到3级"],
+                            当前状态: ["无", "无升级计划"],
+                            目标等级: [3, "计划升级到3级"],
+                            完成时间: ["", ""],
+                            需求: {
+                                金币: [500, "所需金币"],
+                                材料: {
+                                    木材: [50, "方"],
+                                    石材: [100, "方"],
+                                    铁矿: [80, "斤"]
+                                },
+                                时间: [30, "所需天数"]
+                            },
+                            效果: {
+                                等级提升至: [3, "升级后的等级"],
+                                人员上限增加: {
+                                    管理者: [0, "增加的管理者最大人数"],
+                                    工匠: [2, "增加的工匠最大人数"],
+                                    工人: [1, "增加的工人最大人数"],
+                                    学徒: [2, "增加的学徒最大人数"],
+                                    守卫: [0, "增加的守卫最大人数"]
+                                },
+                                经济效果: {
+                                    基础收入增加: [20, "金币"],
+                                    维护费增加: [10, "金币"],
+                                    生产效率提升: [0.15, "系数增加值"]
+                                },
+                                新功能解锁: ["可生产板甲和锁子甲", ""]
+                            },
+                            效果已应用: [false, "升级效果未应用"]
+                        },
+                        外观描述: ["石砌矮房，烟囱冒烟，锤击声不断", "述"],
+                        当前状况: ["订单充足，但铁锭供应不稳定", "况"],
+                        特殊事件: ["杜尔金请求稳定铁矿供应", "事件"]
+                    },
+                    building_market: {
+                        id: ["building_market", "ID"],
+                        名称: ["镇广场市集", "名"],
+                        类型: ["商业", "类"],
+                        产权: ["lord", "领主所有"],
+                        位置: ["B3", "地图坐标：B3"],
+                        等级: [2, "级"],
+                        状态: ["正常运营", "态"],
+                        人员配置: {
+                            管理者: {
+                                当前人数: [1, "市场管理员老汤姆"],
+                                最大人数: [1, ""],
+                                月薪: [12, "金币/月"]
+                            },
+                            工匠: {
+                                当前人数: [0, "无"],
+                                最大人数: [0, ""],
+                                月薪: [8, "金币/月"]
+                            },
+                            工人: {
+                                当前人数: [1, "清洁工"],
+                                最大人数: [2, ""],
+                                月薪: [4, "金币/月"]
+                            },
+                            学徒: {
+                                当前人数: [2, "市场助手"],
+                                最大人数: [4, ""],
+                                月薪: [2, "金币/月"]
+                            },
+                            守卫: {
+                                当前人数: [4, "市场守卫"],
+                                最大人数: [6, ""],
+                                月薪: [6, "金币/月"]
+                            },
+                            总当前人数: [8, "1+0+1+2+4"],
+                            总最大人数: [13, "1+0+2+4+6"],
+                            总月薪: [44, "1×12 + 1×4 + 2×2 + 4×6"],
+                            空闲岗位: [5, "可再雇佣5人"]
+                        },
+                        经济模型: {
+                            通用财务: {
+                                维护费: [15, "每月维护费"],
+                                月总支出: [59, "维护费15 + 人员总月薪44"]
+                            },
+                            生产效率: [1.0, "当前生产效率系数"],
+                            商业型: {
+                                适用: [true, "是商业型建筑"],
+                                交易类型: ["零售与服务", "类型"],
+                                月交易额: [600, "每月总交易额"],
+                                利润率: [0.25, "利润率"],
+                                月毛收入: [150, "自动计算：600×0.25"]
+                            },
+                            财务汇总: {
+                                月毛收入: [150, "继承"],
+                                月总支出: [59, "继承"],
+                                月净收益: [91, "自动计算"],
+                                收支状态: ["盈余", "状态"]
+                            }
+                        },
+                        升级: {
+                            可升级: [true, "可升到3级"],
+                            当前状态: ["无", "无升级计划"],
+                            目标等级: [3, "计划升级到3级"],
+                            完成时间: ["", ""],
+                            需求: {
+                                金币: [800, "所需金币"],
+                                材料: {
+                                    木材: [150, "方"],
+                                    石材: [100, "方"],
+                                    铁矿: [30, "斤"]
+                                },
+                                时间: [45, "所需天数"]
+                            },
+                            效果: {
+                                等级提升至: [3, "升级后的等级"],
+                                人员上限增加: {
+                                    管理者: [0, "增加的管理者最大人数"],
+                                    工匠: [5, "增加的工匠最大人数（商人摊位）"],
+                                    工人: [2, "增加的工人最大人数"],
+                                    学徒: [2, "增加的学徒最大人数"],
+                                    守卫: [2, "增加的守卫最大人数"]
+                                },
+                                经济效果: {
+                                    基础收入增加: [100, "金币"],
+                                    维护费增加: [20, "金币"],
+                                    生产效率提升: [0, "商业建筑无生产效率概念"]
+                                },
+                                新功能解锁: ["可举办月度集市，吸引远方商队", ""]
+                            },
+                            效果已应用: [false, "升级效果未应用"]
+                        },
+                        外观描述: ["鹅卵石广场，木制摊位，中央有老井", "述"],
+                        当前状况: ["周六集市热闹，平日冷清", "况"],
+                        特殊事件: ["传闻有违禁品交易", "事件"]
+                    },
+                    building_lord_hall: {
+                        id: ["building_lord_hall", "ID"],
+                        名称: ["灰石堡大厅", "名"],
+                        类型: ["行政", "类"],
+                        产权: ["lord", "领主所有"],
+                        位置: ["A1", "地图坐标：A1（城堡中心）"],
+                        等级: [3, "级"],
+                        状态: ["正常运营", "态"],
+                        人员配置: {
+                            管理者: {
+                                当前人数: [1, "管家阿尔弗雷德"],
+                                最大人数: [1, ""],
+                                月薪: [25, "金币/月"]
+                            },
+                            工匠: {
+                                当前人数: [4, "文书官"],
+                                最大人数: [6, ""],
+                                月薪: [12, "金币/月"]
+                            },
+                            工人: {
+                                当前人数: [12, "仆人"],
+                                最大人数: [15, ""],
+                                月薪: [5, "金币/月"]
+                            },
+                            学徒: {
+                                当前人数: [4, "侍从"],
+                                最大人数: [6, ""],
+                                月薪: [3, "金币/月"]
+                            },
+                            守卫: {
+                                当前人数: [8, "大厅守卫"],
+                                最大人数: [12, ""],
+                                月薪: [8, "金币/月"]
+                            },
+                            总当前人数: [29, "1+4+12+4+8"],
+                            总最大人数: [40, "1+6+15+6+12"],
+                            总月薪: [185, "1×25 + 4×12 + 12×5 + 4×3 + 8×8"],
+                            空闲岗位: [11, "可再雇佣11人"]
+                        },
+                        经济模型: {
+                            通用财务: {
+                                维护费: [100, "每月维护费"],
+                                月总支出: [285, "维护费100 + 人员总月薪185"]
+                            },
+                            生产效率: [1.0, "当前生产效率系数"],
+                            服务型: {
+                                适用: [true, "是服务型建筑"],
+                                服务类型: ["行政与防御", "类型"],
+                                月服务价值: [300, "提供的服务估值"],
+                                月毛收入: [0, "纯支出，无收入"]
+                            },
+                            财务汇总: {
+                                月毛收入: [0, "继承"],
+                                月总支出: [285, "继承"],
+                                月净收益: [-285, "自动计算"],
+                                收支状态: ["亏损", "但提供行政服务价值"]
+                            }
+                        },
+                        升级: {
+                            可升级: [true, "可扩建"],
+                            当前状态: ["无", "无升级计划"],
+                            目标等级: [4, "计划升级到4级"],
+                            完成时间: ["", ""],
+                            需求: {
+                                金币: [2000, "所需金币"],
+                                材料: {
+                                    木材: [300, "方"],
+                                    石材: [500, "方"],
+                                    铁矿: [100, "斤"]
+                                },
+                                时间: [90, "所需天数"]
+                            },
+                            效果: {
+                                等级提升至: [4, "升级后的等级"],
+                                人员上限增加: {
+                                    管理者: [0, "增加的管理者最大人数"],
+                                    工匠: [2, "增加的工匠最大人数（图书管理员等）"],
+                                    工人: [5, "增加的工人最大人数"],
+                                    学徒: [3, "增加的学徒最大人数"],
+                                    守卫: [4, "增加的守卫最大人数"]
+                                },
+                                经济效果: {
+                                    基础收入增加: [0, "金币"],
+                                    维护费增加: [50, "金币"],
+                                    生产效率提升: [0, "行政建筑无生产效率概念"]
+                                },
+                                新功能解锁: ["增加图书馆、宴会厅、强化城墙", ""]
+                            },
+                            效果已应用: [false, "升级效果未应用"]
+                        },
+                        外观描述: ["坚固石制大厅，先祖旗帜，领主座椅", "述"],
+                        当前状况: ["正常运转，处理领地事务", "况"],
+                        特殊事件: ["暂无", "事件"]
                     }
                 },
                 法令: {
                     decree_basic_tax: {
-                        名称: "基础税法",
-                        生效状态: true,
-                        生效时间: "第1年 1月",
+                        id: ["decree_basic_tax", "ID"],
+                        名称: ["基础税法", "名"],
+                        生效状态: [true, "是否生效"],
+                        生效时间: ["第1年 1月", "何时生效"],
+                        法令描述: ["领地基础税收制度，维持日常运转。", "法令内容和预期效果描述"],
                         经济效果: {
-                            税率修正: 0,
-                            专项税率: 0,
-                            固定收入: 0,
-                            固定支出: 0,
-                            效率加成: 0
+                            税率修正: [0, "对公共税率的全局修正(+/-百分比)"],
+                            专项税率: [0, "针对特定行业的税率(如酒类、奢侈品)"],
+                            固定收入: [0, "每月固定增加的收入(如贡金、补贴)"],
+                            固定支出: [0, "每月固定增加的支出(如津贴、年金)"],
+                            效率加成: [0, "对特定产业生产效率的加成"]
                         },
                         社会效果: {
-                            民心影响: 0,
-                            治安影响: 0,
-                            人口影响: 0
+                            民心影响: [0, "对民心指数的每月影响(+/-)"],
+                            治安影响: [0, "对治安状况的每月影响(+/-)"],
+                            人口影响: [0, "对人口增长率的修正(+/-)"]
                         }
                     }
                 },
-                System: {
-                    当前游戏时间: "第1年 1月",
-                    当前季节: "春季",
-                    上次结算时间: "第1年 1月",
-                    自动结算开关: false
+                Lord: {
+                    姓名: ["艾丹", "领主姓名"],
+                    性别: ["男", "男/女/其他"],
+                    年龄: [28, "领主年龄"],
+                    种族: ["人类", "领主种族"],
+                    职业: ["战士", "领主的战斗职业"],
+                    身高: [185, "厘米"],
+                    体重: [85, "公斤"],
+                    外貌: ["金发蓝眼，面容刚毅，右颊有一道细小的疤痕", "领主的外貌描述"],
+                    衣着: ["镶有家族徽记的皮质护甲，外罩深蓝色斗篷", "领主当前的衣着描述"],
+                    装备: ["精钢长剑，腰间佩戴匕首，背上有复合长弓", "领主当前的装备描述"],
+                    背景: ["北境边境领的年轻领主，继承了父亲的领地，决心保卫这片土地并使其繁荣。", "领主的背景故事"],
+                    称号: ["边境守护者", "领主的称号（初始为空，随剧情添加）"],
+                    性格: ["坚毅、正直、偶尔固执，对领民仁慈，对敌人严厉", "领主的性格特点"],
+                    所在地点: ["领主大厅", "领主当前所在位置"],
+                    肉棒: {
+                        长度: [18, "厘米"],
+                        外观: ["粗壮有力，青筋明显", "外观描述"],
+                        状态: ["正常", "当前状态描述"]
+                    },
+                    性经验: [12, "性经验次数"],
+                    子嗣: ["无", "子嗣描述"]
+                }
+            };
+        }
+        
+        // 获取示例角色（用于测试）
+        function getExampleCharacters() {
+            return {
+                character_001: {
+                    id: ["character_001", "角色ID"],
+                    姓名: ["艾莉丝", "角色姓名"],
+                    角色概览: {
+                        性别: ["女", "女"],
+                        年龄: [26, "年龄"],
+                        身份: ["铁匠铺管理者", "日常身份/职业，如：铁匠、商人、官员"],
+                        职业: ["工匠", "战斗职业，如：战士、法师、盗贼"],
+                        与领主关系: ["下属，忠诚的管理者", "与{{user}}的关系描述"],
+                        性格: ["严谨、细致、有责任心", "性格特点（不可变）"],
+                        好感度: [65, "对{{user}}的好感度0-100"],
+                        忠诚度: [70, "对{{user}}的忠诚度0-100"],
+                        情绪: ["专注", "当前情绪状态"],
+                        当前行为: ["监督铁匠铺生产", "当前正在做什么"],
+                        所在地点: ["铁匠铺", "当前所在位置"],
+                        最近互动: ["上周汇报铁匠铺运营情况", "最近与领主的互动记录"]
+                    },
+                    身体外貌: {
+                        外貌: ["栗色长发束成马尾，绿色眼眸，鼻梁高挺", "脸部和头发的详细描述"],
+                        身材: ["匀称结实，手臂肌肉线条明显", "身材体型描述"],
+                        身高: [168, "厘米"],
+                        体重: [58, "公斤"],
+                        上身衣着: ["皮质围裙，内穿亚麻衬衫", "当前上身穿着"],
+                        下身衣着: ["厚实长裤，牛皮靴", "当前下身穿着"],
+                        配饰: ["银质手镯，家族徽记", "佩戴的饰品、首饰等"],
+                        特殊标记: ["左手腕有烫伤疤痕", "纹身、伤疤等特殊标记"]
+                    },
+                    能力五维: {
+                        军事: [30, "军事指挥和战斗能力0-100"],
+                        管理: [65, "行政管理和组织能力0-100"],
+                        外交: [40, "外交谈判和社交能力0-100"],
+                        谋略: [55, "谋略策划和智慧0-100"],
+                        学识: [45, "知识和学习能力0-100"],
+                        勇武: [35, "个人战斗勇猛程度0-100"]
+                    }
                 },
-                Character: {
-                    领主: {
-                        姓名: "艾丹",
-                        称号: "边境守护者",
-                        健康状态: "良好",
-                        个人战力: "B",
-                        管理能力: 65,
-                        军事能力: 70,
-                        外交能力: 55,
-                        知识水平: 60
+                character_002: {
+                    id: ["character_002", "角色ID"],
+                    姓名: ["杜尔金", "角色姓名"],
+                    角色概览: {
+                        性别: ["男", "男"],
+                        年龄: [52, "年龄"],
+                        身份: ["铁匠大师", "日常身份/职业，如：铁匠、商人、官员"],
+                        职业: ["工匠", "战斗职业，如：战士、法师、盗贼"],
+                        与领主关系: ["老臣，技术顾问", "与{{user}}的关系描述"],
+                        性格: ["固执但经验丰富，忠于职守", "性格特点（不可变）"],
+                        好感度: [70, "对{{user}}的好感度0-100"],
+                        忠诚度: [85, "对{{user}}的忠诚度0-100"],
+                        情绪: ["满意", "当前情绪状态"],
+                        当前行为: ["锻造武器", "当前正在做什么"],
+                        所在地点: ["铁匠铺锻造间", "当前所在位置"],
+                        最近互动: ["请求增加铁矿供应", "最近与领主的互动记录"]
+                    },
+                    身体外貌: {
+                        外貌: ["光头，浓密灰色胡须，棕色眼睛深邃", "脸部和头发的详细描述"],
+                        身材: ["矮壮，肩膀宽厚", "身材体型描述"],
+                        身高: [142, "厘米"],
+                        体重: [65, "公斤"],
+                        上身衣着: ["无袖皮甲，露出肌肉发达的手臂", "当前上身穿着"],
+                        下身衣着: ["厚帆布裤，铁头靴", "当前下身穿着"],
+                        配饰: ["铜质耳环，皮质工具腰带", "佩戴的饰品、首饰等"],
+                        特殊标记: ["双臂布满烫伤和刀疤", "纹身、伤疤等特殊标记"]
+                    },
+                    能力五维: {
+                        军事: [40, "军事指挥和战斗能力0-100"],
+                        管理: [60, "行政管理和组织能力0-100"],
+                        外交: [30, "外交谈判和社交能力0-100"],
+                        谋略: [50, "谋略策划和智慧0-100"],
+                        学识: [70, "知识和学习能力0-100"],
+                        勇武: [55, "个人战斗勇猛程度0-100"]
                     }
                 }
             };
@@ -1241,14 +2010,37 @@
             }
         }
         
+        // 安全获取数字
+        function safeNumber(value, defaultValue = 0) {
+            if (value === undefined || value === null) {
+                return defaultValue;
+            }
+            
+            const extracted = extractMVUValue(value);
+            const num = Number(extracted);
+            
+            if (isNaN(num)) {
+                return defaultValue;
+            }
+            
+            return num;
+        }
+        
+        // 安全获取字符串
+        function safeString(value, defaultValue = '') {
+            if (value === undefined || value === null) {
+                return defaultValue;
+            }
+            
+            const extracted = extractMVUValue(value);
+            return String(extracted);
+        }
+        
         // 更新UI
         function updateUI() {
             if (!territoryData) {
-                console.warn('没有数据可更新');
                 return;
             }
-            
-            console.log('更新UI，当前数据:', territoryData);
             
             updateQuickStats();
             updateBasicInfo();
@@ -1257,79 +2049,23 @@
             updateThreatOverview();
             updateResourceWarnings();
             
-            // 强制刷新当前打开的选项卡内容
-            refreshCurrentTab();
-            
-            // 如果需要，可以根据当前激活的选项卡更新内容（保持原有逻辑）
+            // 更新当前选项卡内容
             const activeTab = document.querySelector('.tab-btn.active');
             if (activeTab) {
-                const tabName = activeTab.textContent.trim();
-                // 确保选项卡内容已加载
-                switch(tabName) {
-                    case '人口':
-                        loadTabData('population');
-                        break;
-                    case '经济':
-                        loadTabData('economy');
-                        break;
-                    case '资源':
-                        loadTabData('resources');
-                        break;
-                    case '军事':
-                        loadTabData('military');
-                        break;
-                    case '建筑':
-                        loadTabData('buildings');
-                        break;
-                    case '科技':
-                        loadTabData('technology');
-                        break;
-                    case '政务':
-                        loadTabData('affairs');
-                        break;
-                    case '系统':
-                        loadTabData('system');
-                        break;
+                const tabText = activeTab.textContent.trim();
+                switch(tabText) {
+                    case '概览': break; // 已经更新
+                    case '经济': loadEconomyDetails(); break;
+                    case '人口': loadPopulationDetails(); break;
+                    case '军事': loadMilitaryDetails(); break;
+                    case '建筑': loadBuildingsGrid(); break;
+                    case '资源': loadResourcesDetails(); break;
+                    case '科技': loadTechnologyDetails(); break;
+                    case '法令': loadDecreesGrid(); break;
+                    case '角色': loadCharactersGrid(); break;
+                    case '系统': loadSystemDetails(); break;
                 }
             }
-        }
-        
-        // 刷新当前打开的选项卡
-        function refreshCurrentTab() {
-            // 检查所有可见的选项卡内容，并重新加载它们
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                if (tab.style.display !== 'none' && tab.id !== 'tab-overview') {
-                    // 根据选项卡ID确定要加载的内容
-                    const tabId = tab.id;
-                    
-                    switch(tabId) {
-                        case 'tab-population':
-                            loadPopulationDetails();
-                            break;
-                        case 'tab-economy':
-                            loadEconomyDetails();
-                            break;
-                        case 'tab-resources':
-                            loadResourcesDetails();
-                            break;
-                        case 'tab-military':
-                            loadMilitaryDetails();
-                            break;
-                        case 'tab-buildings':
-                            loadBuildingsDetails();
-                            break;
-                        case 'tab-technology':
-                            loadTechnologyDetails();
-                            break;
-                        case 'tab-affairs':
-                            loadAffairsDetails();
-                            break;
-                        case 'tab-system':
-                            loadSystemDetails();
-                            break;
-                    }
-                }
-            });
         }
         
         // 更新快速状态
@@ -1343,7 +2079,6 @@
             const residents = territoryData.状态?.居民状态 || {};
             const threat = territoryData.状态?.威胁状态 || {};
             
-            // 安全获取数据，防止NaN
             const totalPopulation = safeNumber(population.总人口, 1250);
             const treasury = safeNumber(finance.库存金币, 2500);
             const netIncome = safeNumber(finance.月净收入, 180);
@@ -1401,40 +2136,6 @@
             container.innerHTML = html;
         }
         
-        // 安全获取数字 - 统一使用extractMVUValue
-        function safeNumber(value, defaultValue = 0) {
-            if (value === undefined || value === null) {
-                return defaultValue;
-            }
-            
-            // 使用统一的提取函数
-            const extracted = extractMVUValue(value);
-            
-            // 转换为数字
-            const num = Number(extracted);
-            
-            // 检查是否为有效数字
-            if (isNaN(num)) {
-                console.warn('无法转换为数字的值:', extracted, '原始值:', value, '使用默认值:', defaultValue);
-                return defaultValue;
-            }
-            
-            return num;
-        }
-        
-        // 安全获取字符串
-        function safeString(value, defaultValue = '') {
-            if (value === undefined || value === null) {
-                return defaultValue;
-            }
-            
-            // 使用统一的提取函数
-            const extracted = extractMVUValue(value);
-            
-            // 转换为字符串
-            return String(extracted);
-        }
-        
         // 更新基础信息
         function updateBasicInfo() {
             const container = document.getElementById('basic-info');
@@ -1473,19 +2174,32 @@
             const finance = territoryData.经济?.财政 || {};
             const taxes = territoryData.经济?.公共税率 || {};
             
-            const income = safeNumber(finance.月总收入, 1850);
-            const expense = safeNumber(finance.月总支出, 1670);
-            const net = safeNumber(finance.月净收入, 180);
-            const balanceStatus = safeString(finance.收支状态, '📈盈余');
+            // 计算总收入（使用新的收入结构）
+            const lordIncome = safeNumber(finance.领主资产_月收入, 0);
+            const privateTax = safeNumber(finance.私有资产_税收, 0);
+            const specialIncome = safeNumber(finance.特殊收支, 0);
+            const totalIncome = safeNumber(finance.月总收入, lordIncome + privateTax + specialIncome);
             
-            const incomeColor = income >= expense ? '#28a745' : '#dc3545';
+            const expense = safeNumber(finance.月总支出, 1670);
+            const net = safeNumber(finance.月净收入, totalIncome - expense);
+            const balanceStatus = safeString(finance.收支状态, net >= 0 ? '📈盈余' : '📉亏损');
+            
+            const incomeColor = totalIncome >= expense ? '#28a745' : '#dc3545';
             const netColor = net >= 0 ? '#28a745' : '#dc3545';
             
             let html = `
                 <table class="data-table">
                     <tr>
                         <td style="width: 100px;">月总收入</td>
-                        <td style="color: ${incomeColor}; font-weight: bold;">${formatCurrency(income)}</td>
+                        <td style="color: ${incomeColor}; font-weight: bold;">${formatCurrency(totalIncome)}</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 100px;">收入构成</td>
+                        <td style="font-size: 11px;">
+                            领主资产: ${formatCurrency(lordIncome)} | 
+                            私有税收: ${formatCurrency(privateTax)} | 
+                            特殊收支: ${formatCurrency(specialIncome, true)}
+                        </td>
                     </tr>
                     <tr>
                         <td>月总支出</td>
@@ -1525,11 +2239,12 @@
             // 计算种族分布
             let raceHtml = '<div style="margin-top: 10px;">';
             Object.entries(races).forEach(([name, data]) => {
-                // 确保data是对象
                 if (typeof data === 'object' && data !== null) {
                     const count = safeNumber(data.数量, 0);
                     const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
                     const status = safeString(data.地位, '');
+                    const loyalty = data.忠诚度 ? safeNumber(data.忠诚度.数值, 65) : 65;
+                    const loyaltyStatus = data.忠诚度 ? safeString(data.忠诚度.状态, '顺从') : '顺从';
                     
                     raceHtml += `
                         <div style="margin-bottom: 5px;">
@@ -1540,7 +2255,10 @@
                             <div class="progress">
                                 <div class="progress-bar" style="width: ${percentage}%"></div>
                             </div>
-                            <div style="font-size: 11px; color: #4A3728;">地位: ${status}</div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #4A3728;">
+                                <span>地位: ${status}</span>
+                                <span>忠诚: ${loyalty} (${loyaltyStatus})</span>
+                            </div>
                         </div>
                     `;
                 }
@@ -1586,8 +2304,8 @@
                         <td>${safeString(threat.主要魔物, '哥布林团伙')}</td>
                     </tr>
                     <tr>
-                        <td>预估下次袭击</td>
-                        <td>${safeString(threat.预计下次袭击, '1-3个月内')}</td>
+                        <td>威胁方向</td>
+                        <td>${safeString(threat.威胁方向, '北面森林')}</td>
                     </tr>
                     <tr>
                         <td>生活水平</td>
@@ -1631,15 +2349,17 @@
             let warnings = [];
             
             Object.values(warehouse).forEach(item => {
-                const current = safeNumber(item.当前储量, 0);
-                const safe = safeNumber(item.安全储量, 0);
-                if (current < safe) {
-                    warnings.push({
-                        name: safeString(item.名称, '未知'),
-                        current: current,
-                        safe: safe,
-                        unit: safeString(item.单位, '')
-                    });
+                if (typeof item === 'object' && item !== null) {
+                    const current = safeNumber(item.当前储量, 0);
+                    const safe = safeNumber(item.安全储量, 0);
+                    if (current < safe) {
+                        warnings.push({
+                            name: safeString(item.名称, '未知'),
+                            current: current,
+                            safe: safe,
+                            unit: safeString(item.单位, '')
+                        });
+                    }
                 }
             });
             
@@ -1656,103 +2376,261 @@
             }
         }
         
-        // 切换章节显示/隐藏
-        function toggleSection(header) {
-            const content = header.nextElementSibling;
-            const toggle = header.querySelector('.section-toggle');
+        // 加载建筑网格
+        function loadBuildingsGrid() {
+            const container = document.getElementById('buildings-content');
+            if (!container) return;
             
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                toggle.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                toggle.textContent = '▶';
+            const buildings = territoryData.建筑 || {};
+            
+            if (Object.keys(buildings).length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无建筑数据</div>';
+                return;
             }
             
-            adjustIframeHeight();
-        }
-        
-        // 切换选项卡
-        function switchTab(tabName) {
-            // 隐藏所有选项卡
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
+            // 按类型分类建筑
+            const buildingsByType = {};
+            
+            Object.entries(buildings).forEach(([key, building]) => {
+                if (typeof building === 'object' && building !== null) {
+                    const type = safeString(building.类型, '其他');
+                    if (!buildingsByType[type]) {
+                        buildingsByType[type] = [];
+                    }
+                    buildingsByType[type].push({ key, building });
+                }
             });
             
-            // 移除所有活动状态
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
+            let html = '';
+            
+            // 定义类型图标和显示顺序
+            const typeOrder = ['生产', '商业', '行政', '军事', '居住', '农业', '特殊'];
+            const typeIcons = {
+                '生产': '🏭',
+                '商业': '🏪',
+                '行政': '🏛️',
+                '军事': '⚔️',
+                '居住': '🏠',
+                '农业': '🌾',
+                '特殊': '✨',
+                '其他': '🏢'
+            };
+            
+            // 按顺序显示各类建筑
+            typeOrder.forEach(type => {
+                if (buildingsByType[type] && buildingsByType[type].length > 0) {
+                    html += `<div class="building-category">`;
+                    html += `<div class="category-title">${typeIcons[type] || '🏢'} ${type}建筑 (${buildingsByType[type].length})</div>`;
+                    html += `<div class="building-grid">`;
+                    
+                    buildingsByType[type].forEach(({ key, building }) => {
+                        const name = safeString(building.名称, '未知建筑');
+                        const location = safeString(building.位置, '');
+                        const level = safeNumber(building.等级, 1);
+                        const status = safeString(building.状态, '未知');
+                        const finance = building.经济模型?.财务汇总 || {};
+                        const netProfit = safeNumber(finance.月净收益, 0);
+                        
+                        // 确定图标
+                        let emoji = typeIcons[type] || '🏢';
+                        if (type === '生产' && name.includes('铁匠')) emoji = '⚒️';
+                        if (type === '生产' && name.includes('伐木')) emoji = '🪓';
+                        if (type === '生产' && name.includes('采石')) emoji = '⛏️';
+                        
+                        // 确定利润颜色
+                        let profitClass = 'profit-neutral';
+                        if (netProfit > 0) profitClass = 'profit-positive';
+                        if (netProfit < 0) profitClass = 'profit-negative';
+                        
+                        // 格式化利润
+                        let profitText = '';
+                        if (netProfit > 0) profitText = `+${formatCurrency(netProfit, false)}`;
+                        else if (netProfit < 0) profitText = `${formatCurrency(netProfit, true)}`;
+                        else profitText = '收支平衡';
+                        
+                        html += `
+                            <div class="building-card" onclick="openBuildingModal('${key}')">
+                                <div class="building-emoji">${emoji}</div>
+                                <div class="building-name">${name}</div>
+                                ${location ? `<div class="building-location">位置: ${location}</div>` : ''}
+                                <div class="building-status">等级: ${level} | ${status}</div>
+                                <div class="profit-indicator ${profitClass}">${profitText}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div>`;
+                }
             });
             
-            // 显示目标选项卡
-            const targetTab = document.getElementById(`tab-${tabName}`);
-            if (targetTab) {
-                targetTab.style.display = 'block';
-            }
+            // 显示未分类的建筑
+            Object.keys(buildingsByType).forEach(type => {
+                if (!typeOrder.includes(type) && type !== '其他') {
+                    if (!buildingsByType[type]) return;
+                    
+                    html += `<div class="building-category">`;
+                    html += `<div class="category-title">${typeIcons[type] || '🏢'} ${type}建筑 (${buildingsByType[type].length})</div>`;
+                    html += `<div class="building-grid">`;
+                    
+                    buildingsByType[type].forEach(({ key, building }) => {
+                        const name = safeString(building.名称, '未知建筑');
+                        const location = safeString(building.位置, '');
+                        const level = safeNumber(building.等级, 1);
+                        const status = safeString(building.状态, '未知');
+                        const finance = building.经济模型?.财务汇总 || {};
+                        const netProfit = safeNumber(finance.月净收益, 0);
+                        
+                        let profitClass = 'profit-neutral';
+                        if (netProfit > 0) profitClass = 'profit-positive';
+                        if (netProfit < 0) profitClass = 'profit-negative';
+                        
+                        let profitText = '';
+                        if (netProfit > 0) profitText = `+${formatCurrency(netProfit, false)}`;
+                        else if (netProfit < 0) profitText = `${formatCurrency(netProfit, true)}`;
+                        else profitText = '收支平衡';
+                        
+                        html += `
+                            <div class="building-card" onclick="openBuildingModal('${key}')">
+                                <div class="building-emoji">${typeIcons[type] || '🏢'}</div>
+                                <div class="building-name">${name}</div>
+                                ${location ? `<div class="building-location">位置: ${location}</div>` : ''}
+                                <div class="building-status">等级: ${level} | ${status}</div>
+                                <div class="profit-indicator ${profitClass}">${profitText}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+            });
             
-            // 设置活动状态
-            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-                btn.textContent.trim().toLowerCase().includes(tabName)
-            );
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
-            
-            // 根据需要加载选项卡数据
-            loadTabData(tabName);
-            
-            adjustIframeHeight();
+            container.innerHTML = html;
         }
         
-        // 加载选项卡数据
-        function loadTabData(tabName) {
-            if (!territoryData) return;
+        // 加载角色网格
+        function loadCharactersGrid() {
+            const container = document.getElementById('characters-content');
+            if (!container) return;
             
-            console.log(`加载选项卡数据: ${tabName}`);
+            const characters = territoryData.角色 || {};
             
-            switch(tabName) {
-                case 'overview':
-                    // 概览选项卡已经在updateUI中更新
-                    break;
-                case 'population':
-                    loadPopulationDetails();
-                    break;
-                case 'economy':
-                    loadEconomyDetails();
-                    break;
-                case 'resources':
-                    loadResourcesDetails();
-                    break;
-                case 'military':
-                    loadMilitaryDetails();
-                    break;
-                case 'buildings':
-                    loadBuildingsDetails();
-                    break;
-                case 'technology':
-                    loadTechnologyDetails();
-                    break;
-                case 'affairs':
-                    loadAffairsDetails();
-                    break;
-                case 'system':
-                    loadSystemDetails();
-                    break;
+            if (Object.keys(characters).length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无角色数据</div>';
+                return;
             }
+            
+            let html = '<div class="character-grid">';
+            
+            Object.entries(characters).forEach(([key, character]) => {
+                if (typeof character === 'object' && character !== null) {
+                    const overview = character.角色概览 || {};
+                    const name = safeString(character.姓名, '未知角色');
+                    const gender = safeString(overview.性别, '');
+                    const identity = safeString(overview.身份, '');
+                    const location = safeString(overview.所在地点, '未知');
+                    const love = safeNumber(overview.好感度, 0);
+                    const loyalty = safeNumber(overview.忠诚度, 0);
+                    
+                    // 确定头像
+                    let avatar = '👤';
+                    if (gender === '女') avatar = '👩';
+                    if (gender === '男') avatar = '👨';
+                    if (identity.includes('铁匠')) avatar = '⚒️';
+                    if (identity.includes('战士')) avatar = '🛡️';
+                    if (identity.includes('商人')) avatar = '💰';
+                    if (identity.includes('官员')) avatar = '📋';
+                    
+                    html += `
+                        <div class="character-card" onclick="openCharacterModal('${key}')">
+                            <div class="character-avatar">${avatar}</div>
+                            <div class="character-info">
+                                <div class="character-name">${name}</div>
+                                <div class="character-title">${identity}</div>
+                                <div class="character-location">📍 ${location}</div>
+                                <div class="character-stats">
+                                    <div class="stat-love">
+                                        <span style="color: #e83e8c;">❤️</span>
+                                        <span>${love}</span>
+                                    </div>
+                                    <div class="stat-loyalty">
+                                        <span style="color: #ffc107;">⭐</span>
+                                        <span>${loyalty}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
         
-        // 加载人口详情 - 修复年龄结构显示问题
+        // 加载法令网格
+        function loadDecreesGrid() {
+            const container = document.getElementById('decrees-content');
+            if (!container) return;
+            
+            const decrees = territoryData.法令 || {};
+            
+            if (Object.keys(decrees).length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无法令数据</div>';
+                return;
+            }
+            
+            let html = '<div class="decree-grid">';
+            
+            Object.entries(decrees).forEach(([key, decree]) => {
+                if (typeof decree === 'object' && decree !== null) {
+                    const name = safeString(decree.名称, '未知法令');
+                    const active = decree.生效状态 === true;
+                    const activeTime = safeString(decree.生效时间, '未知');
+                    const description = safeString(decree.法令描述, '');
+                    const economicEffects = decree.经济效果 || {};
+                    const socialEffects = decree.社会效果 || {};
+                    
+                    html += `
+                        <div class="decree-card" onclick="openDecreeModal('${key}')">
+                            <div class="decree-header">
+                                <div class="decree-name">${name}</div>
+                                <div class="decree-status ${active ? 'status-active' : ''}">
+                                    ${active ? '生效中' : '已失效'}
+                                </div>
+                            </div>
+                            <div class="decree-time">生效时间: ${activeTime}</div>
+                            <div class="decree-effects">
+                                <div class="effect-economy">
+                                    <div class="effect-title">经济效果</div>
+                                    ${economicEffects.税率修正 ? `<div>税率修正: ${economicEffects.税率修正 >= 0 ? '+' : ''}${(economicEffects.税率修正 * 100).toFixed(1)}%</div>` : ''}
+                                    ${economicEffects.固定收入 ? `<div>固定收入: ${formatCurrency(economicEffects.固定收入)}</div>` : ''}
+                                    ${economicEffects.效率加成 ? `<div>效率加成: +${(economicEffects.效率加成 * 100).toFixed(1)}%</div>` : ''}
+                                    ${!economicEffects.税率修正 && !economicEffects.固定收入 && !economicEffects.效率加成 ? '<div>无明显效果</div>' : ''}
+                                </div>
+                                <div class="effect-social">
+                                    <div class="effect-title">社会效果</div>
+                                    ${socialEffects.民心影响 ? `<div>民心影响: ${socialEffects.民心影响 >= 0 ? '+' : ''}${socialEffects.民心影响}</div>` : ''}
+                                    ${socialEffects.治安影响 ? `<div>治安影响: ${socialEffects.治安影响 >= 0 ? '+' : ''}${socialEffects.治安影响}</div>` : ''}
+                                    ${socialEffects.人口影响 ? `<div>人口影响: ${socialEffects.人口影响 >= 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%</div>` : ''}
+                                    ${!socialEffects.民心影响 && !socialEffects.治安影响 && !socialEffects.人口影响 ? '<div>无明显效果</div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // 加载人口详情
         function loadPopulationDetails() {
-            console.log('加载人口详情，检查年龄结构数据...');
-            
             // 年龄结构
             const ageContainer = document.getElementById('age-structure');
             if (ageContainer) {
                 const ageStructure = territoryData.人口?.年龄结构 || {};
                 const total = safeNumber(territoryData.人口?.总人口, 1250);
-                
-                console.log('年龄结构原始数据:', ageStructure);
-                console.log('总人口:', total);
                 
                 let html = `
                     <tr>
@@ -1770,47 +2648,13 @@
                     { key: '老年_60_', label: '老年 (60岁以上)', desc: '需要供养的人口' }
                 ];
                 
-                // 如果年龄结构是空的，尝试其他可能的键名
-                let actualAgeStructure = ageStructure;
-                if (Object.keys(ageStructure).length === 0) {
-                    console.log('年龄结构为空，尝试查找其他可能的键名...');
-                    
-                    // 尝试常见的年龄结构键名
-                    const possibleKeys = [
-                        '儿童0-14', '儿童_0_14', '儿童', 'child_0_14',
-                        '青年15-35', '青年_15_35', '青年', 'youth_15_35',
-                        '中年36-60', '中年_36_60', '中年', 'adult_36_60',
-                        '老年60+', '老年_60_', '老年', 'elder_60'
-                    ];
-                    
-                    // 检查是否有这些键名在人口数据中
-                    for (const key of possibleKeys) {
-                        if (territoryData.人口 && territoryData.人口[key] !== undefined) {
-                            console.log(`找到可能的年龄键: ${key} =`, territoryData.人口[key]);
-                            // 这里可以尝试构建年龄结构对象
-                        }
-                    }
-                }
-                
                 ageGroups.forEach(group => {
-                    // 尝试多种可能的键名
                     let count = 0;
-                    
-                    // 主要键名
                     if (ageStructure[group.key] !== undefined) {
                         count = safeNumber(ageStructure[group.key], 0);
                     }
-                    // 备用键名（不带下划线的版本）
-                    else {
-                        const altKey = group.key.replace('_', '');
-                        if (ageStructure[altKey] !== undefined) {
-                            count = safeNumber(ageStructure[altKey], 0);
-                        }
-                    }
                     
                     const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-                    
-                    console.log(`年龄组 ${group.label}: 值 = ${count}, 占比 = ${percentage}%`);
                     
                     html += `
                         <tr>
@@ -1825,7 +2669,7 @@
                 ageContainer.innerHTML = html;
             }
             
-            // 种族详情
+            // 种族详情 - 更新以包含忠诚度
             const raceContainer = document.getElementById('race-details');
             if (raceContainer) {
                 const races = territoryData.人口?.种族构成 || {};
@@ -1837,6 +2681,7 @@
                         <th>数量</th>
                         <th>占比</th>
                         <th>地位</th>
+                        <th>忠诚度</th>
                         <th>特殊能力</th>
                     </tr>
                 `;
@@ -1847,6 +2692,8 @@
                         const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
                         const status = safeString(data.地位, '');
                         const ability = safeString(data.特殊能力, '');
+                        const loyalty = data.忠诚度 ? safeNumber(data.忠诚度.数值, 65) : 65;
+                        const loyaltyStatus = data.忠诚度 ? safeString(data.忠诚度.状态, '顺从') : '顺从';
                         
                         let statusClass = 'tag';
                         switch(status) {
@@ -1857,12 +2704,18 @@
                             default: statusClass += ' tag-warning';
                         }
                         
+                        let loyaltyClass = 'tag';
+                        if (loyalty >= 80) loyaltyClass += ' tag-success';
+                        else if (loyalty >= 60) loyaltyClass += ' tag-warning';
+                        else loyaltyClass += ' tag-danger';
+                        
                         html += `
                             <tr>
                                 <td>${name}</td>
                                 <td>${formatNumber(count)}人</td>
                                 <td>${percentage}%</td>
                                 <td><span class="${statusClass}">${status}</span></td>
+                                <td><span class="${loyaltyClass}">${loyalty} (${loyaltyStatus})</span></td>
                                 <td style="font-size: 11px;">${ability}</td>
                             </tr>
                         `;
@@ -1973,16 +2826,23 @@
         
         // 加载经济详情
         function loadEconomyDetails() {
-            // 财政详情
+            // 财政详情 - 更新以反映新的收入结构
             const financeContainer = document.getElementById('finance-details');
             if (financeContainer) {
                 const finance = territoryData.经济?.财政 || {};
                 
-                const income = safeNumber(finance.月总收入, 1850);
-                const expense = safeNumber(finance.月总支出, 1670);
-                const net = safeNumber(finance.月净收入, 180);
+                const lordIncome = safeNumber(finance.领主资产_月收入, 0);
+                const lordExpense = safeNumber(finance.领主资产_月支出, 0);
+                const privateTaxable = safeNumber(finance.私有资产_应税收入, 0);
+                const privateTaxRate = safeNumber(finance.私有资产税率, 0.15);
+                const privateTax = safeNumber(finance.私有资产_税收, privateTaxable * privateTaxRate);
+                const specialIncome = safeNumber(finance.特殊收支, 0);
+                
+                const totalIncome = safeNumber(finance.月总收入, lordIncome + privateTax + specialIncome);
+                const expense = safeNumber(finance.月总支出, lordExpense);
+                const net = safeNumber(finance.月净收入, totalIncome - expense);
                 const treasury = safeNumber(finance.库存金币, 2500);
-                const balanceStatus = safeString(finance.收支状态, '📈盈余');
+                const balanceStatus = safeString(finance.收支状态, net >= 0 ? '📈盈余' : '📉亏损');
                 
                 const netColor = net >= 0 ? '#28a745' : '#dc3545';
                 const balanceColor = balanceStatus.includes('盈余') ? '#28a745' : 
@@ -1994,8 +2854,23 @@
                         <td style="font-weight: bold; color: #ffc107;">${formatCurrency(treasury)}</td>
                     </tr>
                     <tr>
+                        <td colspan="2" style="background: #f8f9fa; font-weight: bold;">收入构成</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 20px;">领主资产收入</td>
+                        <td style="color: #28a745;">${formatCurrency(lordIncome)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 20px;">私有资产税收</td>
+                        <td style="color: #28a745;">${formatCurrency(privateTax)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 20px;">特殊收支</td>
+                        <td style="color: ${specialIncome >= 0 ? '#28a745' : '#dc3545'};">${formatCurrency(specialIncome, true)}</td>
+                    </tr>
+                    <tr>
                         <td>月总收入</td>
-                        <td style="color: #28a745;">${formatCurrency(income)}</td>
+                        <td style="color: #28a745; font-weight: bold;">${formatCurrency(totalIncome)}</td>
                     </tr>
                     <tr>
                         <td>月总支出</td>
@@ -2018,17 +2893,35 @@
             const taxContainer = document.getElementById('tax-details');
             if (taxContainer) {
                 const taxes = territoryData.经济?.公共税率 || {};
+                const finance = territoryData.经济?.财政 || {};
+                const privateTaxRate = safeNumber(finance.私有资产税率, 0.15);
                 
-                let html = '';
-                Object.entries(taxes).forEach(([name, value]) => {
-                    const rate = safeNumber(value, 0);
-                    html += `
-                        <tr>
-                            <td>${name}</td>
-                            <td>${(rate * 100).toFixed(1)}%</td>
-                        </tr>
-                    `;
-                });
+                let html = `
+                    <tr>
+                        <th>税种</th>
+                        <th>税率</th>
+                    </tr>
+                    <tr>
+                        <td>农业税</td>
+                        <td>${(safeNumber(taxes.农业税, 0.10) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr>
+                        <td>商业税</td>
+                        <td>${(safeNumber(taxes.商业税, 0.15) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr>
+                        <td>工业税</td>
+                        <td>${(safeNumber(taxes.工业税, 0.12) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr>
+                        <td>个人所得税</td>
+                        <td>${(safeNumber(taxes.个人所得税, 0.05) * 100).toFixed(1)}%</td>
+                    </tr>
+                    <tr>
+                        <td>私有资产税率</td>
+                        <td>${(privateTaxRate * 100).toFixed(1)}%</td>
+                    </tr>
+                `;
                 
                 taxContainer.innerHTML = html;
             }
@@ -2038,7 +2931,13 @@
             if (priceContainer) {
                 const prices = territoryData.经济?.物价指数 || {};
                 
-                let html = '';
+                let html = `
+                    <tr>
+                        <th>物资</th>
+                        <th>单价</th>
+                    </tr>
+                `;
+                
                 Object.entries(prices).forEach(([name, value]) => {
                     const price = safeNumber(value, 0);
                     html += `
@@ -2052,7 +2951,7 @@
                 priceContainer.innerHTML = html;
             }
         }
-
+        
         // 加载资源详情
         function loadResourcesDetails() {
             // 仓库物资
@@ -2067,6 +2966,7 @@
                         <th>安全储量</th>
                         <th>状态</th>
                         <th>单位</th>
+                        <th>单价</th>
                     </tr>
                 `;
                 
@@ -2076,6 +2976,7 @@
                         const safe = safeNumber(item.安全储量, 0);
                         const unit = safeString(item.单位, '');
                         const name = safeString(item.名称, '未知');
+                        const price = safeNumber(item.市场价格, 0);
                         const status = current >= safe ? '充足' : '不足';
                         const statusColor = current >= safe ? '#28a745' : '#dc3545';
                         
@@ -2086,6 +2987,7 @@
                                 <td>${formatNumber(safe)}</td>
                                 <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
                                 <td>${unit}</td>
+                                <td>${formatCurrency(price)}</td>
                             </tr>
                         `;
                     }
@@ -2102,35 +3004,24 @@
                 let html = `
                     <tr>
                         <th>资源类型</th>
-                        <th>储量状况</th>
-                        <th>每月开采</th>
+                        <th>开采量</th>
+                        <th>开采难度</th>
+                        <th>矿石品质</th>
                     </tr>
                 `;
                 
                 Object.entries(resources).forEach(([name, data]) => {
                     if (typeof data === 'object' && data !== null) {
-                        const current = safeNumber(data.当前储量, 0);
                         const extraction = safeNumber(data.每月开采量, 0);
-                        
-                        let status = '';
-                        let statusColor = '#6c757d';
-                        
-                        if (current > 5000) {
-                            status = '丰富';
-                            statusColor = '#28a745';
-                        } else if (current > 1000) {
-                            status = '一般';
-                            statusColor = '#ffc107';
-                        } else {
-                            status = '贫瘠';
-                            statusColor = '#dc3545';
-                        }
+                        const difficulty = safeNumber(data.开采难度, 0.5);
+                        const quality = safeNumber(data.矿石品质, 0.7);
                         
                         html += `
                             <tr>
                                 <td>${name}</td>
-                                <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
-                                <td>${formatNumber(extraction)}</td>
+                                <td>${formatNumber(extraction)}/月</td>
+                                <td>${(difficulty * 100).toFixed(0)}%</td>
+                                <td>${(quality * 100).toFixed(0)}%</td>
                             </tr>
                         `;
                     }
@@ -2186,12 +3077,17 @@
                         <td>${safeNumber(seasonEffects.军事行动修正, 0.9).toFixed(2)}</td>
                         <td>季节对军事的影响</td>
                     </tr>
+                    <tr>
+                        <td>资源采集修正</td>
+                        <td>${safeNumber(seasonEffects.资源采集修正, 1.1).toFixed(2)}</td>
+                        <td>季节对资源采集的影响</td>
+                    </tr>
                 `;
                 
                 environmentContainer.innerHTML = html;
             }
         }
-
+        
         // 加载军事详情
         function loadMilitaryDetails() {
             // 兵力状况
@@ -2361,115 +3257,18 @@
                 defenseContainer.innerHTML = html;
             }
         }
-
-        // 加载建筑详情 - 已删除生产配方内容
-        function loadBuildingsDetails() {
-            const container = document.getElementById('buildings-list');
-            if (!container) return;
-            
-            const buildings = territoryData.建筑 || {};
-            
-            let html = '';
-            
-            Object.entries(buildings).forEach(([key, building]) => {
-                if (typeof building === 'object' && building !== null) {
-                    const name = safeString(building.名称, '未知建筑');
-                    const type = safeString(building.类型, '未知');
-                    const property = safeString(building.产权, '未知');
-                    const level = safeNumber(building.等级, 1);
-                    const status = safeString(building.状态, '未知');
-                    
-                    const jobs = building.岗位 || {};
-                    const currentJobs = safeNumber(jobs.当前人数, 0);
-                    const maxJobs = safeNumber(jobs.最大人数, 0);
-                    const salary = safeNumber(jobs.月薪, 0);
-                    
-                    const finance = building.财务 || {};
-                    const income = safeNumber(finance.计算_月收入, 0);
-                    const expense = safeNumber(finance.计算_月支出, 0);
-                    const profit = safeNumber(finance.计算_净收益, 0);
-                    
-                    const specialEffect = safeString(building.特殊效果, '无');
-                    
-                    const propertyColor = property === 'lord' ? '#28a745' : property === 'private' ? '#ffc107' : '#6c757d';
-                    const statusColor = status.includes('正常') ? '#28a745' : status.includes('停止') ? '#dc3545' : '#ffc107';
-                    const profitColor = profit >= 0 ? '#28a745' : '#dc3545';
-                    
-                    const jobRate = maxJobs > 0 ? (currentJobs / maxJobs * 100).toFixed(0) : 0;
-                    const jobColor = jobRate > 80 ? '#28a745' : jobRate > 40 ? '#ffc107' : '#dc3545';
-                    
-                    html += `
-                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <div>
-                                    <span style="font-weight: bold; font-size: 14px;">${name}</span>
-                                    <span style="font-size: 12px; margin-left: 8px;">
-                                        <span class="tag" style="background: ${propertyColor}; color: white; padding: 2px 6px; border-radius: 10px;">
-                                            ${property === 'lord' ? '领主所有' : '私人所有'}
-                                        </span>
-                                        <span class="tag" style="background: ${statusColor}; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
-                                            ${status}
-                                        </span>
-                                    </span>
-                                </div>
-                                <div style="font-size: 12px; color: #4A3728;">
-                                    等级: ${level} | 类型: ${type}
-                                </div>
-                            </div>
-                            
-                            <table style="width: 100%; font-size: 12px; margin-bottom: 10px;">
-                                <tr>
-                                    <td style="width: 33%; padding: 5px;">
-                                        <div style="font-weight: bold; margin-bottom: 3px;">岗位情况</div>
-                                        <div>
-                                            就业: ${currentJobs}/${maxJobs}人
-                                            <div class="progress" style="margin-top: 2px;">
-                                                <div class="progress-bar" style="width: ${jobRate}%; background: ${jobColor};"></div>
-                                            </div>
-                                            <div style="font-size: 11px; color: #6c757d;">平均月薪: ${salary}金币</div>
-                                        </div>
-                                    </td>
-                                    <td style="width: 33%; padding: 5px; border-left: 1px solid #eee;">
-                                        <div style="font-weight: bold; margin-bottom: 3px;">财务状况</div>
-                                        <div>
-                                            <div>收入: <span style="color: #28a745;">${formatCurrency(income)}</span></div>
-                                            <div>支出: <span style="color: #dc3545;">${formatCurrency(expense)}</span></div>
-                                            <div>净利: <span style="color: ${profitColor}; font-weight: bold;">${formatCurrency(profit, true)}</span></div>
-                                        </div>
-                                    </td>
-                                    <td style="width: 34%; padding: 5px; border-left: 1px solid #eee;">
-                                        <div style="font-weight: bold; margin-bottom: 3px;">运营状态</div>
-                                        <div style="font-size: 11px;">
-                                            <div>雇佣率: ${jobRate}%</div>
-                                            <div>盈利能力: ${profit >= 0 ? '盈利' : '亏损'}</div>
-                                            <div>人均产值: ${currentJobs > 0 ? formatCurrency(income / currentJobs) : 'N/A'}</div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                            
-                            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                                <div style="font-weight: bold; margin-bottom: 5px;">建筑效果</div>
-                                <div style="font-size: 11px; color: #4A3728;">${specialEffect}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-            
-            if (html === '') {
-                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无建筑数据</div>';
-            }
-            
-            container.innerHTML = html;
-        }
-
+        
         // 加载科技详情
         function loadTechnologyDetails() {
             const container = document.getElementById('technology-list');
             if (!container) return;
             
             const techs = territoryData.科技 || {};
+            
+            if (Object.keys(techs).length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无科技数据</div>';
+                return;
+            }
             
             let html = '';
             
@@ -2550,130 +3349,9 @@
                 }
             });
             
-            if (html === '') {
-                html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无科技数据</div>';
-            }
-            
             container.innerHTML = html;
         }
-
-        // 加载政务详情（项目和法令）
-        function loadAffairsDetails() {
-            // 项目详情
-            const projectContainer = document.getElementById('project-details');
-            if (projectContainer) {
-                const projects = territoryData.项目 || {};
-                
-                const currentProject = safeString(projects.当前建设项目, '无');
-                const progress = safeNumber(projects.项目进度, 0);
-                const resources = projects.项目所需资源 || {};
-                
-                let html = `
-                    <tr>
-                        <th>项目</th>
-                        <th>状态</th>
-                    </tr>
-                    <tr>
-                        <td>当前项目</td>
-                        <td>${currentProject}</td>
-                    </tr>
-                    <tr>
-                        <td>项目进度</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>${progress}%</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${progress}%"></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                
-                if (currentProject !== '无') {
-                    html += `
-                        <tr>
-                            <td colspan="2" style="background: #f8f9fa; font-weight: bold;">所需资源</td>
-                        </tr>
-                    `;
-                    
-                    Object.entries(resources).forEach(([resource, amount]) => {
-                        if (safeNumber(amount, 0) > 0) {
-                            html += `
-                                <tr>
-                                    <td>${resource}</td>
-                                    <td>${formatNumber(amount)}</td>
-                                </tr>
-                            `;
-                        }
-                    });
-                }
-                
-                projectContainer.innerHTML = html;
-            }
-            
-            // 法令列表
-            const decreeContainer = document.getElementById('decree-list');
-            if (decreeContainer) {
-                const decrees = territoryData.法令 || {};
-                
-                let html = '';
-                
-                Object.entries(decrees).forEach(([key, decree]) => {
-                    if (typeof decree === 'object' && decree !== null) {
-                        const name = safeString(decree.名称, '未知法令');
-                        const active = decree.生效状态 === true;
-                        const activeTime = safeString(decree.生效时间, '未知');
-                        const economicEffects = decree.经济效果 || {};
-                        const socialEffects = decree.社会效果 || {};
-                        
-                        const activeColor = active ? '#28a745' : '#dc3545';
-                        const activeText = active ? '生效中' : '已失效';
-                        
-                        html += `
-                            <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                    <span style="font-weight: bold; font-size: 13px;">${name}</span>
-                                    <span class="tag" style="background: ${activeColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
-                                        ${activeText}
-                                    </span>
-                                </div>
-                                
-                                <div style="font-size: 11px; color: #6c757d; margin-bottom: 8px;">
-                                    生效时间: ${activeTime}
-                                </div>
-                                
-                                <div style="display: flex; font-size: 11px; border-top: 1px solid #eee; padding-top: 8px;">
-                                    <div style="flex: 1; padding-right: 10px;">
-                                        <div style="font-weight: bold; color: #28a745; margin-bottom: 3px;">经济效果</div>
-                                        ${economicEffects.税率修正 ? `<div>税率修正: ${economicEffects.税率修正 >= 0 ? '+' : ''}${(economicEffects.税率修正 * 100).toFixed(1)}%</div>` : ''}
-                                        ${economicEffects.专项税率 ? `<div>专项税率: ${(economicEffects.专项税率 * 100).toFixed(1)}%</div>` : ''}
-                                        ${economicEffects.固定收入 ? `<div>固定收入: ${formatCurrency(economicEffects.固定收入)}</div>` : ''}
-                                        ${economicEffects.固定支出 ? `<div>固定支出: ${formatCurrency(economicEffects.固定支出)}</div>` : ''}
-                                        ${economicEffects.效率加成 ? `<div>效率加成: +${(economicEffects.效率加成 * 100).toFixed(1)}%</div>` : ''}
-                                        ${!economicEffects.税率修正 && !economicEffects.专项税率 && !economicEffects.固定收入 && !economicEffects.固定支出 && !economicEffects.效率加成 ? '<div>无</div>' : ''}
-                                    </div>
-                                    <div style="flex: 1; padding-left: 10px; border-left: 1px solid #eee;">
-                                        <div style="font-weight: bold; color: #ffc107; margin-bottom: 3px;">社会效果</div>
-                                        ${socialEffects.民心影响 ? `<div>民心影响: ${socialEffects.民心影响 >= 0 ? '+' : ''}${socialEffects.民心影响}</div>` : ''}
-                                        ${socialEffects.治安影响 ? `<div>治安影响: ${socialEffects.治安影响 >= 0 ? '+' : ''}${socialEffects.治安影响}</div>` : ''}
-                                        ${socialEffects.人口影响 ? `<div>人口影响: ${socialEffects.人口影响 >= 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%</div>` : ''}
-                                        ${!socialEffects.民心影响 && !socialEffects.治安影响 && !socialEffects.人口影响 ? '<div>无</div>' : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                
-                if (html === '') {
-                    html = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无法令数据</div>';
-                }
-                
-                decreeContainer.innerHTML = html;
-            }
-        }
-
+        
         // 加载系统详情
         function loadSystemDetails() {
             // 系统设置
@@ -2721,101 +3399,710 @@
                 
                 systemContainer.innerHTML = html;
             }
+        }
+        
+        // 打开领主信息模态框
+        function openLordModal() {
+            const modal = document.getElementById('lord-modal');
+            const content = document.getElementById('lord-modal-content');
+            const title = document.getElementById('lord-modal-title');
             
-            // 领主信息
-            const lordContainer = document.getElementById('lord-details');
-            if (lordContainer) {
-                const character = territoryData.Character?.领主 || {};
+            const lord = territoryData.Lord || {};
+            
+            if (!lord || Object.keys(lord).length === 0) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无领主信息</div>';
+            } else {
+                const name = safeString(lord.姓名, '未知领主');
+                const titleText = safeString(lord.称号, '');
+                const gender = safeString(lord.性别, '');
+                const age = safeNumber(lord.年龄, 0);
+                const race = safeString(lord.种族, '');
+                const profession = safeString(lord.职业, '');
+                const appearance = safeString(lord.外貌, '');
+                const clothing = safeString(lord.衣着, '');
+                const equipment = safeString(lord.装备, '');
+                const background = safeString(lord.背景, '');
+                const personality = safeString(lord.性格, '');
+                const location = safeString(lord.所在地点, '');
+                const height = safeNumber(lord.身高, 0);
+                const weight = safeNumber(lord.体重, 0);
+                const sexExperience = safeNumber(lord.性经验, 0);
+                const children = safeString(lord.子嗣, '');
                 
-                const lordName = safeString(character.姓名, '艾丹');
-                const title = safeString(character.称号, '边境守护者');
-                const health = safeString(character.健康状态, '良好');
-                const combat = safeString(character.个人战力, 'B');
-                const management = safeNumber(character.管理能力, 65);
-                const military = safeNumber(character.军事能力, 70);
-                const diplomacy = safeNumber(character.外交能力, 55);
-                const knowledge = safeNumber(character.知识水平, 60);
+                title.textContent = `${name} ${titleText ? `- ${titleText}` : ''}`;
                 
                 let html = `
-                    <tr>
-                        <th>属性</th>
-                        <th>数值</th>
-                        <th>说明</th>
-                    </tr>
-                    <tr>
-                        <td>姓名</td>
-                        <td style="font-weight: bold;">${lordName}</td>
-                        <td>${title}</td>
-                    </tr>
-                    <tr>
-                        <td>健康状态</td>
-                        <td>${health}</td>
-                        <td>领主健康状况</td>
-                    </tr>
-                    <tr>
-                        <td>个人战力</td>
-                        <td style="font-weight: bold; color: #8B6914;">${combat}</td>
-                        <td>个人战斗能力评级</td>
-                    </tr>
-                    <tr>
-                        <td>管理能力</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>${management}/100</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${management}%"></div>
-                                </div>
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">👑 基本信息</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">性别:</span>
+                                <span class="modal-value">${gender}</span>
                             </div>
-                        </td>
-                        <td>领地管理能力</td>
-                    </tr>
-                    <tr>
-                        <td>军事能力</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>${military}/100</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${military}%"></div>
-                                </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">年龄:</span>
+                                <span class="modal-value">${age}岁</span>
                             </div>
-                        </td>
-                        <td>军事指挥能力</td>
-                    </tr>
-                    <tr>
-                        <td>外交能力</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>${diplomacy}/100</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${diplomacy}%"></div>
-                                </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">种族:</span>
+                                <span class="modal-value">${race}</span>
                             </div>
-                        </td>
-                        <td>外交谈判能力</td>
-                    </tr>
-                    <tr>
-                        <td>知识水平</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>${knowledge}/100</span>
-                                <div class="progress" style="flex: 1;">
-                                    <div class="progress-bar" style="width: ${knowledge}%"></div>
-                                </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">职业:</span>
+                                <span class="modal-value">${profession}</span>
                             </div>
-                        </td>
-                        <td>文化知识水平</td>
-                    </tr>
+                            <div class="modal-info-item">
+                                <span class="modal-label">身高:</span>
+                                <span class="modal-value">${height}厘米</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">体重:</span>
+                                <span class="modal-value">${weight}公斤</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">👔 当前状态</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">所在地点:</span>
+                                <span class="modal-value">${location}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">当前衣着:</span>
+                                <span class="modal-value">${clothing}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">当前装备:</span>
+                                <span class="modal-value">${equipment}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">📖 个人特征</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item" style="grid-column: 1 / -1;">
+                                <span class="modal-label">外貌:</span>
+                                <span class="modal-value">${appearance}</span>
+                            </div>
+                            <div class="modal-info-item" style="grid-column: 1 / -1;">
+                                <span class="modal-label">性格:</span>
+                                <span class="modal-value">${personality}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">📜 背景故事</h3>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${background}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">💑 个人信息</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">性经验次数:</span>
+                                <span class="modal-value">${sexExperience}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">子嗣:</span>
+                                <span class="modal-value">${children}</span>
+                            </div>
+                        </div>
+                    </div>
                 `;
                 
-                lordContainer.innerHTML = html;
+                content.innerHTML = html;
             }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // 打开建筑详情模态框
+        function openBuildingModal(buildingKey) {
+            const modal = document.getElementById('building-modal');
+            const content = document.getElementById('building-modal-content');
+            const title = document.getElementById('building-modal-title');
+            
+            const building = territoryData.建筑?.[buildingKey];
+            
+            if (!building) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">建筑信息不存在</div>';
+                modal.style.display = 'flex';
+                return;
+            }
+            
+            const name = safeString(building.名称, '未知建筑');
+            const type = safeString(building.类型, '未知');
+            const property = safeString(building.产权, '未知');
+            const location = safeString(building.位置, '');
+            const level = safeNumber(building.等级, 1);
+            const status = safeString(building.状态, '未知');
+            const appearance = safeString(building.外观描述, '');
+            const condition = safeString(building.当前状况, '');
+            const specialEvent = safeString(building.特殊事件, '无');
+            
+            const staff = building.人员配置 || {};
+            const managerCount = safeNumber(staff.管理者?.当前人数, 0);
+            const artisanCount = safeNumber(staff.工匠?.当前人数, 0);
+            const workerCount = safeNumber(staff.工人?.当前人数, 0);
+            const apprenticeCount = safeNumber(staff.学徒?.当前人数, 0);
+            const guardCount = safeNumber(staff.守卫?.当前人数, 0);
+            const totalStaff = safeNumber(staff.总当前人数, 0);
+            const maxStaff = safeNumber(staff.总最大人数, 0);
+            const totalSalary = safeNumber(staff.总月薪, 0);
+            
+            const finance = building.经济模型 || {};
+            const generalFinance = finance.通用财务 || {};
+            const financeSummary = finance.财务汇总 || {};
+            const maintenance = safeNumber(generalFinance.维护费, 0);
+            const totalExpense = safeNumber(generalFinance.月总支出, 0);
+            const grossIncome = safeNumber(financeSummary.月毛收入, 0);
+            const netProfit = safeNumber(financeSummary.月净收益, 0);
+            const financeStatus = safeString(financeSummary.收支状态, '未知');
+            
+            const upgrade = building.升级 || {};
+            const canUpgrade = upgrade.可升级 === true;
+            const upgradeTarget = safeNumber(upgrade.目标等级, 0);
+            const upgradeRequirements = upgrade.需求 || {};
+            const upgradeCost = safeNumber(upgradeRequirements.金币, 0);
+            const upgradeMaterials = upgradeRequirements.材料 || {};
+            const upgradeWood = safeNumber(upgradeMaterials.木材, 0);
+            const upgradeStone = safeNumber(upgradeMaterials.石材, 0);
+            const upgradeIron = safeNumber(upgradeMaterials.铁矿, 0);
+            const upgradeTime = safeNumber(upgradeRequirements.时间, 0);
+            
+            title.textContent = name;
+            
+            let html = `
+                <div class="modal-section">
+                    <h3 class="modal-section-title">🏛️ 基础信息</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-label">类型:</span>
+                            <span class="modal-value">${type}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">产权:</span>
+                            <span class="modal-value">${property === 'lord' ? '领主所有' : '私有'}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">位置:</span>
+                            <span class="modal-value">${location || '未指定'}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">等级:</span>
+                            <span class="modal-value">${level}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">状态:</span>
+                            <span class="modal-value">${status}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">👥 人员配置</h3>
+                    <div class="building-detail-section">
+                        <table class="building-finance-table">
+                            <tr>
+                                <td>管理者:</td>
+                                <td>${managerCount}人</td>
+                            </tr>
+                            <tr>
+                                <td>工匠:</td>
+                                <td>${artisanCount}人</td>
+                            </tr>
+                            <tr>
+                                <td>工人:</td>
+                                <td>${workerCount}人</td>
+                            </tr>
+                            <tr>
+                                <td>学徒:</td>
+                                <td>${apprenticeCount}人</td>
+                            </tr>
+                            <tr>
+                                <td>守卫:</td>
+                                <td>${guardCount}人</td>
+                            </tr>
+                            <tr style="border-top: 1px solid rgba(139, 105, 20, 0.3);">
+                                <td>总计:</td>
+                                <td>${totalStaff}/${maxStaff}人</td>
+                            </tr>
+                            <tr>
+                                <td>月薪总额:</td>
+                                <td>${formatCurrency(totalSalary)}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">💰 财务状况</h3>
+                    <div class="building-detail-section">
+                        <table class="building-finance-table">
+                            <tr>
+                                <td>月毛收入:</td>
+                                <td style="color: #28a745;">${formatCurrency(grossIncome)}</td>
+                            </tr>
+                            <tr>
+                                <td>月总支出:</td>
+                                <td style="color: #dc3545;">${formatCurrency(totalExpense)}</td>
+                            </tr>
+                            <tr style="border-top: 1px solid rgba(139, 105, 20, 0.3);">
+                                <td>月净收益:</td>
+                                <td style="color: ${netProfit >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                    ${formatCurrency(netProfit, true)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>收支状态:</td>
+                                <td>${financeStatus}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // 升级信息
+            if (canUpgrade && upgradeTarget > 0) {
+                html += `
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">⬆ 升级信息</h3>
+                        <div class="building-detail-section">
+                            <div class="modal-info-item">
+                                <span class="modal-label">可升级至:</span>
+                                <span class="modal-value">${upgradeTarget}级</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">所需时间:</span>
+                                <span class="modal-value">${upgradeTime}天</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">升级需求:</span>
+                                <span class="modal-value">
+                                    金币: ${formatCurrency(upgradeCost)} | 
+                                    木材: ${upgradeWood}方 | 
+                                    石材: ${upgradeStone}方 | 
+                                    铁矿: ${upgradeIron}斤
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 描述信息
+            html += `
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📝 描述信息</h3>
+                    <div class="building-detail-section">
+                        <div class="modal-info-item">
+                            <span class="modal-label">外观:</span>
+                            <span class="modal-value">${appearance}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">当前状况:</span>
+                            <span class="modal-value">${condition}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">特殊事件:</span>
+                            <span class="modal-value">${specialEvent}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+        
+        // 打开角色详情模态框
+        function openCharacterModal(characterKey) {
+            const modal = document.getElementById('character-modal');
+            const content = document.getElementById('character-modal-content');
+            const title = document.getElementById('character-modal-title');
+            
+            const character = territoryData.角色?.[characterKey];
+            
+            if (!character) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">角色信息不存在</div>';
+                modal.style.display = 'flex';
+                return;
+            }
+            
+            const name = safeString(character.姓名, '未知角色');
+            const overview = character.角色概览 || {};
+            const appearance = character.身体外貌 || {};
+            const abilities = character.能力五维 || {};
+            
+            const gender = safeString(overview.性别, '');
+            const age = safeNumber(overview.年龄, 0);
+            const identity = safeString(overview.身份, '');
+            const profession = safeString(overview.职业, '');
+            const relationship = safeString(overview.与领主关系, '');
+            const personality = safeString(overview.性格, '');
+            const love = safeNumber(overview.好感度, 0);
+            const loyalty = safeNumber(overview.忠诚度, 0);
+            const mood = safeString(overview.情绪, '');
+            const behavior = safeString(overview.当前行为, '');
+            const location = safeString(overview.所在地点, '');
+            const recentInteraction = safeString(overview.最近互动, '无');
+            
+            const appearanceDesc = safeString(appearance.外貌, '');
+            const figure = safeString(appearance.身材, '');
+            const height = safeNumber(appearance.身高, 0);
+            const weight = safeNumber(appearance.体重, 0);
+            const upperClothing = safeString(appearance.上身衣着, '');
+            const lowerClothing = safeString(appearance.下身衣着, '');
+            const accessories = safeString(appearance.配饰, '无');
+            const specialMarks = safeString(appearance.特殊标记, '无');
+            
+            const military = safeNumber(abilities.军事, 0);
+            const management = safeNumber(abilities.管理, 0);
+            const diplomacy = safeNumber(abilities.外交, 0);
+            const strategy = safeNumber(abilities.谋略, 0);
+            const knowledge = safeNumber(abilities.学识, 0);
+            const bravery = safeNumber(abilities.勇武, 0);
+            
+            const background = safeString(character.背景故事, '无背景故事');
+            
+            title.textContent = name;
+            
+            let html = `
+                <div class="character-detail-avatar">
+                    <div class="character-avatar-large">
+                        ${gender === '女' ? '👩' : gender === '男' ? '👨' : '👤'}
+                    </div>
+                    <div style="font-size: 16px; font-weight: bold;">${name}</div>
+                    <div style="font-size: 12px; color: #8B6914;">${identity} | ${profession}</div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📊 基础信息</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-label">性别:</span>
+                            <span class="modal-value">${gender}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">年龄:</span>
+                            <span class="modal-value">${age}岁</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">身份:</span>
+                            <span class="modal-value">${identity}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">职业:</span>
+                            <span class="modal-value">${profession}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">情绪:</span>
+                            <span class="modal-value">${mood}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">所在地点:</span>
+                            <span class="modal-value">${location}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">❤️ 与领主关系</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-label">关系描述:</span>
+                            <span class="modal-value">${relationship}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">性格:</span>
+                            <span class="modal-value">${personality}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">好感度:</span>
+                            <span class="modal-value">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span>${love}/100</span>
+                                    <div class="progress" style="flex: 1;">
+                                        <div class="progress-bar" style="width: ${love}%"></div>
+                                    </div>
+                                </div>
+                            </span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">忠诚度:</span>
+                            <span class="modal-value">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span>${loyalty}/100</span>
+                                    <div class="progress" style="flex: 1;">
+                                        <div class="progress-bar" style="width: ${loyalty}%"></div>
+                                    </div>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">💪 能力五维</h3>
+                    <div class="ability-radar">
+                        <div class="ability-item">
+                            <div class="ability-name">军事</div>
+                            <div class="ability-value">${military}</div>
+                        </div>
+                        <div class="ability-item">
+                            <div class="ability-name">管理</div>
+                            <div class="ability-value">${management}</div>
+                        </div>
+                        <div class="ability-item">
+                            <div class="ability-name">外交</div>
+                            <div class="ability-value">${diplomacy}</div>
+                        </div>
+                        <div class="ability-item">
+                            <div class="ability-name">谋略</div>
+                            <div class="ability-value">${strategy}</div>
+                        </div>
+                        <div class="ability-item">
+                            <div class="ability-name">学识</div>
+                            <div class="ability-value">${knowledge}</div>
+                        </div>
+                        <div class="ability-item">
+                            <div class="ability-name">勇武</div>
+                            <div class="ability-value">${bravery}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">👔 外貌衣着</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item" style="grid-column: 1 / -1;">
+                            <span class="modal-label">外貌:</span>
+                            <span class="modal-value">${appearanceDesc}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">身材:</span>
+                            <span class="modal-value">${figure}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">身高:</span>
+                            <span class="modal-value">${height}厘米</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">体重:</span>
+                            <span class="modal-value">${weight}公斤</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">上身衣着:</span>
+                            <span class="modal-value">${upperClothing}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">下身衣着:</span>
+                            <span class="modal-value">${lowerClothing}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">配饰:</span>
+                            <span class="modal-value">${accessories}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">特殊标记:</span>
+                            <span class="modal-value">${specialMarks}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📝 当前状态</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-label">当前行为:</span>
+                            <span class="modal-value">${behavior}</span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">最近互动:</span>
+                            <span class="modal-value">${recentInteraction}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📖 背景故事</h3>
+                    <div class="modal-info-item">
+                        <span class="modal-value">${background}</span>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+        
+        // 打开法令详情模态框
+        function openDecreeModal(decreeKey) {
+            const modal = document.getElementById('decree-modal');
+            const content = document.getElementById('decree-modal-content');
+            const title = document.getElementById('decree-modal-title');
+            
+            const decree = territoryData.法令?.[decreeKey];
+            
+            if (!decree) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">法令信息不存在</div>';
+                modal.style.display = 'flex';
+                return;
+            }
+            
+            const name = safeString(decree.名称, '未知法令');
+            const active = decree.生效状态 === true;
+            const activeTime = safeString(decree.生效时间, '未知');
+            const description = safeString(decree.法令描述, '无描述');
+            
+            const economicEffects = decree.经济效果 || {};
+            const socialEffects = decree.社会效果 || {};
+            
+            title.textContent = name;
+            
+            let html = `
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📜 基本信息</h3>
+                    <div class="modal-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-label">状态:</span>
+                            <span class="modal-value">
+                                <span class="tag ${active ? 'status-active' : ''}" style="padding: 3px 10px;">
+                                    ${active ? '生效中' : '已失效'}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-label">生效时间:</span>
+                            <span class="modal-value">${activeTime}</span>
+                        </div>
+                    </div>
+                    <div class="modal-info-item" style="margin-top: 10px;">
+                        <span class="modal-label">法令描述:</span>
+                        <span class="modal-value">${description}</span>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title">📈 法令效果</h3>
+                    <div class="decree-effect-details">
+                        <div class="decree-effect-category">
+                            <div class="effect-category-title">💰 经济效果</div>
+                            ${economicEffects.税率修正 ? `<div>税率修正: ${economicEffects.税率修正 >= 0 ? '+' : ''}${(economicEffects.税率修正 * 100).toFixed(1)}%</div>` : '<div>无税率修正</div>'}
+                            ${economicEffects.专项税率 ? `<div>专项税率: ${(economicEffects.专项税率 * 100).toFixed(1)}%</div>` : ''}
+                            ${economicEffects.固定收入 ? `<div>固定收入: ${formatCurrency(economicEffects.固定收入)}</div>` : ''}
+                            ${economicEffects.固定支出 ? `<div>固定支出: ${formatCurrency(economicEffects.固定支出)}</div>` : ''}
+                            ${economicEffects.效率加成 ? `<div>效率加成: +${(economicEffects.效率加成 * 100).toFixed(1)}%</div>` : ''}
+                        </div>
+                        <div class="decree-effect-category">
+                            <div class="effect-category-title">🏘️ 社会效果</div>
+                            ${socialEffects.民心影响 ? `<div>民心影响: ${socialEffects.民心影响 >= 0 ? '+' : ''}${socialEffects.民心影响}</div>` : '<div>无民心影响</div>'}
+                            ${socialEffects.治安影响 ? `<div>治安影响: ${socialEffects.治安影响 >= 0 ? '+' : ''}${socialEffects.治安影响}</div>` : ''}
+                            ${socialEffects.人口影响 ? `<div>人口影响: ${socialEffects.人口影响 >= 0 ? '+' : ''}${(socialEffects.人口影响 * 100).toFixed(2)}%</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+        
+        // 关闭模态框
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+        
+        // 切换章节显示/隐藏
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+            
+            adjustIframeHeight();
+        }
+        
+        // 切换选项卡
+        function switchTab(tabName) {
+            // 隐藏所有选项卡
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有活动状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示目标选项卡
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // 设置活动状态
+            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+                btn.textContent.trim().toLowerCase().includes(tabName.toLowerCase())
+            );
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+            
+            // 加载选项卡数据
+            switch(tabName) {
+                case 'overview':
+                    // 概览选项卡已经在updateUI中更新
+                    break;
+                case 'economy':
+                    loadEconomyDetails();
+                    break;
+                case 'population':
+                    loadPopulationDetails();
+                    break;
+                case 'military':
+                    loadMilitaryDetails();
+                    break;
+                case 'buildings':
+                    loadBuildingsGrid();
+                    break;
+                case 'resources':
+                    loadResourcesDetails();
+                    break;
+                case 'technology':
+                    loadTechnologyDetails();
+                    break;
+                case 'decrees':
+                    loadDecreesGrid();
+                    break;
+                case 'characters':
+                    loadCharactersGrid();
+                    break;
+                case 'system':
+                    loadSystemDetails();
+                    break;
+            }
+            
+            adjustIframeHeight();
         }
         
         // 刷新数据
         async function refreshData() {
             try {
                 showLoading(true);
-                console.log('开始强制刷新数据...');
                 
                 // 清除现有数据，强制重新获取
                 territoryData = null;
@@ -2827,7 +4114,6 @@
                 const now = new Date();
                 document.getElementById('last-update').textContent = now.toLocaleTimeString();
                 
-                console.log('数据刷新完成');
             } catch (error) {
                 console.error('刷新数据失败:', error);
                 alert('刷新数据失败: ' + error.message);
@@ -2845,12 +4131,9 @@
                     // 检查MVU函数是否存在
                     if (typeof executeMvuCode === 'function') {
                         await executeMvuCode('Territory.monthlySettlement()');
-                        console.log('月度结算执行成功');
                     } else if (typeof window.executeMvuCode === 'function') {
                         await window.executeMvuCode('Territory.monthlySettlement()');
-                        console.log('月度结算执行成功（通过window）');
                     } else {
-                        console.log('模拟执行月度结算');
                         // 模拟数据变化
                         if (territoryData) {
                             // 更新国库
@@ -2906,8 +4189,7 @@
             if (autoRefreshEnabled) {
                 btn.innerHTML = '⏸️ 暂停刷新';
                 btn.style.background = '#28a745';
-                autoRefreshInterval = setInterval(refreshData, 30000); // 每30秒刷新一次
-                console.log('自动刷新已启用');
+                autoRefreshInterval = setInterval(refreshData, 30000);
             } else {
                 btn.innerHTML = '▶️ 自动刷新';
                 btn.style.background = '#8B6914';
@@ -2915,7 +4197,6 @@
                     clearInterval(autoRefreshInterval);
                     autoRefreshInterval = null;
                 }
-                console.log('自动刷新已禁用');
             }
         }
         
@@ -2957,37 +4238,20 @@
             if (debugMode) {
                 debugSection.style.display = 'block';
                 
-                let debugHtml = '<div class="debug-panel">';
+                let debugHtml = '<div style="font-size: 12px;">';
                 
                 // 显示当前数据状态
-                debugHtml += '<div class="debug-item"><span class="debug-key">数据状态:</span> <span class="debug-value">' + (territoryData ? '已加载' : '未加载') + '</span></div>';
+                debugHtml += '<div><strong>数据状态:</strong> ' + (territoryData ? '已加载' : '未加载') + '</div>';
                 
                 if (territoryData) {
                     // 显示关键数据
-                    debugHtml += '<div class="debug-item"><span class="debug-key">人口:</span> <span class="debug-value">' + (territoryData.人口?.总人口 || 'N/A') + '</span></div>';
-                    debugHtml += '<div class="debug-item"><span class="debug-key">国库:</span> <span class="debug-value">' + (territoryData.经济?.财政?.库存金币 || 'N/A') + '</span></div>';
-                    
-                    // 特别显示年龄结构数据
-                    if (territoryData.人口?.年龄结构) {
-                        debugHtml += '<div class="debug-item"><span class="debug-key">年龄结构原始数据:</span> <span class="debug-value">' + JSON.stringify(territoryData.人口.年龄结构) + '</span></div>';
-                        
-                        // 显示每个年龄组的数据
-                        Object.entries(territoryData.人口.年龄结构).forEach(([key, value]) => {
-                            debugHtml += `<div class="debug-item"><span class="debug-key">${key}:</span> <span class="debug-value">${JSON.stringify(value)} (类型: ${typeof value})</span></div>`;
-                        });
-                    }
-                    
-                    debugHtml += '<div class="debug-item"><span class="debug-key">最后更新:</span> <span class="debug-value">' + (lastUpdate ? lastUpdate.toLocaleTimeString() : 'N/A') + '</span></div>';
-                    
-                    // 显示数据来源
-                    debugHtml += '<div class="debug-item"><span class="debug-key">数据源:</span> <span class="debug-value">' + (localStorage.getItem('territoryData') ? 'localStorage + MVU' : 'MVU') + '</span></div>';
+                    debugHtml += '<div><strong>人口:</strong> ' + (territoryData.人口?.总人口 || 'N/A') + '</div>';
+                    debugHtml += '<div><strong>国库:</strong> ' + (territoryData.经济?.财政?.库存金币 || 'N/A') + '</div>';
+                    debugHtml += '<div><strong>建筑数量:</strong> ' + (territoryData.建筑 ? Object.keys(territoryData.建筑).length : 0) + '</div>';
+                    debugHtml += '<div><strong>角色数量:</strong> ' + (territoryData.角色 ? Object.keys(territoryData.角色).length : 0) + '</div>';
+                    debugHtml += '<div><strong>法令数量:</strong> ' + (territoryData.法令 ? Object.keys(territoryData.法令).length : 0) + '</div>';
+                    debugHtml += '<div><strong>最后更新:</strong> ' + (lastUpdate ? lastUpdate.toLocaleTimeString() : 'N/A') + '</div>';
                 }
-                
-                // 显示API可用性
-                debugHtml += '<div class="debug-item"><span class="debug-key">getVariables:</span> <span class="debug-value">' + (typeof getVariables) + '</span></div>';
-                debugHtml += '<div class="debug-item"><span class="debug-key">window.getVariables:</span> <span class="debug-value">' + (typeof window.getVariables) + '</span></div>';
-                debugHtml += '<div class="debug-item"><span class="debug-key">getCurrentMessageId:</span> <span class="debug-value">' + (typeof getCurrentMessageId) + '</span></div>';
-                debugHtml += '<div class="debug-item"><span class="debug-key">lodash (_):</span> <span class="debug-value">' + (typeof _) + '</span></div>';
                 
                 debugHtml += '</div>';
                 
@@ -3033,7 +4297,7 @@
                 case '安全': return '#28a745';
                 case '警戒': return '#ffc107';
                 case '危险': return '#dc3545';
-                case '极危险': return '#721c24';
+                case '极危': return '#721c24';
                 default: return '#6c757d';
             }
         }
@@ -3047,8 +4311,6 @@
         
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('领地状态面板初始化...');
-            
             // 加载数据
             fetchFromMVU();
             
@@ -3058,7 +4320,12 @@
             // 监听窗口大小变化
             window.addEventListener('resize', adjustIframeHeight);
             
-            console.log('领地状态面板已就绪');
+            // 监听模态框外点击关闭
+            window.addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal-overlay')) {
+                    event.target.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>
