@@ -742,88 +742,107 @@
         let autoRefreshInterval = null;
         let debugMode = false;
         
-        // 改进的数据转换函数 - 修复年龄结构问题
-        function convertMVUData(data) {
-            if (!data || typeof data !== 'object') return data;
+        // 统一的数据提取函数 - 修复年龄结构问题
+        function extractMVUValue(data) {
+            if (data === undefined || data === null) return null;
             
-            // 如果是数组，检查是否包含值
+            console.log('提取数据:', data, '类型:', typeof data);
+            
+            // 如果是数组，检查格式
             if (Array.isArray(data)) {
-                // 检查数组第一个元素是否是对象或数组
-                if (data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
-                    // 如果是对象数组，可能需要特殊处理
-                    return data;
+                console.log('数据是数组，长度:', data.length);
+                // MVU常见格式：[值, 描述] 或 [值]
+                if (data.length >= 1) {
+                    // 递归处理数组中的第一个元素
+                    return extractMVUValue(data[0]);
                 }
-                // 否则返回第一个元素作为值
-                return data.length > 0 ? data[0] : null;
+                return null;
             }
             
-            // 如果是对象，递归处理
+            // 如果是对象，检查常见属性
+            if (typeof data === 'object') {
+                console.log('数据是对象，键:', Object.keys(data));
+                // 尝试获取常见的数值属性
+                if (data.value !== undefined) return data.value;
+                if (data.值 !== undefined) return data.值;
+                if (data.数量 !== undefined) return data.数量;
+                if (data.count !== undefined) return data.count;
+                if (data.Value !== undefined) return data.Value;
+                
+                // 如果是包含数字的对象，直接返回
+                if (typeof data === 'number') return data;
+                
+                // 如果对象只有一个键值对，且值是数字，返回该值
+                const keys = Object.keys(data);
+                if (keys.length === 1) {
+                    const value = data[keys[0]];
+                    if (typeof value === 'number' || !isNaN(parseFloat(value))) {
+                        return parseFloat(value);
+                    }
+                }
+                
+                // 其他情况返回原对象
+                return data;
+            }
+            
+            // 如果是数字或可以转换为数字的字符串
+            if (typeof data === 'number') return data;
+            if (typeof data === 'string' && !isNaN(parseFloat(data))) {
+                return parseFloat(data);
+            }
+            
+            // 其他情况返回原值
+            return data;
+        }
+        
+        // 改进的数据转换函数
+        function convertMVUData(data, path = '') {
+            if (!data || typeof data !== 'object') {
+                console.log(`路径 ${path}: 非对象数据:`, data);
+                return data;
+            }
+            
+            console.log(`转换路径 ${path}, 类型:`, Array.isArray(data) ? '数组' : '对象', '数据:', data);
+            
+            // 处理数组
+            if (Array.isArray(data)) {
+                // 检查是否是 [值, 描述] 格式
+                if (data.length === 2 && typeof data[1] === 'string') {
+                    console.log(`路径 ${path}: 提取 [值, 描述] 格式的值:`, data[0]);
+                    return data[0];
+                }
+                // 处理数组中的每个元素
+                const result = [];
+                for (let i = 0; i < data.length; i++) {
+                    result.push(convertMVUData(data[i], `${path}[${i}]`));
+                }
+                return result;
+            }
+            
+            // 处理对象
             const result = {};
             
             for (const [key, value] of Object.entries(data)) {
                 // 跳过$meta属性
                 if (key === '$meta') continue;
                 
-                if (Array.isArray(value)) {
-                    // 处理数组：检查是否包含[值, 描述]格式
-                    if (value.length === 2 && typeof value[1] === 'string') {
-                        // [值, 描述]格式，只保留值
-                        result[key] = value[0];
-                    } else if (value.length > 0) {
-                        // 其他数组格式，取第一个元素
-                        result[key] = convertMVUData(value[0]);
-                    } else {
-                        result[key] = null;
-                    }
-                } else if (typeof value === 'object' && value !== null) {
-                    // 处理对象
-                    // 跳过模板对象
-                    if (value.$meta && value.$meta.extensible === true) {
-                        // 对于可扩展对象，处理其内容但跳过模板本身
-                        const processedObj = {};
-                        for (const [subKey, subValue] of Object.entries(value)) {
-                            if (subKey !== '$meta') {
-                                processedObj[subKey] = convertMVUData(subValue);
-                            }
-                        }
-                        result[key] = processedObj;
-                    } else {
-                        // 递归处理普通对象
-                        result[key] = convertMVUData(value);
-                    }
+                const currentPath = path ? `${path}.${key}` : key;
+                
+                if (value === null || value === undefined) {
+                    result[key] = value;
+                } else if (Array.isArray(value)) {
+                    // 处理数组
+                    result[key] = convertMVUData(value, currentPath);
+                } else if (typeof value === 'object') {
+                    // 处理嵌套对象
+                    result[key] = convertMVUData(value, currentPath);
                 } else {
-                    // 其他情况直接赋值
+                    // 基本类型直接赋值
                     result[key] = value;
                 }
             }
             
             return result;
-        }
-        
-        // 增强的数据转换函数 - 针对MVU数据结构
-        function extractValue(data) {
-            if (data === undefined || data === null) return null;
-            
-            // 如果是数组，取第一个元素
-            if (Array.isArray(data)) {
-                if (data.length === 0) return null;
-                return extractValue(data[0]);
-            }
-            
-            // 如果是对象，检查是否有value或值属性
-            if (typeof data === 'object') {
-                // 优先尝试获取数值属性
-                if (data.value !== undefined) return data.value;
-                if (data.值 !== undefined) return data.值;
-                if (data.数量 !== undefined) return data.数量;
-                if (data.count !== undefined) return data.count;
-                
-                // 如果没有找到标准属性，返回对象本身用于进一步处理
-                return data;
-            }
-            
-            // 否则直接返回
-            return data;
         }
         
         // 从MVU获取数据
@@ -842,7 +861,7 @@
                             type: 'message',
                             message_id: getCurrentMessageId?.() || 'current'
                         });
-                        console.log('getVariables 返回:', mvuData);
+                        console.log('getVariables 返回的原始数据:', mvuData);
                     } catch (e) {
                         console.error('getVariables 错误:', e);
                     }
@@ -861,42 +880,49 @@
                     }
                 }
                 
-                // 从stat_data中提取Territory数据
+                // 处理获取到的数据
                 if (mvuData) {
-                    console.log('原始MVU数据键:', Object.keys(mvuData));
+                    console.log('原始MVU数据:', mvuData);
                     
-                    // 关键：检查stat_data是否存在
+                    // 从stat_data中提取Territory数据
                     if (mvuData.stat_data) {
                         console.log('找到 stat_data');
+                        console.log('stat_data结构:', mvuData.stat_data);
                         
-                        // 检查Territory是否存在
                         if (mvuData.stat_data.Territory) {
                             console.log('找到 Territory 数据');
-                            territoryData = convertMVUData(mvuData.stat_data.Territory);
+                            // 对数据进行转换
+                            territoryData = convertMVUData(mvuData.stat_data.Territory, 'Territory');
                             
-                            // 特别处理人口数据
+                            // 特别处理年龄结构数据
                             if (territoryData.人口 && territoryData.人口.年龄结构) {
                                 console.log('年龄结构原始数据:', territoryData.人口.年龄结构);
-                                // 确保年龄结构是数字格式
+                                console.log('年龄结构类型:', typeof territoryData.人口.年龄结构);
+                                
+                                // 遍历年龄结构的每个键，确保值是数字
                                 const ageStructure = territoryData.人口.年龄结构;
-                                for (const key in ageStructure) {
-                                    if (typeof ageStructure[key] === 'object') {
-                                        // 如果是对象，提取数值
-                                        ageStructure[key] = extractValue(ageStructure[key]);
+                                for (const [ageKey, ageValue] of Object.entries(ageStructure)) {
+                                    console.log(`年龄组 ${ageKey}:`, ageValue, '类型:', typeof ageValue);
+                                    
+                                    // 使用统一的提取函数
+                                    const extractedValue = extractMVUValue(ageValue);
+                                    console.log(`提取后的值:`, extractedValue);
+                                    
+                                    if (extractedValue !== null && extractedValue !== undefined) {
+                                        ageStructure[ageKey] = extractedValue;
                                     }
                                 }
                             }
                         } else {
                             console.warn('stat_data 中没有 Territory 数据');
-                            // 尝试使用stat_data本身
-                            territoryData = convertMVUData(mvuData.stat_data);
+                            territoryData = convertMVUData(mvuData.stat_data, 'stat_data');
                         }
                     } else if (mvuData.Territory) {
-                        // 如果没有stat_data，直接尝试Territory
+                        // 直接处理Territory数据
                         console.log('直接找到 Territory 数据');
-                        territoryData = convertMVUData(mvuData.Territory);
+                        territoryData = convertMVUData(mvuData.Territory, 'Territory');
                     } else {
-                        console.warn('MVU数据中没有找到领地数据');
+                        console.warn('MVU数据中没有找到领地数据，使用默认数据');
                         territoryData = getDefaultData();
                     }
                 } else {
@@ -918,7 +944,14 @@
                 }
                 
                 console.log('最终领地数据:', territoryData);
-                console.log('年龄结构数据:', territoryData.人口?.年龄结构);
+                
+                // 特别打印年龄结构用于调试
+                if (territoryData.人口 && territoryData.人口.年龄结构) {
+                    console.log('最终年龄结构数据:');
+                    for (const [key, value] of Object.entries(territoryData.人口.年龄结构)) {
+                        console.log(`  ${key}:`, value, '类型:', typeof value);
+                    }
+                }
                 
                 lastUpdate = new Date();
                 document.getElementById('last-update').textContent = lastUpdate.toLocaleTimeString();
@@ -1368,30 +1401,21 @@
             container.innerHTML = html;
         }
         
-        // 安全获取数字 - 增强版，处理更多数据类型
+        // 安全获取数字 - 统一使用extractMVUValue
         function safeNumber(value, defaultValue = 0) {
             if (value === undefined || value === null) {
                 return defaultValue;
             }
             
-            // 如果是对象，尝试提取数值
-            if (typeof value === 'object') {
-                // 尝试从对象中提取常见的数值属性
-                const extracted = extractValue(value);
-                value = extracted;
-            }
-            
-            // 如果是数组，取第一个元素
-            if (Array.isArray(value) && value.length > 0) {
-                value = value[0];
-            }
+            // 使用统一的提取函数
+            const extracted = extractMVUValue(value);
             
             // 转换为数字
-            const num = Number(value);
+            const num = Number(extracted);
             
             // 检查是否为有效数字
             if (isNaN(num)) {
-                console.warn('无法转换为数字的值:', value, '使用默认值:', defaultValue);
+                console.warn('无法转换为数字的值:', extracted, '原始值:', value, '使用默认值:', defaultValue);
                 return defaultValue;
             }
             
@@ -1404,18 +1428,11 @@
                 return defaultValue;
             }
             
-            // 如果是对象，尝试提取字符串
-            if (typeof value === 'object') {
-                const extracted = extractValue(value);
-                value = extracted;
-            }
+            // 使用统一的提取函数
+            const extracted = extractMVUValue(value);
             
-            // 如果是数组，取第一个元素
-            if (Array.isArray(value) && value.length > 0) {
-                value = value[0];
-            }
-            
-            return String(value);
+            // 转换为字符串
+            return String(extracted);
         }
         
         // 更新基础信息
@@ -1724,15 +1741,18 @@
             }
         }
         
-        // 加载人口详情 - 修复年龄结构问题
+        // 加载人口详情 - 修复年龄结构显示问题
         function loadPopulationDetails() {
-            console.log('加载人口详情，年龄结构数据:', territoryData.人口?.年龄结构);
+            console.log('加载人口详情，检查年龄结构数据...');
             
             // 年龄结构
             const ageContainer = document.getElementById('age-structure');
             if (ageContainer) {
                 const ageStructure = territoryData.人口?.年龄结构 || {};
                 const total = safeNumber(territoryData.人口?.总人口, 1250);
+                
+                console.log('年龄结构原始数据:', ageStructure);
+                console.log('总人口:', total);
                 
                 let html = `
                     <tr>
@@ -1750,14 +1770,47 @@
                     { key: '老年_60_', label: '老年 (60岁以上)', desc: '需要供养的人口' }
                 ];
                 
-                ageGroups.forEach(group => {
-                    const rawValue = ageStructure[group.key];
-                    console.log(`年龄组 ${group.key}: 原始值 =`, rawValue);
+                // 如果年龄结构是空的，尝试其他可能的键名
+                let actualAgeStructure = ageStructure;
+                if (Object.keys(ageStructure).length === 0) {
+                    console.log('年龄结构为空，尝试查找其他可能的键名...');
                     
-                    const count = safeNumber(rawValue, 0);
+                    // 尝试常见的年龄结构键名
+                    const possibleKeys = [
+                        '儿童0-14', '儿童_0_14', '儿童', 'child_0_14',
+                        '青年15-35', '青年_15_35', '青年', 'youth_15_35',
+                        '中年36-60', '中年_36_60', '中年', 'adult_36_60',
+                        '老年60+', '老年_60_', '老年', 'elder_60'
+                    ];
+                    
+                    // 检查是否有这些键名在人口数据中
+                    for (const key of possibleKeys) {
+                        if (territoryData.人口 && territoryData.人口[key] !== undefined) {
+                            console.log(`找到可能的年龄键: ${key} =`, territoryData.人口[key]);
+                            // 这里可以尝试构建年龄结构对象
+                        }
+                    }
+                }
+                
+                ageGroups.forEach(group => {
+                    // 尝试多种可能的键名
+                    let count = 0;
+                    
+                    // 主要键名
+                    if (ageStructure[group.key] !== undefined) {
+                        count = safeNumber(ageStructure[group.key], 0);
+                    }
+                    // 备用键名（不带下划线的版本）
+                    else {
+                        const altKey = group.key.replace('_', '');
+                        if (ageStructure[altKey] !== undefined) {
+                            count = safeNumber(ageStructure[altKey], 0);
+                        }
+                    }
+                    
                     const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
                     
-                    console.log(`年龄组 ${group.key}: 处理后值 =`, count);
+                    console.log(`年龄组 ${group.label}: 值 = ${count}, 占比 = ${percentage}%`);
                     
                     html += `
                         <tr>
