@@ -727,6 +727,167 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* ========== 新增：角色模态框选项卡样式 ========== */
+        .character-modal-tabs {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #8B6914;
+            background: rgba(232, 212, 168, 0.3);
+        }
+        
+        .character-tab-btn {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            color: #4A3728;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+        }
+        
+        .character-tab-btn.active {
+            color: #2C1810;
+            font-weight: bold;
+            border-bottom: 2px solid #8B6914;
+            background: rgba(139, 105, 20, 0.1);
+        }
+        
+        .character-tab-content {
+            display: none;
+        }
+        
+        .character-tab-content.active {
+            display: block;
+        }
+        
+        /* 性信息样式 */
+        .sex-info-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            border: 1px solid rgba(139, 105, 20, 0.3);
+        }
+        
+        .sex-info-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2C1810;
+            font-size: 15px;
+        }
+        
+        .sex-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .sex-info-item {
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .sex-progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        
+        .sex-progress-label {
+            min-width: 100px;
+            font-size: 12px;
+        }
+        
+        /* 生理周期指示器 */
+        .cycle-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .cycle-stage {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .cycle-menstrual {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .cycle-follicular {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .cycle-ovulation {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .cycle-luteal {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        /* 怀孕状态指示器 */
+        .pregnancy-indicator {
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        
+        .pregnancy-yes {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        
+        .pregnancy-no {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        /* 体液状态样式 */
+        .fluid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .fluid-item {
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(232, 212, 168, 0.2);
+        }
+        
+        .fluid-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4A3728;
+        }
+        
+        /* 性器官信息样式 */
+        .organ-info {
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(232, 212, 168, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        .organ-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2C1810;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -764,7 +925,7 @@
                 <button class="close-button" onclick="closeModal('character-modal')">×</button>
             </div>
             <div id="character-modal-content">
-                <!-- 内容将动态生成 -->
+                <!-- 内容将动态生成（已删除大emoji头像） -->
             </div>
         </div>
     </div>
@@ -1955,7 +2116,77 @@
                         谋略: [55, "谋略策划和智慧0-100"],
                         学识: [45, "知识和学习能力0-100"],
                         勇武: [35, "个人战斗勇猛程度0-100"]
-                    }
+                    },
+                    性: {
+                        胸部: {
+                            外观: ["丰满圆润，乳晕浅粉色", "外观描述"],
+                            大小: ["C罩杯", "尺寸描述"],
+                            敏感度: [70, "敏感度0-100"],
+                            状态: ["正常", "当前状态描述"]
+                        },
+                        小穴: {
+                            外观: ["粉嫩，阴唇小巧", "外观描述"],
+                            紧致度: [85, "紧致度0-100"],
+                            敏感度: [75, "敏感度0-100"],
+                            状态: ["湿润", "当前湿润/状态描述"],
+                            使用次数: [3, "被插入次数"]
+                        },
+                        后庭: {
+                            外观: ["紧致，粉红色", "外观描述"],
+                            紧致度: [90, "紧致度0-100"],
+                            敏感度: [60, "敏感度0-100"],
+                            状态: ["未开发", "当前状态描述"],
+                            使用次数: [0, "被插入次数"]
+                        },
+                        肉棒: {
+                            外观: ["无", "外观描述"],
+                            长度: [0, "厘米"],
+                            粗度: [0, "厘米"],
+                            状态: ["无", "当前勃起状态描述"]
+                        },
+                        性经验: {
+                            总次数: [5, "性行为总次数"],
+                            人数: [2, "有过关系的总人数"],
+                            第一次时间: ["18岁", "初体验时间"],
+                            偏好姿势: ["传教士", "偏好的性爱姿势"]
+                        },
+                        性癖: ["轻微支配倾向，喜欢被温柔对待", "性偏好和特殊癖好"],
+                        生理周期: {
+                            当前阶段: ["卵泡期", "月经期/卵泡期/排卵期/黄体期"],
+                            阶段进度: [3, "当前阶段第几天，1-7"],
+                            总周期天数: [28, "周期总天数"],
+                            当前周期天数: [10, "当前周期第几天"],
+                            上次月经开始: ["第1年 1月1日", "上次月经开始时间"]
+                        },
+                        怀孕状态: {
+                            是否怀孕: [false, "是否怀孕"],
+                            怀孕开始时间: ["", "怀孕开始时间"],
+                            怀孕周数: [0, "怀孕周数"],
+                            胎儿父亲: ["", "胎儿父亲姓名/ID"],
+                            孕期状态: ["", "孕期反应描述"]
+                        },
+                        子嗣: {
+                            数量: [0, "子嗣总数"],
+                            描述: ["无", "子嗣简单描述"]
+                        },
+                        体液状态: {
+                            胃部液体量: [200, "胃部液体量(ml)"],
+                            子宫液体量: [5, "子宫液体量(ml)"],
+                            肠道液体量: [300, "肠道液体量(ml)"],
+                            膀胱液体量: [150, "膀胱液体量(ml)"],
+                            最大容量: {
+                                胃部: [2000, "胃部最大容量(ml)"],
+                                子宫: [100, "子宫最大容量(ml)"],
+                                肠道: [1500, "肠道最大容量(ml)"],
+                                膀胱: [800, "膀胱最大容量(ml)"]
+                            },
+                            排泄需求: [20, "排泄需求程度0-100"]
+                        },
+                        敏感带: ["颈部、耳后、胸部、大腿内侧", "身体敏感区域描述"],
+                        拒绝行为: ["粗暴行为、公开场合", "拒绝的性行为类型"],
+                        特殊能力: ["无", "特殊的性能力或体质"]
+                    },
+                    背景故事: ["艾莉丝是铁匠大师杜尔金的女儿，从小在铁匠铺长大，继承了父亲的技艺和管理能力。她性格严谨认真，对工作一丝不苟，深受铁匠铺员工们的尊重。", "角色的背景故事和经历"]
                 },
                 character_002: {
                     id: ["character_002", "角色ID"],
@@ -1991,7 +2222,77 @@
                         谋略: [50, "谋略策划和智慧0-100"],
                         学识: [70, "知识和学习能力0-100"],
                         勇武: [55, "个人战斗勇猛程度0-100"]
-                    }
+                    },
+                    性: {
+                        胸部: {
+                            外观: ["平坦，胸肌发达", "外观描述"],
+                            大小: ["无", "尺寸描述"],
+                            敏感度: [20, "敏感度0-100"],
+                            状态: ["正常", "当前状态描述"]
+                        },
+                        小穴: {
+                            外观: ["无", "外观描述"],
+                            紧致度: [0, "紧致度0-100"],
+                            敏感度: [0, "敏感度0-100"],
+                            状态: ["无", "当前湿润/状态描述"],
+                            使用次数: [0, "被插入次数"]
+                        },
+                        后庭: {
+                            外观: ["正常", "外观描述"],
+                            紧致度: [80, "紧致度0-100"],
+                            敏感度: [30, "敏感度0-100"],
+                            状态: ["未开发", "当前状态描述"],
+                            使用次数: [0, "被插入次数"]
+                        },
+                        肉棒: {
+                            外观: ["粗壮，青筋明显", "外观描述"],
+                            长度: [16, "厘米"],
+                            粗度: [4, "厘米"],
+                            状态: ["正常", "当前勃起状态描述"]
+                        },
+                        性经验: {
+                            总次数: [50, "性行为总次数"],
+                            人数: [3, "有过关系的总人数"],
+                            第一次时间: ["20岁", "初体验时间"],
+                            偏好姿势: ["传统姿势", "偏好的性爱姿势"]
+                        },
+                        性癖: ["传统保守", "性偏好和特殊癖好"],
+                        生理周期: {
+                            当前阶段: ["无", "月经期/卵泡期/排卵期/黄体期"],
+                            阶段进度: [0, "当前阶段第几天，1-7"],
+                            总周期天数: [0, "周期总天数"],
+                            当前周期天数: [0, "当前周期第几天"],
+                            上次月经开始: ["", "上次月经开始时间"]
+                        },
+                        怀孕状态: {
+                            是否怀孕: [false, "是否怀孕"],
+                            怀孕开始时间: ["", "怀孕开始时间"],
+                            怀孕周数: [0, "怀孕周数"],
+                            胎儿父亲: ["", "胎儿父亲姓名/ID"],
+                            孕期状态: ["", "孕期反应描述"]
+                        },
+                        子嗣: {
+                            数量: [2, "子嗣总数"],
+                            描述: ["一子一女，均已成年", "子嗣简单描述"]
+                        },
+                        体液状态: {
+                            胃部液体量: [500, "胃部液体量(ml)"],
+                            子宫液体量: [0, "子宫液体量(ml)"],
+                            肠道液体量: [400, "肠道液体量(ml)"],
+                            膀胱液体量: [200, "膀胱液体量(ml)"],
+                            最大容量: {
+                                胃部: [2500, "胃部最大容量(ml)"],
+                                子宫: [0, "子宫最大容量(ml)"],
+                                肠道: [1800, "肠道最大容量(ml)"],
+                                膀胱: [1000, "膀胱最大容量(ml)"]
+                            },
+                            排泄需求: [30, "排泄需求程度0-100"]
+                        },
+                        敏感带: ["无特别敏感区域", "身体敏感区域描述"],
+                        拒绝行为: ["同性行为、特殊癖好", "拒绝的性行为类型"],
+                        特殊能力: ["无", "特殊的性能力或体质"]
+                    },
+                    背景故事: ["杜尔金是领地内最资深的铁匠大师，已在铁匠铺工作了三十余年。他技艺精湛，尤其擅长锻造武器和盔甲，为领地的防御做出了重要贡献。", "角色的背景故事和经历"]
                 }
             };
         }
@@ -3721,7 +4022,7 @@
             modal.style.display = 'flex';
         }
         
-        // 打开角色详情模态框
+        // 打开角色详情模态框 - 重大修改：添加选项卡功能
         function openCharacterModal(characterKey) {
             const modal = document.getElementById('character-modal');
             const content = document.getElementById('character-modal-content');
@@ -3739,6 +4040,7 @@
             const overview = character.角色概览 || {};
             const appearance = character.身体外貌 || {};
             const abilities = character.能力五维 || {};
+            const sexInfo = character.性 || {};
             
             const gender = safeString(overview.性别, '');
             const age = safeNumber(overview.年龄, 0);
@@ -3773,173 +4075,586 @@
             
             title.textContent = name;
             
+            // 构建选项卡导航
             let html = `
-                <div class="character-detail-avatar">
-                    <div class="character-avatar-large">
-                        ${gender === '女' ? '👩' : gender === '男' ? '👨' : '👤'}
-                    </div>
-                    <div style="font-size: 16px; font-weight: bold;">${name}</div>
-                    <div style="font-size: 12px; color: #8B6914;">${identity} | ${profession}</div>
+                <div style="margin-bottom: 15px; display: flex; align-items: center;">
+                    <span style="font-size: 18px; font-weight: bold; margin-right: 10px;">${name}</span>
+                    <span style="font-size: 14px; color: #8B6914;">${identity} | ${profession}</span>
                 </div>
                 
-                <div class="modal-section">
-                    <h3 class="modal-section-title">📊 基础信息</h3>
-                    <div class="modal-grid">
-                        <div class="modal-info-item">
-                            <span class="modal-label">性别:</span>
-                            <span class="modal-value">${gender}</span>
+                <div class="character-modal-tabs">
+                    <button class="character-tab-btn active" onclick="switchCharacterTab(this, 'basic')">基本信息</button>
+                    <button class="character-tab-btn" onclick="switchCharacterTab(this, 'relationship')">关系与能力</button>
+                    <button class="character-tab-btn" onclick="switchCharacterTab(this, 'appearance')">外貌衣着</button>
+                    <button class="character-tab-btn" onclick="switchCharacterTab(this, 'sex')">性信息</button>
+                    <button class="character-tab-btn" onclick="switchCharacterTab(this, 'background')">背景故事</button>
+                </div>
+                
+                <!-- 基本信息选项卡 -->
+                <div class="character-tab-content active" id="character-tab-basic">
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">📊 基础信息</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">性别:</span>
+                                <span class="modal-value">${gender}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">年龄:</span>
+                                <span class="modal-value">${age}岁</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">身份:</span>
+                                <span class="modal-value">${identity}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">职业:</span>
+                                <span class="modal-value">${profession}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">情绪:</span>
+                                <span class="modal-value">${mood}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">所在地点:</span>
+                                <span class="modal-value">${location}</span>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">年龄:</span>
-                            <span class="modal-value">${age}岁</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">身份:</span>
-                            <span class="modal-value">${identity}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">职业:</span>
-                            <span class="modal-value">${profession}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">情绪:</span>
-                            <span class="modal-value">${mood}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">所在地点:</span>
-                            <span class="modal-value">${location}</span>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">📝 当前状态</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">当前行为:</span>
+                                <span class="modal-value">${behavior}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">最近互动:</span>
+                                <span class="modal-value">${recentInteraction}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="modal-section">
-                    <h3 class="modal-section-title">❤️ 与领主关系</h3>
-                    <div class="modal-grid">
-                        <div class="modal-info-item">
-                            <span class="modal-label">关系描述:</span>
-                            <span class="modal-value">${relationship}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">性格:</span>
-                            <span class="modal-value">${personality}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">好感度:</span>
-                            <span class="modal-value">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span>${love}/100</span>
-                                    <div class="progress" style="flex: 1;">
-                                        <div class="progress-bar" style="width: ${love}%"></div>
+                <!-- 关系与能力选项卡 -->
+                <div class="character-tab-content" id="character-tab-relationship">
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">❤️ 与领主关系</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-label">关系描述:</span>
+                                <span class="modal-value">${relationship}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">性格:</span>
+                                <span class="modal-value">${personality}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">好感度:</span>
+                                <span class="modal-value">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span>${love}/100</span>
+                                        <div class="progress" style="flex: 1;">
+                                            <div class="progress-bar" style="width: ${love}%"></div>
+                                        </div>
                                     </div>
-                                </div>
-                            </span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">忠诚度:</span>
-                            <span class="modal-value">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span>${loyalty}/100</span>
-                                    <div class="progress" style="flex: 1;">
-                                        <div class="progress-bar" style="width: ${loyalty}%"></div>
+                                </span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">忠诚度:</span>
+                                <span class="modal-value">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span>${loyalty}/100</span>
+                                        <div class="progress" style="flex: 1;">
+                                            <div class="progress-bar" style="width: ${loyalty}%"></div>
+                                        </div>
                                     </div>
-                                </div>
-                            </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">💪 能力五维</h3>
+                        <div class="ability-radar">
+                            <div class="ability-item">
+                                <div class="ability-name">军事</div>
+                                <div class="ability-value">${military}</div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-name">管理</div>
+                                <div class="ability-value">${management}</div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-name">外交</div>
+                                <div class="ability-value">${diplomacy}</div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-name">谋略</div>
+                                <div class="ability-value">${strategy}</div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-name">学识</div>
+                                <div class="ability-value">${knowledge}</div>
+                            </div>
+                            <div class="ability-item">
+                                <div class="ability-name">勇武</div>
+                                <div class="ability-value">${bravery}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="modal-section">
-                    <h3 class="modal-section-title">💪 能力五维</h3>
-                    <div class="ability-radar">
-                        <div class="ability-item">
-                            <div class="ability-name">军事</div>
-                            <div class="ability-value">${military}</div>
-                        </div>
-                        <div class="ability-item">
-                            <div class="ability-name">管理</div>
-                            <div class="ability-value">${management}</div>
-                        </div>
-                        <div class="ability-item">
-                            <div class="ability-name">外交</div>
-                            <div class="ability-value">${diplomacy}</div>
-                        </div>
-                        <div class="ability-item">
-                            <div class="ability-name">谋略</div>
-                            <div class="ability-value">${strategy}</div>
-                        </div>
-                        <div class="ability-item">
-                            <div class="ability-name">学识</div>
-                            <div class="ability-value">${knowledge}</div>
-                        </div>
-                        <div class="ability-item">
-                            <div class="ability-name">勇武</div>
-                            <div class="ability-value">${bravery}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-section">
-                    <h3 class="modal-section-title">👔 外貌衣着</h3>
-                    <div class="modal-grid">
-                        <div class="modal-info-item" style="grid-column: 1 / -1;">
-                            <span class="modal-label">外貌:</span>
-                            <span class="modal-value">${appearanceDesc}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">身材:</span>
-                            <span class="modal-value">${figure}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">身高:</span>
-                            <span class="modal-value">${height}厘米</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">体重:</span>
-                            <span class="modal-value">${weight}公斤</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">上身衣着:</span>
-                            <span class="modal-value">${upperClothing}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">下身衣着:</span>
-                            <span class="modal-value">${lowerClothing}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">配饰:</span>
-                            <span class="modal-value">${accessories}</span>
-                        </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">特殊标记:</span>
-                            <span class="modal-value">${specialMarks}</span>
+                <!-- 外貌衣着选项卡 -->
+                <div class="character-tab-content" id="character-tab-appearance">
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">👔 外貌衣着</h3>
+                        <div class="modal-grid">
+                            <div class="modal-info-item" style="grid-column: 1 / -1;">
+                                <span class="modal-label">外貌:</span>
+                                <span class="modal-value">${appearanceDesc}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">身材:</span>
+                                <span class="modal-value">${figure}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">身高:</span>
+                                <span class="modal-value">${height}厘米</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">体重:</span>
+                                <span class="modal-value">${weight}公斤</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">上身衣着:</span>
+                                <span class="modal-value">${upperClothing}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">下身衣着:</span>
+                                <span class="modal-value">${lowerClothing}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">配饰:</span>
+                                <span class="modal-value">${accessories}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-label">特殊标记:</span>
+                                <span class="modal-value">${specialMarks}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="modal-section">
-                    <h3 class="modal-section-title">📝 当前状态</h3>
-                    <div class="modal-grid">
-                        <div class="modal-info-item">
-                            <span class="modal-label">当前行为:</span>
-                            <span class="modal-value">${behavior}</span>
+                <!-- 性信息选项卡 -->
+                <div class="character-tab-content" id="character-tab-sex">
+            `;
+            
+            // ========== 性信息内容 ==========
+            const chest = sexInfo.胸部 || {};
+            const vagina = sexInfo.小穴 || {};
+            const anus = sexInfo.后庭 || {};
+            const penis = sexInfo.肉棒 || {};
+            const sexExp = sexInfo.性经验 || {};
+            const fetish = safeString(sexInfo.性癖, '');
+            const cycle = sexInfo.生理周期 || {};
+            const pregnancy = sexInfo.怀孕状态 || {};
+            const children = sexInfo.子嗣 || {};
+            const fluids = sexInfo.体液状态 || {};
+            const sensitiveAreas = safeString(sexInfo.敏感带, '');
+            const rejectedActs = safeString(sexInfo.拒绝行为, '');
+            const specialAbilities = safeString(sexInfo.特殊能力, '');
+            
+            // 胸部信息
+            if (safeString(chest.外观, '') !== '无' && safeString(chest.外观, '') !== '') {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">胸部</div>
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">外观:</span>
+                                <span class="modal-value">${safeString(chest.外观, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">大小:</span>
+                                <span class="modal-value">${safeString(chest.大小, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">状态:</span>
+                                <span class="modal-value">${safeString(chest.状态, '')}</span>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-label">最近互动:</span>
-                            <span class="modal-value">${recentInteraction}</span>
+                        <div class="sex-progress-container">
+                            <div class="sex-progress-label">敏感度:</div>
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${safeNumber(chest.敏感度, 0)}%"></div>
+                            </div>
+                            <span>${safeNumber(chest.敏感度, 0)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 小穴信息
+            if (safeString(vagina.外观, '') !== '无' && safeString(vagina.外观, '') !== '') {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">小穴</div>
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">外观:</span>
+                                <span class="modal-value">${safeString(vagina.外观, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">状态:</span>
+                                <span class="modal-value">${safeString(vagina.状态, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">使用次数:</span>
+                                <span class="modal-value">${safeNumber(vagina.使用次数, 0)}</span>
+                            </div>
+                        </div>
+                        <div class="sex-progress-container">
+                            <div class="sex-progress-label">紧致度:</div>
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${safeNumber(vagina.紧致度, 0)}%"></div>
+                            </div>
+                            <span>${safeNumber(vagina.紧致度, 0)}</span>
+                        </div>
+                        <div class="sex-progress-container">
+                            <div class="sex-progress-label">敏感度:</div>
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${safeNumber(vagina.敏感度, 0)}%"></div>
+                            </div>
+                            <span>${safeNumber(vagina.敏感度, 0)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 后庭信息
+            if (safeString(anus.外观, '') !== '无' && safeString(anus.外观, '') !== '') {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">后庭</div>
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">外观:</span>
+                                <span class="modal-value">${safeString(anus.外观, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">状态:</span>
+                                <span class="modal-value">${safeString(anus.状态, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">使用次数:</span>
+                                <span class="modal-value">${safeNumber(anus.使用次数, 0)}</span>
+                            </div>
+                        </div>
+                        <div class="sex-progress-container">
+                            <div class="sex-progress-label">紧致度:</div>
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${safeNumber(anus.紧致度, 0)}%"></div>
+                            </div>
+                            <span>${safeNumber(anus.紧致度, 0)}</span>
+                        </div>
+                        <div class="sex-progress-container">
+                            <div class="sex-progress-label">敏感度:</div>
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${safeNumber(anus.敏感度, 0)}%"></div>
+                            </div>
+                            <span>${safeNumber(anus.敏感度, 0)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 肉棒信息
+            if (safeString(penis.外观, '') !== '无' && safeString(penis.外观, '') !== '') {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">肉棒</div>
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">外观:</span>
+                                <span class="modal-value">${safeString(penis.外观, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">长度:</span>
+                                <span class="modal-value">${safeNumber(penis.长度, 0)}厘米</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">粗度:</span>
+                                <span class="modal-value">${safeNumber(penis.粗度, 0)}厘米</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">状态:</span>
+                                <span class="modal-value">${safeString(penis.状态, '')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 性经验
+            html += `
+                <div class="sex-info-section">
+                    <div class="sex-info-title">性经验</div>
+                    <div class="sex-info-grid">
+                        <div class="sex-info-item">
+                            <span class="modal-label">总次数:</span>
+                            <span class="modal-value">${safeNumber(sexExp.总次数, 0)}</span>
+                        </div>
+                        <div class="sex-info-item">
+                            <span class="modal-label">人数:</span>
+                            <span class="modal-value">${safeNumber(sexExp.人数, 0)}</span>
+                        </div>
+                        <div class="sex-info-item">
+                            <span class="modal-label">第一次时间:</span>
+                            <span class="modal-value">${safeString(sexExp.第一次时间, '')}</span>
+                        </div>
+                        <div class="sex-info-item">
+                            <span class="modal-label">偏好姿势:</span>
+                            <span class="modal-value">${safeString(sexExp.偏好姿势, '')}</span>
                         </div>
                     </div>
                 </div>
+            `;
+            
+            // 性癖
+            if (fetish) {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">性癖</div>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${fetish}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 生理周期
+            if (safeString(cycle.当前阶段, '') !== '' && safeString(cycle.当前阶段, '') !== '无') {
+                let cycleClass = '';
+                switch(safeString(cycle.当前阶段, '')) {
+                    case '月经期': cycleClass = 'cycle-menstrual'; break;
+                    case '卵泡期': cycleClass = 'cycle-follicular'; break;
+                    case '排卵期': cycleClass = 'cycle-ovulation'; break;
+                    case '黄体期': cycleClass = 'cycle-luteal'; break;
+                }
                 
-                <div class="modal-section">
-                    <h3 class="modal-section-title">📖 背景故事</h3>
-                    <div class="modal-info-item">
-                        <span class="modal-value">${background}</span>
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">生理周期</div>
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">当前阶段:</span>
+                                <span class="modal-value">
+                                    <span class="cycle-stage ${cycleClass}">${safeString(cycle.当前阶段, '')}</span>
+                                </span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">阶段进度:</span>
+                                <span class="modal-value">第${safeNumber(cycle.阶段进度, 0)}天</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">总周期天数:</span>
+                                <span class="modal-value">${safeNumber(cycle.总周期天数, 0)}天</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">当前周期天数:</span>
+                                <span class="modal-value">第${safeNumber(cycle.当前周期天数, 0)}天</span>
+                            </div>
+                        </div>
+                        <div class="cycle-indicator">
+                            <div class="progress" style="flex: 1;">
+                                <div class="progress-bar" style="width: ${(safeNumber(cycle.当前周期天数, 0) / safeNumber(cycle.总周期天数, 28) * 100)}%"></div>
+                            </div>
+                        </div>
+                        <div class="sex-info-item">
+                            <span class="modal-label">上次月经开始:</span>
+                            <span class="modal-value">${safeString(cycle.上次月经开始, '')}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 怀孕状态
+            const isPregnant = pregnancy.是否怀孕 === true;
+            html += `
+                <div class="sex-info-section">
+                    <div class="sex-info-title">怀孕状态</div>
+                    <div class="pregnancy-indicator ${isPregnant ? 'pregnancy-yes' : 'pregnancy-no'}">
+                        <div style="font-weight: bold; margin-bottom: 5px;">
+                            ${isPregnant ? '🤰 怀孕中' : '🚫 未怀孕'}
+                        </div>
+            `;
+            
+            if (isPregnant) {
+                html += `
+                        <div class="sex-info-grid">
+                            <div class="sex-info-item">
+                                <span class="modal-label">怀孕开始时间:</span>
+                                <span class="modal-value">${safeString(pregnancy.怀孕开始时间, '')}</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">怀孕周数:</span>
+                                <span class="modal-value">${safeNumber(pregnancy.怀孕周数, 0)}周</span>
+                            </div>
+                            <div class="sex-info-item">
+                                <span class="modal-label">胎儿父亲:</span>
+                                <span class="modal-value">${safeString(pregnancy.胎儿父亲, '')}</span>
+                            </div>
+                        </div>
+                        <div class="sex-info-item">
+                            <span class="modal-label">孕期状态:</span>
+                            <span class="modal-value">${safeString(pregnancy.孕期状态, '')}</span>
+                        </div>
+                `;
+            }
+            
+            html += `</div></div>`;
+            
+            // 子嗣
+            html += `
+                <div class="sex-info-section">
+                    <div class="sex-info-title">子嗣</div>
+                    <div class="sex-info-grid">
+                        <div class="sex-info-item">
+                            <span class="modal-label">数量:</span>
+                            <span class="modal-value">${safeNumber(children.数量, 0)}</span>
+                        </div>
+                    </div>
+                    <div class="sex-info-item">
+                        <span class="modal-label">描述:</span>
+                        <span class="modal-value">${safeString(children.描述, '')}</span>
+                    </div>
+                </div>
+            `;
+            
+            // 体液状态
+            if (fluids && Object.keys(fluids).length > 0) {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">体液状态</div>
+                        <div class="fluid-container">
+                `;
+                
+                const fluidItems = [
+                    { key: '胃部液体量', label: '胃部', maxKey: '胃部', unit: 'ml' },
+                    { key: '子宫液体量', label: '子宫', maxKey: '子宫', unit: 'ml' },
+                    { key: '肠道液体量', label: '肠道', maxKey: '肠道', unit: 'ml' },
+                    { key: '膀胱液体量', label: '膀胱', maxKey: '膀胱', unit: 'ml' }
+                ];
+                
+                fluidItems.forEach(item => {
+                    const current = safeNumber(fluids[item.key], 0);
+                    const max = safeNumber(fluids.最大容量?.[item.maxKey], 1000);
+                    const percentage = max > 0 ? (current / max * 100) : 0;
+                    
+                    html += `
+                        <div class="fluid-item">
+                            <div class="fluid-name">${item.label}</div>
+                            <div>${current}${item.unit} / ${max}${item.unit}</div>
+                            <div class="progress" style="margin-top: 5px;">
+                                <div class="progress-bar" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                
+                // 排泄需求
+                const excretionNeed = safeNumber(fluids.排泄需求, 0);
+                html += `
+                    <div style="margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                            <span>排泄需求:</span>
+                            <span>${excretionNeed}/100</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: ${excretionNeed}%"></div>
+                        </div>
+                    </div>
+                `;
+                
+                html += `</div>`;
+            }
+            
+            // 敏感带
+            if (sensitiveAreas) {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">敏感带</div>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${sensitiveAreas}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 拒绝行为
+            if (rejectedActs) {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">拒绝行为</div>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${rejectedActs}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 特殊能力
+            if (specialAbilities && specialAbilities !== '无') {
+                html += `
+                    <div class="sex-info-section">
+                        <div class="sex-info-title">特殊能力</div>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${specialAbilities}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 关闭性信息选项卡
+            html += `</div>`;
+            
+            // 背景故事选项卡
+            html += `
+                <div class="character-tab-content" id="character-tab-background">
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">📖 背景故事</h3>
+                        <div class="modal-info-item">
+                            <span class="modal-value">${background}</span>
+                        </div>
                     </div>
                 </div>
             `;
             
             content.innerHTML = html;
             modal.style.display = 'flex';
+        }
+        
+        // 角色模态框选项卡切换函数
+        function switchCharacterTab(btn, tabId) {
+            // 移除所有活动状态
+            const tabButtons = btn.parentElement.querySelectorAll('.character-tab-btn');
+            tabButtons.forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // 隐藏所有选项卡内容
+            const tabContents = document.querySelectorAll('.character-tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 激活当前选项卡
+            btn.classList.add('active');
+            document.getElementById(`character-tab-${tabId}`).classList.add('active');
         }
         
         // 打开法令详情模态框
