@@ -5779,33 +5779,63 @@ function copyToClipboard(text) {
     });
 }
 
-// 发送文本到Silly Tavern输入框（增强版）
-function sendToSillyTavern(text) {
-    // 尝试多种方法
-    if (typeof triggerSlash === 'function') {
-        // 方法1：直接发送消息
-        triggerSlash(`/send ${text}`);
-        return true;
-    } else if (typeof window.triggerSlash === 'function') {
-        // 方法2：通过window对象
-        window.triggerSlash(`/send ${text}`);
-        return true;
-    } else if (window.parent && window.parent.postMessage) {
-        // 方法3：通过postMessage
-        window.parent.postMessage({
-            type: 'send_to_chat',
-            text: text
-        }, '*');
-        return true;
-    } else if (typeof window.sendMessageToChat === 'function') {
-        // 方法4：直接调用Silly Tavern函数
-        window.sendMessageToChat(text);
-        return true;
-    } else {
-        // 最终方案：复制到剪贴板
-        copyToClipboard(text);
-        return false;
+// 将文本放入Silly Tavern的输入框
+function insertToSillyTavernInput(text) {
+    // 尝试多种方式找到输入框
+    let textarea = null;
+    
+    // 常见选择器（Silly Tavern的输入框）
+    const selectors = [
+        '#send_textarea',           // 常见ID
+        'textarea[placeholder*="发送消息"]',
+        'textarea[placeholder*="输入"]',
+        'textarea[data-id="user-input"]',
+        '#user-input',              // 用户输入框
+        '#message-input',           // 消息输入框
+        '.message-input textarea',  // 类名选择器
+        '.input-area textarea',
+        '.chat-input textarea'
+    ];
+    
+    // 尝试每个选择器
+    for (let selector of selectors) {
+        textarea = document.querySelector(selector);
+        if (textarea) {
+            break;
+        }
     }
+    
+    // 如果找到输入框，设置文本
+    if (textarea) {
+        textarea.value = text;
+        
+        // 触发输入事件，让Silly Tavern知道内容已改变
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // 聚焦到输入框
+        textarea.focus();
+        
+        console.log('✅ 已填充输入框:', text.substring(0, 50) + '...');
+        return true;
+    }
+    
+    // 如果没找到输入框，尝试使用triggerSlash的其他命令
+    if (typeof triggerSlash === 'function') {
+        try {
+            // 尝试使用/type命令（可能可用）
+            triggerSlash(`/type ${text}`);
+            console.log('✅ 使用/type命令填充输入框');
+            return true;
+        } catch (e) {
+            // 如果/type不可用，尝试直接发送
+            console.log('❌ /type命令不可用');
+        }
+    }
+    
+    // 最后手段：复制到剪贴板
+    copyToClipboard(text);
+    return false;
 }
     </script>
 </body>
