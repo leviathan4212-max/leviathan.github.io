@@ -5746,17 +5746,17 @@ function openShareCharacterModal() {
 function selectCharacterForShare(characterKey, characterName) {
     if (!currentShareReport) return;
     
-    // 生成分享文本 - 使用更自然的格式
-    const shareText = `领主大人将今日的晨报分享给我：\n\n【${currentShareReport.title}】\n${currentShareReport.content}\n\n${characterName}，你对这些消息有什么看法？`;
+    // 生成分享文本 - 格式更自然
+    const shareText = `领主大人将今日的晨报分享给我：\n\n【${currentShareReport.title}】\n\n${currentShareReport.content}\n\n${characterName}，你对这些消息有什么看法？`;
     
-    console.log('分享给', characterName, ':', shareText.substring(0, 100) + '...');
+    console.log('正在分享给', characterName);
     
     // 尝试放入输入框
     const result = sendToSillyTavern(shareText);
     
     // 根据结果显示不同提示
     if (result) {
-        alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，确认后发送。`);
+        alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，可以编辑后发送。`);
     } else {
         alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${characterName}。`);
     }
@@ -5785,58 +5785,98 @@ function copyToClipboard(text) {
 
 // 发送文本到Silly Tavern输入框
 function sendToSillyTavern(text) {
-    console.log('调用 sendToSillyTavern:', text.substring(0, 50) + '...');
+    console.log('尝试填充输入框，内容长度:', text.length);
     
-    // 首先尝试直接找到并填充输入框
+    // 尝试多种常见的选择器
     const selectors = [
+        // Silly Tavern 常用选择器
         '#send_textarea',
-        'textarea[placeholder*="发送消息"]',
-        'textarea[placeholder*="输入"]',
         '#user-input',
         '#message-input',
+        'textarea[placeholder*="发送"]',
+        'textarea[placeholder*="Send"]',
+        'textarea[placeholder*="消息"]',
+        'textarea[placeholder*="Type"]',
+        'textarea[placeholder*="输入"]',
+        'textarea[placeholder*="Message"]',
+        
+        // 备用选择器
         '.chat-input textarea',
         '.input-area textarea',
-        'textarea[id*="input"]',
-        'textarea[name*="message"]'
+        '.message-input textarea',
+        '#chat-input',
+        '#text-input',
+        
+        // 更通用的选择器
+        'textarea:not([readonly])',
+        'textarea:not([disabled])'
     ];
     
-    for (let selector of selectors) {
-        const textarea = document.querySelector(selector);
-        if (textarea) {
-            console.log(`✅ 找到输入框: ${selector}`);
-            
-            // 设置文本
-            textarea.value = text;
-            
-            // 触发事件
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            textarea.dispatchEvent(new Event('change', { bubbles: true }));
-            
-            // 聚焦并滚动到可见
-            textarea.focus();
-            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            return true;
-        }
-    }
-    
-    console.log('❌ 未找到输入框元素，尝试其他方法...');
-    
-    // 尝试使用triggerSlash（如果存在）
-    if (typeof triggerSlash === 'function') {
+    // 尝试每个选择器
+    for (let i = 0; i < selectors.length; i++) {
+        const selector = selectors[i];
         try {
-            console.log('尝试使用triggerSlash...');
-            // 尝试/type命令填充输入框
-            triggerSlash(`/type ${text}`);
-            console.log('✅ 使用/type命令');
-            return true;
-        } catch (e) {
-            console.log('❌ triggerSlash失败:', e);
+            const textarea = document.querySelector(selector);
+            if (textarea && textarea.tagName === 'TEXTAREA') {
+                console.log(`✅ 找到输入框: ${selector}`);
+                console.log('输入框信息:', {
+                    id: textarea.id,
+                    placeholder: textarea.placeholder,
+                    class: textarea.className
+                });
+                
+                // 设置文本
+                textarea.value = text;
+                
+                // 触发事件让Silly Tavern知道内容已改变
+                const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+                const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+                
+                textarea.dispatchEvent(inputEvent);
+                textarea.dispatchEvent(changeEvent);
+                
+                // 聚焦到输入框
+                textarea.focus();
+                
+                // 确保输入框可见
+                setTimeout(() => {
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+                
+                return true;
+            }
+        } catch (error) {
+            console.log(`选择器 ${selector} 错误:`, error);
         }
     }
     
-    // 最终备用方案：复制到剪贴板
-    console.log('使用剪贴板备用方案');
+    console.log('❌ 未找到可用的输入框');
+    
+    // 尝试全局搜索所有textarea
+    console.log('尝试全局搜索所有textarea...');
+    const allTextareas = document.querySelectorAll('textarea');
+    if (allTextareas.length > 0) {
+        console.log(`找到 ${allTextareas.length} 个textarea元素:`);
+        allTextareas.forEach((ta, index) => {
+            console.log(`${index}: id="${ta.id}", placeholder="${ta.placeholder}", class="${ta.className}"`);
+        });
+        
+        // 尝试使用第一个可写的textarea
+        for (let i = 0; i < allTextareas.length; i++) {
+            const ta = allTextareas[i];
+            if (!ta.readOnly && !ta.disabled && ta.style.display !== 'none') {
+                console.log(`尝试使用第 ${i} 个textarea`);
+                ta.value = text;
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
+                ta.dispatchEvent(new Event('change', { bubbles: true }));
+                ta.focus();
+                return true;
+            }
+        }
+    }
+    
+    // 如果以上都失败，复制到剪贴板
+    console.log('所有方法都失败，使用剪贴板备用方案');
     copyToClipboard(text);
     return false;
 }
