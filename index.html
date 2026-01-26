@@ -5746,17 +5746,15 @@ function openShareCharacterModal() {
 function selectCharacterForShare(characterKey, characterName) {
     if (!currentShareReport) return;
     
-    // 生成分享文本
-    const shareText = `我将晨报《${currentShareReport.title}》的内容分享给${characterName}："${currentShareReport.content}"，并询问她的看法和意见。`;
+    // 生成分享文本（使用更自然的对话格式）
+    const shareText = `我将晨报《${currentShareReport.title}》的内容分享给你：${currentShareReport.content}\n\n你对这个消息有什么看法？`;
     
-    // 尝试发送到Silly Tavern的输入框
-    if (typeof sendToSillyTavern === 'function') {
-        sendToSillyTavern(shareText);
-    } else if (typeof window.sendToSillyTavern === 'function') {
-        window.sendToSillyTavern(shareText);
-    } else {
-        // 备用方案：复制到剪贴板
-        copyToClipboard(shareText);
+    // 尝试发送到Silly Tavern
+    const sent = sendToSillyTavern(shareText);
+    
+    // 显示反馈
+    if (sent) {
+        alert(`✅ 已将晨报分享给${characterName}！`);
     }
     
     // 关闭模态框
@@ -5781,22 +5779,23 @@ function copyToClipboard(text) {
     });
 }
 
-        // 发送文本到Silly Tavern输入框（如果可用）
+// 发送文本到Silly Tavern输入框
 function sendToSillyTavern(text) {
-    // 尝试通过多种方法发送到Silly Tavern
-    if (typeof window.sendMessageToChat === 'function') {
+    // 优先使用triggerSlash函数（Silly Tavern环境）
+    if (typeof triggerSlash === 'function') {
+        // 使用/send命令直接发送消息
+        triggerSlash('/send ' + text);
+        return true;
+    } else if (typeof window.triggerSlash === 'function') {
+        window.triggerSlash('/send ' + text);
+        return true;
+    } else if (typeof window.sendMessageToChat === 'function') {
         window.sendMessageToChat(text);
-    } else if (typeof window.insertText === 'function') {
-        window.insertText(text);
-    } else if (window.parent && window.parent.postMessage) {
-        // 通过postMessage发送
-        window.parent.postMessage({
-            type: 'territory_share',
-            text: text
-        }, '*');
+        return true;
     } else {
-        // 最终备用方案
+        // 备用方案：复制到剪贴板
         copyToClipboard(text);
+        return false;
     }
 }
     </script>
