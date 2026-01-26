@@ -888,6 +888,154 @@
             color: #2C1810;
             font-size: 14px;
         }
+        /* ========== 晨报系统样式 ========== */
+.morning-report-btn {
+    position: relative;
+    padding: 8px 15px;
+    background: #8B6914;
+    color: #F5E6C8;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.morning-report-btn:hover {
+    background: #725811;
+    transform: translateY(-2px);
+}
+
+.unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background: #dc3545;
+    border-radius: 50%;
+    border: 2px solid #F5E6C8;
+}
+
+/* 晨报模态框特定样式 */
+.morning-report-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.morning-report-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #8B6914;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.morning-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.morning-report-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2C1810;
+    margin-right: 10px;
+}
+
+.morning-report-category {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #E8D4A8;
+    color: #4A3728;
+}
+
+.morning-report-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4A3728;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(232, 212, 168, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #8B6914;
+}
+
+.morning-report-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.share-btn {
+    padding: 6px 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.share-btn:hover {
+    background: #218838;
+}
+
+/* 分享角色选择模态框样式 */
+.share-character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+.share-character-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #8B6914;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.share-character-card:hover {
+    background: rgba(232, 212, 168, 0.3);
+    transform: translateY(-2px);
+}
+
+.share-character-avatar {
+    font-size: 30px;
+}
+
+.share-character-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #2C1810;
+}
+
+.share-character-title {
+    font-size: 11px;
+    color: #8B6914;
+}
     </style>
 </head>
 <body>
@@ -942,18 +1090,54 @@
             </div>
         </div>
     </div>
-    
+    <!-- 晨报模态框 -->
+<div class="modal-overlay" id="morning-report-modal">
+    <div class="modal-content" style="max-width: 800px; max-height: 85vh;">
+        <div class="modal-header">
+            <h2 class="modal-title">📰 晨报系统</h2>
+            <button class="close-button" onclick="closeMorningReportModal()">×</button>
+        </div>
+        <div id="morning-report-modal-content">
+            <!-- 晨报内容将动态生成 -->
+        </div>
+    </div>
+</div>
+
+<!-- 分享选择角色模态框 -->
+<div class="modal-overlay" id="share-report-modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2 class="modal-title">🤝 分享晨报</h2>
+            <button class="close-button" onclick="closeModal('share-report-modal')">×</button>
+        </div>
+        <div id="share-report-modal-content">
+            <div id="share-report-info" style="margin-bottom: 15px; padding: 10px; background: rgba(232, 212, 168, 0.3); border-radius: 5px;">
+                <!-- 分享信息将动态生成 -->
+            </div>
+            <div class="share-character-grid" id="share-character-list">
+                <!-- 角色列表将动态生成 -->
+            </div>
+        </div>
+    </div>
+</div>
     <div class="territory-panel">
         <!-- 标题和领主按钮 -->
         <div class="panel-header">
-            <div class="header-left">
-                <h1 class="panel-title">🏰 领地状态面板</h1>
-                <div class="panel-subtitle">版本: 3.0 | 最后更新: <span id="last-update">刚刚</span></div>
-            </div>
-            <button class="lord-button" onclick="openLordModal()">
-                👑 <span id="lord-name">领主</span>
-            </button>
-        </div>
+    <div class="header-left">
+        <h1 class="panel-title">🏰 领地状态面板</h1>
+        <div class="panel-subtitle">版本: 3.0 | 最后更新: <span id="last-update">刚刚</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="lord-button" onclick="openLordModal()">
+            👑 <span id="lord-name">领主</span>
+        </button>
+        <!-- 新增晨报按钮 -->
+        <button class="morning-report-btn" onclick="openMorningReportModal()" id="morning-report-btn">
+            📰 晨报
+            <span class="unread-badge" id="morning-report-badge" style="display: none;"></span>
+        </button>
+    </div>
+</div>
         
         <!-- 控制栏 -->
         <div class="control-bar">
@@ -980,6 +1164,7 @@
             <button class="tab-btn" onclick="switchTab('technology')">科技</button>
             <button class="tab-btn" onclick="switchTab('decrees')">法令</button>
             <button class="tab-btn" onclick="switchTab('characters')">角色</button>
+            <button class="tab-btn" onclick="switchTab('diplomacy')">外交</button>
             <button class="tab-btn" onclick="switchTab('system')">系统</button>
         </div>
         
@@ -1281,6 +1466,48 @@
             </div>
         </div>
         
+        <!-- 外交选项卡 -->
+<div class="tab-content" id="tab-diplomacy">
+    <!-- 外交概览 -->
+    <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+            <div class="section-title">🌍 外交概览</div>
+            <div class="section-toggle">▼</div>
+        </div>
+        <div class="section-content">
+            <div id="diplomacy-overview">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 势力关系 -->
+    <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+            <div class="section-title">🤝 势力关系</div>
+            <div class="section-toggle">▼</div>
+        </div>
+        <div class="section-content">
+            <div id="diplomacy-relations">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 使者信息 -->
+    <div class="section">
+        <div class="section-header" onclick="toggleSection(this)">
+            <div class="section-title">👤 使者信息</div>
+            <div class="section-toggle">▼</div>
+        </div>
+        <div class="section-content">
+            <div id="diplomacy-envoys">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+</div>
+        
         <!-- 系统选项卡 -->
         <div class="tab-content" id="tab-system">
             <!-- 系统设置 -->
@@ -1344,6 +1571,9 @@
     <script>
         // 领地数据存储
         let territoryData = null;
+        // 晨报系统变量
+        let morningReportUnread = false;
+        let currentShareReport = null; // 当前正在分享的晨报
         let lastUpdate = null;
         let autoRefreshEnabled = false;
         let autoRefreshInterval = null;
@@ -2075,7 +2305,109 @@
                     },
                     性经验: [12, "性经验次数"],
                     子嗣: ["无", "子嗣描述"]
+                },
+                Diplomacy: {
+    全局状态: {
+        外交焦点: ["帝国关系", "当前最重要的外交事务"],
+        最近事件: ["帝国使者来访", "最近发生的外交事件"],
+        特殊状态: ["有宗主国", "例如：处于战争中、有宗主国、被封锁等"],
+        月度外交收支: [0, "自动计算：所有条约的收支影响总和"]
+    },
+    势力关系: {
+        格里芬帝国: {
+            名称: ["格里芬帝国", "中央政权"],
+            领袖: ["奥古斯都皇帝", "领袖姓名"],
+            态度: ["宗主", "我的宗主国"],
+            关系值: [25, "表面恭敬，实则紧张"],
+            实力对比: ["远强于我", "完全无法抗衡"],
+            现有条约: {
+                附庸协议: {
+                    条约类型: ["附庸", "类型"],
+                    签订时间: ["即位时", "签订时间"],
+                    主要内容: ["承认帝国宗主权，每年缴纳岁贡，战时提供兵力", "核心内容"],
+                    有效期: ["永久", "除非独立"],
+                    收支影响: [-500, "每月向帝国缴纳的岁贡"]
+                },
+                基础贸易: {
+                    条约类型: ["贸易", "类型"],
+                    签订时间: ["即位时", "签订时间"],
+                    主要内容: ["帝国商人可在领地自由经商，关税优惠5%", "核心内容"],
+                    有效期: ["永久", "有效期"],
+                    收支影响: [80, "帝国商队带来的净收入"]
                 }
+            },
+            近期动向: ["使者即将来访，商讨增加岁贡事宜", "近期动向"]
+        },
+        山民王国: {
+            名称: ["山民王国", "名"],
+            领袖: ["布兰德国王", "领袖姓名"],
+            态度: ["友善", "态度"],
+            关系值: [65, "关系值"],
+            实力对比: ["稍强", "实力对比"],
+            现有条约: {
+                互不侵犯: {
+                    条约类型: ["军事", "类型"],
+                    签订时间: ["第1年 1月", "签订时间"],
+                    主要内容: ["承诺互不侵犯，尊重现有边界", "核心内容"],
+                    有效期: ["10年", "有效期"],
+                    收支影响: [0, "无直接经济影响"]
+                },
+                通商条约: {
+                    条约类型: ["贸易", "类型"],
+                    签订时间: ["第1年 1月", "签订时间"],
+                    主要内容: ["互降关税10%，保障商队安全", "核心内容"],
+                    有效期: ["5年", "有效期"],
+                    收支影响: [150, "毛皮和草药的贸易净收入"]
+                }
+            },
+            近期动向: ["忙于内部狩猎节，边境平静", "近期动向"]
+        },
+        碎牙部落: {
+            名称: ["碎牙部落", "名"],
+            领袖: ["格拉克酋长", "领袖姓名"],
+            态度: ["敌对", "态度"],
+            关系值: [-70, "关系值"],
+            实力对比: ["相当", "实力对比"],
+            现有条约: {
+                事实停火: {
+                    条约类型: ["军事", "类型"],
+                    签订时间: ["无正式签订", "签订时间"],
+                    主要内容: ["基于实际控制线的非正式停火", "核心内容"],
+                    有效期: ["不稳定", "有效期"],
+                    收支影响: [-30, "边境防御的额外开销"]
+                }
+            },
+            近期动向: ["在北部森林频繁活动，可能策划袭击", "近期动向"]
+        }
+    },
+    使者信息: {
+        帝国使者: {
+            姓名: ["塞巴斯蒂安子爵", "使者姓名"],
+            所在位置: ["领主大厅", "当前所在"],
+            任务: ["商讨岁贡", "来访目的"],
+            停留时间: ["7天", "预计停留"],
+            个人好感: [40, "对领主个人好感"]
+        }
+    }
+},
+晨报: {
+    王国风闻: {
+        标题: ["帝国朝堂暗流涌动，边境领主集会商讨对策", "标题"],
+        内容: ["帝都传来消息，几位实权贵族正在推动新的边境管控法案，要求所有边境领地增派驻军并提高税收。与此同时，北境十七位领主已秘密约定下月在灰岩堡集会，商讨联合应对之策。", "内容"]
+    },
+    领地纪事: {
+        标题: ["南坡新垦地丰收，却遭野猪祸害", "标题"],
+        内容: ["领民们欣喜于南坡新垦农田的首次丰收，但昨夜一群从黑森林窜出的巨野猪毁坏了近三分之一的庄稼。猎户们已组织围捕，铁匠铺正在赶制更多矛头。", "内容"]
+    },
+    人物轶录: {
+        标题: ["老药师的神秘访客与铁匠的黄昏恋情", "标题"],
+        内容: ["有人目睹一位披着斗篷的精灵连续三夜造访老药师的草屋，离去时携带着鼓囊囊的包裹。另一方面，铁匠安德烈最近收工后总往半精灵聚居区跑，年轻学徒们都在窃笑议论。", "内容"]
+    },
+    异事杂谈: {
+        标题: ["牧童的独角兽幻梦与酒馆里的预言诗", "标题"],
+        内容: ["牧童皮特坚持说在晨雾中见到了通体纯白的独角兽，但跟着去的猎犬什么也没找到。'沉睡巨人'酒馆里，一个流浪吟游诗人唱了首关于'冰封之心'的古老叙事诗，几个老酒客听后脸色发白。", "内容"]
+    }
+}
             };
         }
         
@@ -2364,6 +2696,7 @@
                     case '科技': loadTechnologyDetails(); break;
                     case '法令': loadDecreesGrid(); break;
                     case '角色': loadCharactersGrid(); break;
+                    case '外交': loadDiplomacyDetails(); break;
                     case '系统': loadSystemDetails(); break;
                 }
             }
@@ -3655,6 +3988,198 @@
         
         // 加载系统详情
         function loadSystemDetails() {
+
+            // 加载外交概览
+function loadDiplomacyOverview() {
+    const container = document.getElementById('diplomacy-overview');
+    if (!container) return;
+    
+    const diplomacy = territoryData.Diplomacy || {};
+    const global = diplomacy.全局状态 || {};
+    
+    const focus = safeString(global.外交焦点, '');
+    const recentEvent = safeString(global.最近事件, '');
+    const specialStatus = safeString(global.特殊状态, '');
+    const monthlyBalance = safeNumber(global.月度外交收支, 0);
+    
+    let html = `
+        <table class="data-table">
+            <tr>
+                <td style="width: 100px;">外交焦点</td>
+                <td>${focus}</td>
+            </tr>
+            <tr>
+                <td>最近事件</td>
+                <td>${recentEvent}</td>
+            </tr>
+            <tr>
+                <td>特殊状态</td>
+                <td>${specialStatus}</td>
+            </tr>
+            <tr>
+                <td>月度外交收支</td>
+                <td style="color: ${monthlyBalance >= 0 ? '#28a745' : '#dc3545'};">${formatCurrency(monthlyBalance, true)}</td>
+            </tr>
+        </table>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// 加载势力关系
+function loadDiplomacyRelations() {
+    const container = document.getElementById('diplomacy-relations');
+    if (!container) return;
+    
+    const diplomacy = territoryData.Diplomacy || {};
+    const relations = diplomacy.势力关系 || {};
+    
+    if (Object.keys(relations).length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无外交关系数据</div>';
+        return;
+    }
+    
+    let html = '';
+    
+    Object.entries(relations).forEach(([key, relation]) => {
+        if (typeof relation === 'object' && relation !== null) {
+            const name = safeString(relation.名称, '未知势力');
+            const leader = safeString(relation.领袖, '');
+            const attitude = safeString(relation.态度, '中立');
+            const relationValue = safeNumber(relation.关系值, 0);
+            const strength = safeString(relation.实力对比, '');
+            const recentMove = safeString(relation.近期动向, '');
+            const treaties = relation.现有条约 || {};
+            
+            // 关系值颜色
+            let relationColor = '#6c757d';
+            if (relationValue > 50) relationColor = '#28a745';
+            else if (relationValue > 20) relationColor = '#20c997';
+            else if (relationValue > -20) relationColor = '#ffc107';
+            else if (relationValue > -50) relationColor = '#fd7e14';
+            else relationColor = '#dc3545';
+            
+            // 态度标签
+            let attitudeClass = 'tag';
+            switch(attitude) {
+                case '敌对': attitudeClass += ' tag-danger'; break;
+                case '冷淡': attitudeClass += ' tag-warning'; break;
+                case '中立': attitudeClass += ' tag-secondary'; break;
+                case '友善': attitudeClass += ' tag-success'; break;
+                case '盟约': attitudeClass += ' tag-primary'; break;
+                case '臣服(于我)': attitudeClass += ' tag-info'; break;
+                case '宗主(于我)': attitudeClass += ' tag-dark'; break;
+                default: attitudeClass += ' tag-secondary';
+            }
+            
+            html += `
+                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="font-size: 18px; font-weight: bold;">${name}</div>
+                        <div>
+                            <span class="${attitudeClass}" style="margin-right: 10px;">${attitude}</span>
+                            <span style="color: ${relationColor}; font-weight: bold;">${relationValue}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px; font-size: 12px;">
+                        <div><strong>领袖:</strong> ${leader}</div>
+                        <div><strong>实力对比:</strong> ${strength}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div><strong>近期动向:</strong> ${recentMove}</div>
+                    </div>
+                    
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 8px;">现有条约:</div>
+            `;
+            
+            if (Object.keys(treaties).length === 0) {
+                html += `<div style="font-size: 12px; color: #6c757d;">无正式条约</div>`;
+            } else {
+                Object.entries(treaties).forEach(([treatyKey, treaty]) => {
+                    const treatyType = safeString(treaty.条约类型, '');
+                    const signTime = safeString(treaty.签订时间, '');
+                    const mainContent = safeString(treaty.主要内容, '');
+                    const validity = safeString(treaty.有效期, '');
+                    const financialImpact = safeNumber(treaty.收支影响, 0);
+                    
+                    html += `
+                        <div style="margin-bottom: 10px; padding: 10px; border-left: 3px solid #8B6914; background: rgba(139, 105, 20, 0.05);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: bold;">${treatyType}</span>
+                                <span style="color: ${financialImpact >= 0 ? '#28a745' : '#dc3545'};">${formatCurrency(financialImpact, true)}/月</span>
+                            </div>
+                            <div style="font-size: 11px; color: #4A3728; margin-bottom: 3px;">${mainContent}</div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                                <span>签订: ${signTime}</span>
+                                <span>有效期: ${validity}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `</div></div>`;
+        }
+    });
+    
+    container.innerHTML = html;
+}
+
+// 加载使者信息
+function loadDiplomacyEnvoys() {
+    const container = document.getElementById('diplomacy-envoys');
+    if (!container) return;
+    
+    const diplomacy = territoryData.Diplomacy || {};
+    const envoys = diplomacy.使者信息 || {};
+    
+    if (Object.keys(envoys).length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无使者信息</div>';
+        return;
+    }
+    
+    let html = '';
+    
+    Object.entries(envoys).forEach(([key, envoy]) => {
+        if (typeof envoy === 'object' && envoy !== null) {
+            const name = safeString(envoy.姓名, '未知使者');
+            const location = safeString(envoy.所在位置, '');
+            const mission = safeString(envoy.任务, '');
+            const stayTime = safeString(envoy.停留时间, '');
+            const personalFavor = safeNumber(envoy.个人好感, 0);
+            
+            const favorColor = personalFavor > 60 ? '#28a745' : personalFavor > 40 ? '#ffc107' : '#dc3545';
+            
+            html += `
+                <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #8B6914; border-radius: 5px; background: rgba(255, 255, 255, 0.8);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="font-size: 16px; font-weight: bold;">${name}</div>
+                        <div style="color: ${favorColor};">好感: ${personalFavor}</div>
+                    </div>
+                    
+                    <div style="font-size: 12px;">
+                        <div><strong>所在位置:</strong> ${location}</div>
+                        <div><strong>任务:</strong> ${mission}</div>
+                        <div><strong>停留时间:</strong> ${stayTime}</div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    container.innerHTML = html;
+}
+
+// 加载外交详情
+function loadDiplomacyDetails() {
+    loadDiplomacyOverview();
+    loadDiplomacyRelations();
+    loadDiplomacyEnvoys();
+}
+            
             // 系统设置
             const systemContainer = document.getElementById('system-details');
             if (systemContainer) {
@@ -4747,7 +5272,8 @@
                 content.style.display = 'none';
                 toggle.textContent = '▶';
             }
-            
+            // 检查晨报未读状态
+            checkMorningReportUnread();
             adjustIframeHeight();
         }
         
@@ -4779,6 +5305,11 @@
             
             // 加载选项卡数据
             switch(tabName) {
+
+                case 'diplomacy':
+    loadDiplomacyDetails();
+    break;
+                    
                 case 'overview':
                     // 概览选项卡已经在updateUI中更新
                     break;
@@ -5042,6 +5573,231 @@
                 }
             });
         });
+
+        // 检查晨报未读状态
+function checkMorningReportUnread() {
+    if (!territoryData || !territoryData.晨报) {
+        morningReportUnread = false;
+        return;
+    }
+    
+    // 检查本地存储中是否已读取
+    const lastReadTime = localStorage.getItem('morningReportLastRead');
+    const morningReports = territoryData.晨报;
+    
+    if (!lastReadTime) {
+        // 如果从未读取过，显示未读标记
+        morningReportUnread = true;
+    } else {
+        // 这里可以添加更复杂的逻辑，比如根据时间判断是否有新晨报
+        // 暂时简单处理为总是显示未读标记
+        morningReportUnread = true;
+    }
+    
+    // 更新按钮状态
+    updateMorningReportButton();
+}
+
+// 更新晨报按钮状态
+function updateMorningReportButton() {
+    const badge = document.getElementById('morning-report-badge');
+    if (badge) {
+        badge.style.display = morningReportUnread ? 'block' : 'none';
+    }
+}
+
+// 打开晨报模态框
+function openMorningReportModal() {
+    const modal = document.getElementById('morning-report-modal');
+    const content = document.getElementById('morning-report-modal-content');
+    
+    const morningReports = territoryData.晨报 || {};
+    
+    if (Object.keys(morningReports).length === 0) {
+        content.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">暂无晨报内容</div>';
+    } else {
+        let html = '<div class="morning-report-grid">';
+        
+        Object.entries(morningReports).forEach(([key, report]) => {
+            if (typeof report === 'object' && report !== null) {
+                const title = safeString(report.标题, '');
+                const contentText = safeString(report.内容, '');
+                const category = key;
+                
+                // 根据key显示不同的分类名称
+                let categoryName = '未分类';
+                switch(key) {
+                    case '王国风闻': categoryName = '王国风闻'; break;
+                    case '领地纪事': categoryName = '领地纪事'; break;
+                    case '人物轶录': categoryName = '人物轶录'; break;
+                    case '异事杂谈': categoryName = '异事杂谈'; break;
+                }
+                
+                html += `
+                    <div class="morning-report-card">
+                        <div class="morning-report-header">
+                            <div class="morning-report-title">${title}</div>
+                            <div class="morning-report-category">${categoryName}</div>
+                        </div>
+                        <div class="morning-report-content">
+                            ${contentText.replace(/\n/g, '<br>')}
+                        </div>
+                        <div class="morning-report-actions">
+                            <button class="share-btn" onclick="shareReport('${key}', '${title.replace(/'/g, "\\'")}', '${contentText.replace(/'/g, "\\'")}')">
+                                📤 分享
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        html += '</div>';
+        content.innerHTML = html;
+    }
+    
+    // 标记为已读
+    morningReportUnread = false;
+    updateMorningReportButton();
+    localStorage.setItem('morningReportLastRead', new Date().toISOString());
+    
+    modal.style.display = 'flex';
+}
+
+// 关闭晨报模态框
+function closeMorningReportModal() {
+    const modal = document.getElementById('morning-report-modal');
+    modal.style.display = 'none';
+}
+
+// 分享晨报
+function shareReport(reportKey, reportTitle, reportContent) {
+    // 存储当前分享的晨报信息
+    currentShareReport = {
+        key: reportKey,
+        title: reportTitle,
+        content: reportContent
+    };
+    
+    // 打开分享选择角色模态框
+    openShareCharacterModal();
+}
+
+// 打开分享选择角色模态框
+function openShareCharacterModal() {
+    if (!currentShareReport) return;
+    
+    const modal = document.getElementById('share-report-modal');
+    const infoDiv = document.getElementById('share-report-info');
+    const characterList = document.getElementById('share-character-list');
+    
+    // 设置分享信息
+    infoDiv.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px;">分享晨报：${currentShareReport.title}</div>
+        <div style="font-size: 12px; color: #4A3728;">
+            ${currentShareReport.content.length > 100 ? currentShareReport.content.substring(0, 100) + '...' : currentShareReport.content}
+        </div>
+    `;
+    
+    // 获取角色列表
+    const characters = territoryData.角色 || {};
+    
+    if (Object.keys(characters).length === 0) {
+        characterList.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;">暂无角色</div>';
+    } else {
+        let html = '';
+        
+        Object.entries(characters).forEach(([characterKey, character]) => {
+            if (typeof character === 'object' && character !== null) {
+                const name = safeString(character.姓名, '未知角色');
+                const overview = character.角色概览 || {};
+                const identity = safeString(overview.身份, '');
+                const gender = safeString(overview.性别, '');
+                
+                // 确定头像
+                let avatar = '👤';
+                if (gender === '女') avatar = '👩';
+                if (gender === '男') avatar = '👨';
+                if (identity.includes('铁匠')) avatar = '⚒️';
+                if (identity.includes('战士')) avatar = '🛡️';
+                if (identity.includes('商人')) avatar = '💰';
+                if (identity.includes('官员')) avatar = '📋';
+                
+                html += `
+                    <div class="share-character-card" onclick="selectCharacterForShare('${characterKey}', '${name.replace(/'/g, "\\'")}')">
+                        <div class="share-character-avatar">${avatar}</div>
+                        <div>
+                            <div class="share-character-name">${name}</div>
+                            <div class="share-character-title">${identity}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        characterList.innerHTML = html;
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// 选择角色进行分享
+function selectCharacterForShare(characterKey, characterName) {
+    if (!currentShareReport) return;
+    
+    // 生成分享文本
+    const shareText = `我将晨报《${currentShareReport.title}》的内容分享给${characterName}："${currentShareReport.content}"，并询问她的看法和意见。`;
+    
+    // 尝试发送到Silly Tavern的输入框
+    if (typeof sendToSillyTavern === 'function') {
+        sendToSillyTavern(shareText);
+    } else if (typeof window.sendToSillyTavern === 'function') {
+        window.sendToSillyTavern(shareText);
+    } else {
+        // 备用方案：复制到剪贴板
+        copyToClipboard(shareText);
+    }
+    
+    // 关闭模态框
+    closeModal('share-report-modal');
+    currentShareReport = null;
+}
+
+// 复制到剪贴板
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('分享文本已复制到剪贴板！\n\n' + text);
+    }).catch(err => {
+        console.error('复制失败:', err);
+        // 创建临时元素进行复制
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('分享文本已复制到剪贴板！');
+    });
+}
+
+        // 发送文本到Silly Tavern输入框（如果可用）
+function sendToSillyTavern(text) {
+    // 尝试通过多种方法发送到Silly Tavern
+    if (typeof window.sendMessageToChat === 'function') {
+        window.sendMessageToChat(text);
+    } else if (typeof window.insertText === 'function') {
+        window.insertText(text);
+    } else if (window.parent && window.parent.postMessage) {
+        // 通过postMessage发送
+        window.parent.postMessage({
+            type: 'territory_share',
+            text: text
+        }, '*');
+    } else {
+        // 最终备用方案
+        copyToClipboard(text);
+    }
+}
     </script>
 </body>
 </html>
