@@ -5779,21 +5779,30 @@ function copyToClipboard(text) {
     });
 }
 
-// 发送文本到Silly Tavern输入框
+// 发送文本到Silly Tavern输入框（增强版）
 function sendToSillyTavern(text) {
-    // 优先使用triggerSlash函数（Silly Tavern环境）
+    // 尝试多种方法
     if (typeof triggerSlash === 'function') {
-        // 使用/send命令直接发送消息
-        triggerSlash('/send ' + text);
+        // 方法1：直接发送消息
+        triggerSlash(`/send ${text}`);
         return true;
     } else if (typeof window.triggerSlash === 'function') {
-        window.triggerSlash('/send ' + text);
+        // 方法2：通过window对象
+        window.triggerSlash(`/send ${text}`);
+        return true;
+    } else if (window.parent && window.parent.postMessage) {
+        // 方法3：通过postMessage
+        window.parent.postMessage({
+            type: 'send_to_chat',
+            text: text
+        }, '*');
         return true;
     } else if (typeof window.sendMessageToChat === 'function') {
+        // 方法4：直接调用Silly Tavern函数
         window.sendMessageToChat(text);
         return true;
     } else {
-        // 备用方案：复制到剪贴板
+        // 最终方案：复制到剪贴板
         copyToClipboard(text);
         return false;
     }
