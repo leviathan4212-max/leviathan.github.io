@@ -5746,10 +5746,32 @@ function openShareCharacterModal() {
 function selectCharacterForShare(characterKey, characterName) {
     if (!currentShareReport) return;
     
-    // 生成分享文本 - 格式更自然
-    const shareText = `领主大人将今日的晨报分享给我：\n\n【${currentShareReport.title}】\n\n${currentShareReport.content}\n\n${characterName}，你对这些消息有什么看法？`;
+    // 获取角色的身份信息，用于称呼
+    const character = territoryData.角色?.[characterKey];
+    const identity = character?.角色概览?.身份 || '';
+    const gender = character?.角色概览?.性别 || '';
     
-    console.log('正在分享给', characterName);
+    // 根据性别选择合适的称呼代词
+    let pronoun = '他';
+    let title = '';
+    
+    if (gender === '女') pronoun = '她';
+    if (gender === '男') pronoun = '他';
+    
+    // 根据身份设置不同的称呼
+    if (identity.includes('铁匠')) title = '铁匠';
+    else if (identity.includes('官员') || identity.includes('管理者')) title = '大人';
+    else if (identity.includes('商人')) title = '老板';
+    else if (identity.includes('战士') || identity.includes('守卫')) title = '战士';
+    else title = '';
+    
+    // 构建更自然的称呼
+    const fullTitle = title ? `${characterName}${title}` : characterName;
+    
+    // 生成更自然、有沉浸感的分享文本
+    const shareText = generateImmersionText(fullTitle, characterName, pronoun, currentShareReport);
+    
+    console.log('正在分享给', characterName, '，生成文本:', shareText);
     
     // 尝试放入输入框
     const result = sendToSillyTavern(shareText);
@@ -5758,10 +5780,10 @@ function selectCharacterForShare(characterKey, characterName) {
     if (result.success) {
         // 如果成功，但没有使用toastr，则使用alert
         if (!result.usedToastr) {
-            alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，可以编辑后发送。`);
+            alert(`✅ 消息已放入输入框！\n\n分享对象：${fullTitle}\n\n请查看输入框中的内容，可以编辑后发送。`);
         }
     } else {
-        alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${characterName}。`);
+        alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${fullTitle}。`);
     }
     
     // 关闭模态框
