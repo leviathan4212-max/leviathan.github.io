@@ -881,7 +881,7 @@
                             <div class="preset-grid territory-grid">
                                 <!-- 预设1: 富饶平原领 -->
                                 <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="rich_plain" checked>
+                                    <input type="radio" name="territory-preset" value="rich_plain" checked data-nation="aesland" data-terrain="inland_plain">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🏞️</div>
@@ -899,7 +899,7 @@
                                 
                                 <!-- 预设2: 边境要塞领 -->
                                 <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="border_fortress">
+                                    <input type="radio" name="territory-preset" value="border_fortress" data-nation="steel_law" data-terrain="hills">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🏰</div>
@@ -917,7 +917,7 @@
                                 
                                 <!-- 预设3: 沿海贸易领 -->
                                 <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="coastal_trade">
+                                    <input type="radio" name="territory-preset" value="coastal_trade" data-nation="blue_league" data-terrain="coastal_plain">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">⚓</div>
@@ -935,7 +935,7 @@
                                 
                                 <!-- 预设4: 山林资源领 -->
                                 <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="mountain_resource">
+                                    <input type="radio" name="territory-preset" value="mountain_resource" data-nation="deeprock" data-terrain="mountains">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🌲</div>
@@ -953,7 +953,7 @@
                                 
                                 <!-- 预设5: 河谷农业领 -->
                                 <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="river_valley">
+                                    <input type="radio" name="territory-preset" value="river_valley" data-nation="aesland" data-terrain="river_valley">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🌾</div>
@@ -1271,6 +1271,127 @@
             }
         };
 
+        // 从本地存储加载数据
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('power_path_creation_data');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    window.creationData = { ...window.creationData, ...parsedData };
+                    console.log('从本地存储加载数据:', window.creationData);
+                }
+            } catch (e) {
+                console.error('加载本地存储数据失败:', e);
+            }
+        }
+
+        // 保存数据到本地存储
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('power_path_creation_data', JSON.stringify(window.creationData));
+                console.log('保存数据到本地存储:', window.creationData);
+            } catch (e) {
+                console.error('保存到本地存储失败:', e);
+            }
+        }
+
+        // 从UI更新数据
+        function updateDataFromUI() {
+            // 更新角色数据
+            window.creationData.character.name = document.getElementById('char-name').value;
+            window.creationData.character.gender = document.getElementById('char-gender').value;
+            window.creationData.character.race = document.getElementById('char-race').value;
+            window.creationData.character.age = parseInt(document.getElementById('char-age').value) || 25;
+            window.creationData.character.class = document.getElementById('char-class').value;
+            window.creationData.character.height = parseInt(document.getElementById('char-height').value) || 175;
+            window.creationData.character.weight = parseInt(document.getElementById('char-weight').value) || 70;
+            window.creationData.character.penisLength = parseInt(document.getElementById('penis-length').value) || 15;
+            window.creationData.character.appearance = document.getElementById('char-appearance').value;
+            window.creationData.character.personality = document.getElementById('char-personality').value;
+            
+            // 更新背景故事
+            const backgroundRadio = document.querySelector('input[name="background"]:checked');
+            if (backgroundRadio) {
+                window.creationData.character.background = backgroundRadio.value;
+                if (backgroundRadio.value === 'custom') {
+                    window.creationData.character.customBackground = document.getElementById('custom-background').value;
+                }
+            }
+            
+            // 更新领地数据
+            window.creationData.territory.name = document.getElementById('territory-name').value;
+            
+            const territoryPresetRadio = document.querySelector('input[name="territory-preset"]:checked');
+            if (territoryPresetRadio) {
+                window.creationData.territory.preset = territoryPresetRadio.value;
+                window.creationData.territory.isCustom = territoryPresetRadio.value === 'custom';
+                
+                // 如果不是自定义，从data属性获取国家和地形
+                if (!window.creationData.territory.isCustom) {
+                    window.creationData.territory.nation = territoryPresetRadio.getAttribute('data-nation') || 'aesland';
+                    window.creationData.territory.terrain = territoryPresetRadio.getAttribute('data-terrain') || 'inland_plain';
+                }
+            }
+            
+            // 如果是自定义，从表单获取
+            if (window.creationData.territory.isCustom) {
+                window.creationData.territory.nation = document.getElementById('territory-nation').value;
+                
+                const terrainRadio = document.querySelector('input[name="terrain"]:checked');
+                if (terrainRadio) {
+                    window.creationData.territory.terrain = terrainRadio.value;
+                }
+            }
+            
+            // 获取难度
+            const difficultyRadio = document.querySelector('input[name="difficulty"]:checked');
+            if (difficultyRadio) {
+                window.creationData.territory.difficulty = difficultyRadio.value;
+            }
+            
+            saveToLocalStorage();
+        }
+
+        // 从数据更新UI
+        function updateUIFromData() {
+            // 更新角色UI
+            document.getElementById('char-name').value = window.creationData.character.name;
+            document.getElementById('char-gender').value = window.creationData.character.gender;
+            document.getElementById('char-race').value = window.creationData.character.race;
+            document.getElementById('char-age').value = window.creationData.character.age;
+            document.getElementById('char-class').value = window.creationData.character.class;
+            document.getElementById('char-height').value = window.creationData.character.height;
+            document.getElementById('char-weight').value = window.creationData.character.weight;
+            document.getElementById('penis-length').value = window.creationData.character.penisLength;
+            document.getElementById('char-appearance').value = window.creationData.character.appearance;
+            document.getElementById('char-personality').value = window.creationData.character.personality;
+            
+            // 更新背景故事
+            document.querySelector(`input[name="background"][value="${window.creationData.character.background}"]`).checked = true;
+            if (window.creationData.character.background === 'custom') {
+                document.getElementById('custom-background').value = window.creationData.character.customBackground;
+            }
+            
+            // 更新领地UI
+            document.getElementById('territory-name').value = window.creationData.territory.name;
+            
+            // 更新领地预设
+            document.querySelector(`input[name="territory-preset"][value="${window.creationData.territory.preset}"]`).checked = true;
+            
+            // 如果是自定义，显示自定义设置
+            const customSettings = document.getElementById('custom-territory-settings');
+            if (window.creationData.territory.isCustom) {
+                customSettings.style.display = 'block';
+                document.getElementById('territory-nation').value = window.creationData.territory.nation;
+                document.querySelector(`input[name="terrain"][value="${window.creationData.territory.terrain}"]`).checked = true;
+            } else {
+                customSettings.style.display = 'none';
+            }
+            
+            // 更新难度
+            document.querySelector(`input[name="difficulty"][value="${window.creationData.territory.difficulty}"]`).checked = true;
+        }
+
         // 领地预设数据
         window.territoryPresets = {
             rich_plain: {
@@ -1367,6 +1488,11 @@
             
             if (step < 0 || step >= window.totalSteps) return;
             
+            // 保存当前步骤数据
+            if (window.currentStep >= 1 && window.currentStep <= 2) {
+                window.updateDataFromUI();
+            }
+            
             window.currentStep = step;
             
             // 更新步骤指示器
@@ -1392,6 +1518,7 @@
             
             // 如果到达确认步骤，更新预览
             if (window.currentStep === 3) {
+                window.updateDataFromUI(); // 确保数据是最新的
                 window.updateConfirmationPreview();
                 window.generateFinalMessage();
             }
@@ -1411,6 +1538,9 @@
             if (!window.validateCurrentStep()) {
                 return;
             }
+            
+            // 保存当前步骤数据
+            window.updateDataFromUI();
             
             if (window.currentStep < window.totalSteps - 1) {
                 window.goToStep(window.currentStep + 1);
@@ -1683,6 +1813,28 @@
             const wood = document.getElementById('stat-wood')?.textContent || 0;
             const stone = document.getElementById('stat-stone')?.textContent || 0;
             
+            // 获取国家和种族构成数据
+            const nationCode = terr.isCustom ? terr.nation : (window.territoryPresets[terr.preset]?.nation || 'aesland');
+            const nationName = nationNames[nationCode] || nationCode;
+            
+            // 根据国家确定主要种族构成比例
+            const raceDistribution = {
+                aesland: { human: 0.85, elf: 0.05, dwarf: 0.05, halfling: 0.03, other: 0.02 },
+                blue_league: { human: 0.60, elf: 0.15, dwarf: 0.10, halfling: 0.05, beastkin: 0.05, other: 0.05 },
+                steel_law: { human: 0.70, orc: 0.15, dwarf: 0.08, other: 0.07 },
+                eternal_song: { elf: 0.95, human: 0.05 },
+                deeprock: { dwarf: 0.90, human: 0.08, other: 0.02 },
+                savage_claw: { orc: 0.80, beastkin: 0.15, human: 0.05 },
+                sand_shadow: { beastkin: 0.85, human: 0.10, other: 0.05 },
+                abyssal: { other: 1.00 }, // 海族
+                cloud: { other: 1.00 }, // 天空种族
+                salterra: { human: 0.60, elf: 0.20, dwarf: 0.10, other: 0.10 },
+                independent: { human: 0.50, elf: 0.15, dwarf: 0.15, beastkin: 0.10, other: 0.10 }
+            };
+            
+            const distribution = raceDistribution[nationCode] || raceDistribution.aesland;
+            const totalPop = parseInt(population);
+            
             // 构建最终消息
             let message = "【系统：领主创建完成 - 权力之路】\n\n";
             message += "=== 文学化开场白 ===\n\n";
@@ -1697,7 +1849,7 @@
             }
             
             message += `\n\n窗外是${terr.isCustom ? terrainNames[terr.terrain] || terr.terrain : window.territoryPresets[terr.preset]?.description || '未知'}的景色。`;
-            message += `这片土地位于${terr.isCustom ? nationNames[terr.nation] || terr.nation : nationNames[window.territoryPresets[terr.preset]?.nation] || '未知地区'}。`;
+            message += `这片土地位于${nationName}。`;
             message += `作为新晋领主，我深知前方的道路充满挑战，但权力与荣耀也正在远方等待。\n\n`;
             
             message += "【系统指令：请回忆以上背景，并推进剧情。现在，开始你的统治吧。】\n\n";
@@ -1728,12 +1880,12 @@
             
             if (terr.isCustom) {
                 message += `🗺️ 领地类型：自定义领地\n`;
-                message += `🏴 所属国家：${nationNames[terr.nation] || terr.nation}\n`;
+                message += `🏴 所属国家：${nationName}\n`;
                 message += `🌄 领地地形：${terrainNames[terr.terrain] || terr.terrain}\n`;
             } else {
                 const preset = window.territoryPresets[terr.preset];
                 message += `🗺️ 领地类型：${preset ? preset.name : '未知'}\n`;
-                message += `🏴 所属国家：${preset ? nationNames[preset.nation] || preset.nation : '未知'}\n`;
+                message += `🏴 所属国家：${nationName}\n`;
                 message += `🌄 领地地形：${preset ? terrainNames[preset.terrain] || preset.terrain : '未知'}\n`;
                 if (preset && preset.description) {
                     message += `📝 领地描述：${preset.description}\n`;
@@ -1750,29 +1902,86 @@
             message += `⛏️ 石材：${stone}\n\n`;
             
             message += `=== 系统指令 ===\n\n`;
-            message += `【变量更新要求】\n`;
-            message += `请根据以上设定初始化以下变量：\n`;
-            message += `1. Lord.姓名 = "${char.name}"\n`;
-            message += `2. Lord.性别 = "${genderNames[char.gender] || char.gender}"\n`;
-            message += `3. Lord.种族 = "${raceNames[char.race] || char.race}"\n`;
-            message += `4. Lord.年龄 = ${char.age}\n`;
-            message += `5. Lord.职业 = "${classNames[char.class] || char.class}"\n`;
-            message += `6. Lord.身高 = ${char.height}\n`;
-            message += `7. Lord.体重 = ${char.weight}\n`;
-            message += `8. Lord.肉棒.长度 = ${char.penisLength}\n`;
-            message += `9. Lord.外貌 = "${char.appearance || '未描述'}"\n`;
-            message += `10. Lord.性格 = "${char.personality || '未描述'}"\n`;
-            message += `11. Lord.背景 = "${backgroundText || '未提供'}"\n`;
-            message += `12. Territory.基本信息.名称 = "${terr.name}"\n`;
-            message += `13. Territory.基本信息.所属国家 = "${terr.isCustom ? nationNames[terr.nation] || terr.nation : nationNames[window.territoryPresets[terr.preset]?.nation] || '未知'}"\n`;
-            message += `14. Territory.基本信息.地形 = "${terr.isCustom ? terrainNames[terr.terrain] || terr.terrain : terrainNames[window.territoryPresets[terr.preset]?.terrain] || '未知'}"\n`;
-            message += `15. Territory.基本信息.发展阶段 = "据点"\n`;
-            message += `16. Territory.人口.总人口 = ${population}\n`;
-            message += `17. Territory.经济.财政.库存金币 = ${gold}\n`;
-            message += `18. Territory.仓库.粮食.当前储量 = ${food}\n`;
-            message += `19. System.当前游戏时间 = "第1年1月"\n`;
-            message += `20. System.当前季节 = "春季"\n`;
-            message += `21. System.上次结算时间 = ""\n\n`;
+            
+            // 构建UpdateVariable部分
+            message += `<UpdateVariable>\n`;
+            message += `<Checklist>\n`;
+            message += `- [游戏初始化] 初始化新游戏\n`;
+            message += `</Checklist>\n`;
+            message += `<Analysis>\n`;
+            message += `- Game initialization: Creating new game with character ${char.name} and territory ${terr.name}\n`;
+            message += `- Dramatic updates allowed: yes\n`;
+            message += `- Territory status: New territory established\n`;
+            message += `</Analysis>\n`;
+            message += `<JSONPatch>\n`;
+            message += `[\n`;
+            
+            // 添加变量更新命令
+            message += `  { "op": "replace", "path": "/Lord/姓名", "value": "${char.name}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/性别", "value": "${genderNames[char.gender] || char.gender}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/种族", "value": "${raceNames[char.race] || char.race}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/年龄", "value": ${char.age} },\n`;
+            message += `  { "op": "replace", "path": "/Lord/职业", "value": "${classNames[char.class] || char.class}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/身高", "value": ${char.height} },\n`;
+            message += `  { "op": "replace", "path": "/Lord/体重", "value": ${char.weight} },\n`;
+            message += `  { "op": "replace", "path": "/Lord/肉棒/长度", "value": ${char.penisLength} },\n`;
+            message += `  { "op": "replace", "path": "/Lord/外貌", "value": "${char.appearance || '未描述'}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/性格", "value": "${char.personality || '未描述'}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/背景", "value": "${backgroundText || '未提供'}" },\n`;
+            message += `  { "op": "replace", "path": "/Lord/所在地点", "value": "领主大厅" },\n`;
+            message += `  { "op": "replace", "path": "/Territory/基本信息/名称", "value": "${terr.name}" },\n`;
+            message += `  { "op": "replace", "path": "/Territory/基本信息/所属国家", "value": "${nationName}" },\n`;
+            message += `  { "op": "replace", "path": "/Territory/基本信息/地形", "value": "${terr.isCustom ? terrainNames[terr.terrain] || terr.terrain : terrainNames[window.territoryPresets[terr.preset]?.terrain] || '未知'}" },\n`;
+            message += `  { "op": "replace", "path": "/Territory/基本信息/发展阶段", "value": "据点" },\n`;
+            message += `  { "op": "replace", "path": "/Territory/基本信息/面积", "value": 50 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/总人口", "value": ${population} },\n`;
+            message += `  { "op": "replace", "path": "/Territory/经济/财政/库存金币", "value": ${gold} },\n`;
+            
+            // 添加种族构成
+            Object.entries(distribution).forEach(([race, ratio], index) => {
+                const raceCount = Math.round(totalPop * ratio);
+                const raceName = raceNames[race] || race;
+                message += `  { "op": "insert", "path": "/Territory/人口/种族构成/${race}", "value": {\n`;
+                message += `    "数量": ${raceCount},\n`;
+                message += `    "地位": "${race === 'human' || race === raceNames[char.race] ? '主导' : '平等'}",\n`;
+                message += `    "特殊能力": "",\n`;
+                message += `    "忠诚度": {\n`;
+                message += `      "数值": 50,\n`;
+                message += `      "状态": "顺从"\n`;
+                message += `    }\n`;
+                message += `  } }${index < Object.entries(distribution).length - 1 ? ',' : ''}\n`;
+            });
+            
+            // 添加仓库资源
+            message += `  { "op": "insert", "path": "/Territory/仓库/粮食", "value": { "id": "food", "名称": "粮食", "类别": "食品", "当前储量": ${food}, "单位": "担", "安全储量": 200, "市场价格": 1.5, "描述": "基础粮食供应" } },\n`;
+            message += `  { "op": "insert", "path": "/Territory/仓库/木材", "value": { "id": "wood", "名称": "木材", "类别": "建材", "当前储量": ${wood}, "单位": "方", "安全储量": 100, "市场价格": 2.0, "描述": "建筑和燃料用木材" } },\n`;
+            message += `  { "op": "insert", "path": "/Territory/仓库/石材", "value": { "id": "stone", "名称": "石材", "类别": "建材", "当前储量": ${stone}, "单位": "方", "安全储量": 80, "市场价格": 3.0, "描述": "建筑用石材" } },\n`;
+            
+            // 添加系统和环境设置
+            message += `  { "op": "replace", "path": "/System/当前游戏时间", "value": "第1年1月" },\n`;
+            message += `  { "op": "replace", "path": "/System/当前季节", "value": "春季" },\n`;
+            message += `  { "op": "replace", "path": "/System/上次结算时间", "value": "" },\n`;
+            message += `  { "op": "replace", "path": "/System/自动结算开关", "value": true },\n`;
+            
+            // 添加军事基础设置
+            message += `  { "op": "replace", "path": "/Territory/军事/兵力/常备军", "value": 50 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/军事/兵力/民兵", "value": 100 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/军事/装备状态/装备完整率", "value": 0.6 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/军事/装备状态/训练水平", "value": 0.4 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/军事/装备状态/士气", "value": 60 },\n`;
+            
+            // 添加满意度基础
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/食物满意度", "value": 70 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/住房满意度", "value": 60 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/安全满意度", "value": 65 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/娱乐满意度", "value": 40 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/税收满意度", "value": 50 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/满意度维度/工作满意度", "value": 55 },\n`;
+            message += `  { "op": "replace", "path": "/Territory/人口/人口增长率", "value": 0.01 }\n`;
+            
+            message += `]\n`;
+            message += `</JSONPatch>\n`;
+            message += `</UpdateVariable>\n\n`;
             
             message += `【AI指令】\n`;
             message += `1. 基于以上文学化开场白，让{{user}}（领主）回忆自己是如何获得这片领地的\n`;
@@ -1835,58 +2044,72 @@
             document.getElementById('char-name').addEventListener('input', function() {
                 window.creationData.character.name = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-gender').addEventListener('change', function() {
                 window.creationData.character.gender = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-race').addEventListener('change', function() {
                 window.creationData.character.race = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-age').addEventListener('input', function() {
                 window.creationData.character.age = parseInt(this.value) || 25;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-class').addEventListener('change', function() {
                 window.creationData.character.class = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-height').addEventListener('input', function() {
                 window.creationData.character.height = parseInt(this.value) || 175;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-weight').addEventListener('input', function() {
                 window.creationData.character.weight = parseInt(this.value) || 70;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('penis-length').addEventListener('input', function() {
                 window.creationData.character.penisLength = parseInt(this.value) || 15;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-appearance').addEventListener('input', function() {
                 window.creationData.character.appearance = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.getElementById('char-personality').addEventListener('input', function() {
                 window.creationData.character.personality = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             // 背景故事收集
             document.querySelectorAll('input[name="background"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     window.creationData.character.background = this.value;
+                    if (this.value === 'custom') {
+                        window.creationData.character.customBackground = document.getElementById('custom-background').value;
+                    }
                     window.updateConfirmationPreview();
+                    saveToLocalStorage();
                 });
             });
             
@@ -1897,15 +2120,17 @@
                     document.querySelector('input[name="background"][value="custom"]').checked = true;
                 }
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             // 领地数据收集
             document.getElementById('territory-name').addEventListener('input', function() {
                 window.creationData.territory.name = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
-            // 领地预设
+            // 领地预设 - 修复：添加自定义领地展开功能
             document.querySelectorAll('input[name="territory-preset"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     const customSettings = document.getElementById('custom-territory-settings');
@@ -1918,20 +2143,20 @@
                         window.creationData.territory.isCustom = false;
                         
                         // 自动设置预设值
-                        const preset = window.territoryPresets[this.value];
-                        if (preset) {
-                            window.creationData.territory.nation = preset.nation;
-                            window.creationData.territory.terrain = preset.terrain;
-                            
-                            // 更新UI
-                            document.getElementById('territory-nation').value = preset.nation;
-                            const terrainRadio = document.querySelector(`input[name="terrain"][value="${preset.terrain}"]`);
-                            if (terrainRadio) terrainRadio.checked = true;
-                        }
+                        window.creationData.territory.nation = this.getAttribute('data-nation') || 'aesland';
+                        window.creationData.territory.terrain = this.getAttribute('data-terrain') || 'inland_plain';
+                        
+                        // 更新UI中的国家选择（用于自定义设置）
+                        document.getElementById('territory-nation').value = window.creationData.territory.nation;
+                        
+                        // 更新地形选择
+                        const terrainRadio = document.querySelector(`input[name="terrain"][value="${window.creationData.territory.terrain}"]`);
+                        if (terrainRadio) terrainRadio.checked = true;
                     }
                     
                     window.creationData.territory.preset = this.value;
                     window.updateConfirmationPreview();
+                    saveToLocalStorage();
                     adjustIframeHeight();
                 });
             });
@@ -1940,12 +2165,14 @@
             document.getElementById('territory-nation').addEventListener('change', function() {
                 window.creationData.territory.nation = this.value;
                 window.updateConfirmationPreview();
+                saveToLocalStorage();
             });
             
             document.querySelectorAll('input[name="terrain"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     window.creationData.territory.terrain = this.value;
                     window.updateConfirmationPreview();
+                    saveToLocalStorage();
                 });
             });
             
@@ -1953,6 +2180,7 @@
                 radio.addEventListener('change', function() {
                     window.creationData.territory.difficulty = this.value;
                     window.updateConfirmationPreview();
+                    saveToLocalStorage();
                 });
             });
         }
@@ -1960,6 +2188,12 @@
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM加载完成，开始初始化领主创建系统...');
+            
+            // 从本地存储加载数据
+            loadFromLocalStorage();
+            
+            // 初始化UI从数据
+            updateUIFromData();
             
             // 初始化数据收集
             initDataCollection();
