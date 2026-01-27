@@ -880,8 +880,8 @@
                         <div class="preset-selector">
                             <div class="preset-grid territory-grid">
                                 <!-- 预设1: 富饶平原领 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="rich_plain" checked data-nation="aesland" data-terrain="inland_plain">
+                               <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="rich_plain" checked data-nation="aesland" data-terrain="inland_plain">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🏞️</div>
@@ -898,8 +898,8 @@
                                 </label>
                                 
                                 <!-- 预设2: 边境要塞领 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="border_fortress" data-nation="steel_law" data-terrain="hills">
+                               <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="border_fortress" data-nation="steel_law" data-terrain="hills">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🏰</div>
@@ -916,8 +916,8 @@
                                 </label>
                                 
                                 <!-- 预设3: 沿海贸易领 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="coastal_trade" data-nation="blue_league" data-terrain="coastal_plain">
+                               <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="coastal_trade" data-nation="blue_league" data-terrain="coastal_plain">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">⚓</div>
@@ -934,8 +934,8 @@
                                 </label>
                                 
                                 <!-- 预设4: 山林资源领 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="mountain_resource" data-nation="deeprock" data-terrain="mountains">
+                                <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="mountain_resource" data-nation="deeprock" data-terrain="mountains">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🌲</div>
@@ -952,8 +952,8 @@
                                 </label>
                                 
                                 <!-- 预设5: 河谷农业领 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="river_valley" data-nation="aesland" data-terrain="river_valley">
+                               <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="river_valley" data-nation="aesland" data-terrain="river_valley">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🌾</div>
@@ -970,8 +970,8 @@
                                 </label>
                                 
                                 <!-- 预设6: 自定义选项 -->
-                                <label class="preset-option territory-card">
-                                    <input type="radio" name="territory-preset" value="custom">
+                                <label class="preset-option territory-card" onclick="window.selectTerritoryPreset(this)">
+    <input type="radio" name="territory-preset" value="custom">
                                     <div class="preset-card">
                                         <div class="card-content">
                                             <div class="card-icon">🔧</div>
@@ -1993,7 +1993,66 @@
             // 将消息显示在文本区域
             document.getElementById('final-message').value = message;
         };
-
+// 处理领地预设选择的函数
+window.selectTerritoryPreset = function(element) {
+    const radio = element.querySelector('input[type="radio"]');
+    if (!radio) return;
+    
+    // 确保单选按钮被选中
+    radio.checked = true;
+    
+    // 获取自定义设置区域
+    const customSettings = document.getElementById('custom-territory-settings');
+    
+    console.log('选择领地预设:', radio.value, '是自定义:', radio.value === 'custom');
+    
+    // 处理自定义领地
+    if (radio.value === 'custom') {
+        customSettings.style.display = 'block';
+        window.creationData.territory.isCustom = true;
+    } else {
+        customSettings.style.display = 'none';
+        window.creationData.territory.isCustom = false;
+        
+        // 从data属性获取国家和地形
+        const nation = radio.getAttribute('data-nation');
+        const terrain = radio.getAttribute('data-terrain');
+        
+        console.log('预设属性:', {nation, terrain});
+        
+        if (nation) {
+            window.creationData.territory.nation = nation;
+            // 更新国家选择器的显示值
+            const nationSelect = document.getElementById('territory-nation');
+            if (nationSelect) {
+                nationSelect.value = nation;
+            }
+        }
+        
+        if (terrain) {
+            window.creationData.territory.terrain = terrain;
+            // 更新地形选择
+            const terrainRadio = document.querySelector(`input[name="terrain"][value="${terrain}"]`);
+            if (terrainRadio) {
+                terrainRadio.checked = true;
+            }
+        }
+    }
+    
+    // 更新数据
+    window.creationData.territory.preset = radio.value;
+    
+    // 更新预览
+    window.updateConfirmationPreview();
+    
+    // 保存到本地存储
+    saveToLocalStorage();
+    
+    // 调整iframe高度
+    setTimeout(() => {
+        adjustIframeHeight();
+    }, 100);
+};
         window.completeCreation = function() {
             window.goToStep(3);
         };
@@ -2130,36 +2189,7 @@
                 saveToLocalStorage();
             });
             
-            // 领地预设 - 修复：添加自定义领地展开功能
-            document.querySelectorAll('input[name="territory-preset"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const customSettings = document.getElementById('custom-territory-settings');
-                    
-                    if (this.value === 'custom') {
-                        customSettings.style.display = 'block';
-                        window.creationData.territory.isCustom = true;
-                    } else {
-                        customSettings.style.display = 'none';
-                        window.creationData.territory.isCustom = false;
-                        
-                        // 自动设置预设值
-                        window.creationData.territory.nation = this.getAttribute('data-nation') || 'aesland';
-                        window.creationData.territory.terrain = this.getAttribute('data-terrain') || 'inland_plain';
-                        
-                        // 更新UI中的国家选择（用于自定义设置）
-                        document.getElementById('territory-nation').value = window.creationData.territory.nation;
-                        
-                        // 更新地形选择
-                        const terrainRadio = document.querySelector(`input[name="terrain"][value="${window.creationData.territory.terrain}"]`);
-                        if (terrainRadio) terrainRadio.checked = true;
-                    }
-                    
-                    window.creationData.territory.preset = this.value;
-                    window.updateConfirmationPreview();
-                    saveToLocalStorage();
-                    adjustIframeHeight();
-                });
-            });
+  
             
             // 自定义设置的变更监听
             document.getElementById('territory-nation').addEventListener('change', function() {
@@ -2186,26 +2216,40 @@
         }
 
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM加载完成，开始初始化领主创建系统...');
-            
-            // 从本地存储加载数据
-            loadFromLocalStorage();
-            
-            // 初始化UI从数据
-            updateUIFromData();
-            
-            // 初始化数据收集
-            initDataCollection();
-            
-            // 调整iframe高度
-            adjustIframeHeight();
-            
-            // 初始化默认值
-            window.updateConfirmationPreview();
-            
-            console.log('领主创建系统初始化完成');
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，开始初始化领主创建系统...');
+    
+    // 从本地存储加载数据
+    loadFromLocalStorage();
+    
+    // 初始化UI从数据
+    updateUIFromData();
+    
+    // 初始化数据收集
+    initDataCollection();
+    
+    // 调整iframe高度
+    adjustIframeHeight();
+    
+    // 检查是否选择了自定义领地，确保显示正确的设置区域
+    setTimeout(() => {
+        const selectedPreset = document.querySelector('input[name="territory-preset"]:checked');
+        const customSettings = document.getElementById('custom-territory-settings');
+        
+        if (selectedPreset && selectedPreset.value === 'custom') {
+            customSettings.style.display = 'block';
+        } else {
+            customSettings.style.display = 'none';
+        }
+        
+        adjustIframeHeight();
+    }, 100);
+    
+    // 初始化默认值
+    window.updateConfirmationPreview();
+    
+    console.log('领主创建系统初始化完成');
+});
 
         // 窗口加载完成后调整高度
         window.addEventListener('load', adjustIframeHeight);
