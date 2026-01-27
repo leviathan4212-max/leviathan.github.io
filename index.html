@@ -5625,14 +5625,14 @@ function openMorningReportModal() {
                 const contentText = safeString(report.内容, '');
                 const category = key;
                 
-                // 根据key显示不同的分类名称
-                let categoryName = '未分类';
-                switch(key) {
-                    case '王国风闻': categoryName = '王国风闻'; break;
-                    case '领地纪事': categoryName = '领地纪事'; break;
-                    case '人物轶录': categoryName = '人物轶录'; break;
-                    case '异事杂谈': categoryName = '异事杂谈'; break;
-                }
+       // 根据key显示不同的分类名称
+let categoryName = '📰 今日要闻';
+switch(key) {
+    case '王国风闻': categoryName = '👑 王国风闻'; break;
+    case '领地纪事': categoryName = '🏰 领地纪事'; break;
+    case '人物轶录': categoryName = '👥 人物轶录'; break;
+    case '异事杂谈': categoryName = '✨ 异事杂谈'; break;
+}
                 
                 html += `
                     <div class="morning-report-card">
