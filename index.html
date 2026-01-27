@@ -5751,21 +5751,24 @@ function selectCharacterForShare(characterKey, characterName) {
     
     console.log('正在分享给', characterName);
     
-    // 尝试放入输入框
+    // 尝试发送到Silly Tavern
     const result = sendToSillyTavern(shareText);
     
     // 根据结果显示不同提示
     if (result) {
-        alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，可以编辑后发送。`);
+        // 如果triggerSlash可用，它已经显示了/echo消息
+        // 否则显示alert
+        if (typeof triggerSlash !== 'function') {
+            alert(`✅ 晨报已复制到剪贴板！\n\n分享对象：${characterName}\n\n请粘贴到Silly Tavern的输入框中。`);
+        }
     } else {
-        alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${characterName}。`);
+        alert(`❌ 复制失败，请手动复制文本。`);
     }
     
     // 关闭模态框
     closeModal('share-report-modal');
     currentShareReport = null;
 }
-
 // 复制到剪贴板
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -5782,126 +5785,49 @@ function copyToClipboard(text) {
         alert('分享文本已复制到剪贴板！');
     });
 }
-
-// 发送文本到Silly Tavern输入框 - 使用postMessage
+// 静默复制到剪贴板（无弹窗）
+function copyToClipboardSilently(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return successful;
+    } catch (err) {
+        document.body.removeChild(textarea);
+        return false;
+    }
+}
+// 发送文本到Silly Tavern输入框
 function sendToSillyTavern(text) {
-    console.log('正在尝试将文本放入Silly Tavern输入框...');
+    console.log('尝试发送文本到Silly Tavern:', text.substring(0, 50) + '...');
     
-    // 方法1：尝试通过postMessage与Silly Tavern通信
-    try {
-        // 向父窗口发送消息
-        if (window.parent && window.parent !== window) {
-            console.log('尝试通过postMessage发送消息到父窗口...');
+    // 尝试使用Silly Tavern的斜杠命令
+    if (typeof triggerSlash === 'function') {
+        try {
+            // 尝试/echo命令（通常可用）
+            triggerSlash('/echo severity=info 领地晨报已准备，请粘贴到输入框');
             
-            // 发送不同类型的消息，尝试不同的Silly Tavern扩展支持的消息格式
-            const messages = [
-                // 格式1：标准的Silly Tavern扩展消息
-                {
-                    type: 'territory_report_share',
-                    action: 'fill_input',
-                    text: text,
-                    timestamp: Date.now()
-                },
-                // 格式2：常见的iframe通信格式
-                {
-                    action: 'insertText',
-                    text: text
-                },
-                // 格式3：简单格式
-                {
-                    type: 'insert_text',
-                    text: text
-                }
-            ];
-            
-            // 尝试发送所有格式的消息
-            messages.forEach((msg, index) => {
-                try {
-                    window.parent.postMessage(msg, '*');
-                    console.log(`发送消息格式${index + 1}:`, msg.type || msg.action);
-                } catch (e) {
-                    console.log(`发送消息格式${index + 1}失败:`, e);
-                }
-            });
-            
-            // 等待一下看是否有效
-            setTimeout(() => {
-                // 如果没有其他反馈，至少复制到剪贴板
-                console.log('postMessage已发送，如果输入框没有填充，将使用剪贴板...');
-            }, 500);
-            
-            // 同时显示弹窗提示
-            return true;
-        }
-    } catch (error) {
-        console.log('postMessage失败:', error);
-    }
-    
-    // 方法2：如果当前页面就是主页面（不是iframe），尝试直接查找
-    try {
-        console.log('尝试在当前文档中查找输入框...');
-        
-        // 更全面的选择器列表
-        const selectors = [
-            // 尝试所有可能的textarea
-            'textarea',
-            
-            // 尝试contenteditable div（某些聊天界面使用这个）
-            '[contenteditable="true"]',
-            '[contenteditable="plaintext-only"]',
-            '.proseMirror', // 某些富文本编辑器
-            
-            // 尝试input元素
-            'input[type="text"]',
-            'input[placeholder*="发送"]',
-            'input[placeholder*="消息"]',
-            
-            // 尝试通过ID查找
-            '#prompt-textarea',
-            '#text-input',
-            '#chat-input',
-            '#input-area'
-        ];
-        
-        for (let selector of selectors) {
-            try {
-                const elements = document.querySelectorAll(selector);
-                console.log(`选择器 ${selector}: 找到 ${elements.length} 个元素`);
-                
-                for (let element of elements) {
-                    if (!element.disabled && element.style.display !== 'none' && element.offsetParent !== null) {
-                        console.log('尝试填充元素:', element.tagName, element.id || element.className);
-                        
-                        // 根据元素类型设置值
-                        if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-                            element.value = text;
-                        } else if (element.hasAttribute('contenteditable')) {
-                            element.textContent = text;
-                        }
-                        
-                        // 触发事件
-                        element.dispatchEvent(new Event('input', { bubbles: true }));
-                        element.dispatchEvent(new Event('change', { bubbles: true }));
-                        element.dispatchEvent(new Event('keyup', { bubbles: true }));
-                        
-                        // 聚焦
-                        element.focus();
-                        
-                        console.log('✅ 成功填充元素');
-                        return true;
-                    }
-                }
-            } catch (e) {
-                console.log(`选择器 ${selector} 错误:`, e);
+            // 复制到剪贴板
+            if (copyToClipboardSilently(text)) {
+                console.log('✅ 已复制到剪贴板');
+                return true;
             }
+        } catch (e) {
+            console.log('triggerSlash失败:', e);
         }
-    } catch (error) {
-        console.log('直接DOM操作失败:', error);
     }
     
-    // 方法3：终极备份方案 - 使用更可靠的剪贴板方法
-    console.log('所有方法失败，使用剪贴板备份');
-    copyToClipboard(text);
+    // 如果triggerSlash不存在，使用常规方法
+    if (copyToClipboardSilently(text)) {
+        console.log('✅ 使用常规方法复制到剪贴板');
+        return true;
+    }
+    
+    console.log('❌ 所有方法都失败');
     return false;
 }
     </script>
