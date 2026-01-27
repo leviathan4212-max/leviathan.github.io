@@ -1755,12 +1755,6 @@
             } finally {
                 showLoading(false);
                 adjustIframeHeight();
-                // 在 fetchFromMVU 函数的 finally 块中添加：
-if (typeof window.updateTerritoryData === 'function') {
-    window.updateTerritoryData(territoryData);
-} else if (window.parent && typeof window.parent.updateTerritoryData === 'function') {
-    window.parent.updateTerritoryData(territoryData);
-}
             }
         }
         
@@ -5752,20 +5746,21 @@ function openShareCharacterModal() {
 function selectCharacterForShare(characterKey, characterName) {
     if (!currentShareReport) return;
     
-    // 生成分享文本
+    // 生成分享文本 - 格式更自然
     const shareText = `领主大人将今日的晨报分享给我：\n\n【${currentShareReport.title}】\n\n${currentShareReport.content}\n\n${characterName}，你对这些消息有什么看法？`;
     
-    console.log('分享晨报给:', characterName);
+    console.log('正在分享给', characterName);
     
     // 尝试放入输入框
     const result = sendToSillyTavern(shareText);
     
-    // 显示反馈
-    if (result === true) {
-        // 如果成功放入输入框
-        alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框内容，可以编辑后发送。`);
+    // 根据结果显示不同提示
+    if (result.success) {
+        // 如果成功，但没有使用toastr，则使用alert
+        if (!result.usedToastr) {
+            alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，可以编辑后发送。`);
+        }
     } else {
-        // 如果使用剪贴板
         alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${characterName}。`);
     }
     
@@ -5773,6 +5768,7 @@ function selectCharacterForShare(characterKey, characterName) {
     closeModal('share-report-modal');
     currentShareReport = null;
 }
+        
 // 复制到剪贴板
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -5789,67 +5785,139 @@ function copyToClipboard(text) {
         alert('分享文本已复制到剪贴板！');
     });
 }
-// 静默复制到剪贴板（无弹窗）
-function copyToClipboardSilently(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return successful;
-    } catch (err) {
-        document.body.removeChild(textarea);
-        return false;
-    }
-}
-// 发送文本到Silly Tavern输入框
+
+// 发送文本到Silly Tavern输入框 - 改进版（借鉴地图插件方法）
 function sendToSillyTavern(text) {
-    console.log('调用 sendToSillyTavern，文本长度:', text.length);
+    console.log('尝试填充输入框，内容长度:', text.length);
     
-    // 方法1：直接调用Silly Tavern的全局函数（如果存在）
-    if (typeof window.setTerritoryInput === 'function') {
-        console.log('调用 window.setTerritoryInput');
-        return window.setTerritoryInput(text);
-    }
-    
-    // 方法2：如果我们在iframe中，尝试访问父窗口的函数
     try {
-        if (window.parent && typeof window.parent.setTerritoryInput === 'function') {
-            console.log('调用父窗口的 setTerritoryInput');
-            return window.parent.setTerritoryInput(text);
-        }
-    } catch (e) {
-        console.log('无法访问父窗口函数:', e);
-    }
-    
-    // 方法3：尝试通过postMessage通信
-    try {
-        if (window.parent && window.parent !== window) {
-            console.log('通过postMessage发送');
-            window.parent.postMessage({
-                type: 'territory_set_input',
-                text: text,
-                source: 'territory_panel'
-            }, '*');
+        // 方法1：使用地图插件的方法（最可能有效）
+        const stDoc = window.parent.document;
+        let textarea = stDoc.getElementById('send_textarea');
+        
+        if (textarea && textarea.tagName === 'TEXTAREA') {
+            console.log('✅ 找到输入框 (send_textarea)');
             
-            // 假设发送成功，显示提示
-            setTimeout(() => {
-                // 这里可以添加反馈机制
-            }, 100);
+            // 设置文本
+            textarea.value = text;
             
-            return true;
+            // 触发事件让Silly Tavern知道内容已改变
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            textarea.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // 聚焦到输入框
+            textarea.focus();
+            
+            // 显示成功消息（使用toastr，如果存在的话）
+            if (window.parent.toastr) {
+                window.parent.toastr.success('文本已放入输入框！');
+            }
+            
+            return { success: true, usedToastr: !!window.parent.toastr };
         }
-    } catch (e) {
-        console.log('postMessage失败:', e);
+        
+        // 方法2：备用选择器
+        const backupSelectors = [
+            '#user-input',
+            '#message-input',
+            '.chat-input textarea',
+            '.input-area textarea',
+            'textarea[placeholder*="发送"]',
+            'textarea[placeholder*="Send"]',
+            'textarea[placeholder*="消息"]',
+            'textarea[placeholder*="Message"]'
+        ];
+        
+        for (let selector of backupSelectors) {
+            textarea = stDoc.querySelector(selector);
+            if (textarea && textarea.tagName === 'TEXTAREA') {
+                console.log(`✅ 找到输入框 (${selector})`);
+                textarea.value = text;
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                textarea.focus();
+                
+                if (window.parent.toastr) {
+                    window.parent.toastr.success('文本已放入输入框！');
+                }
+                
+                return { success: true, usedToastr: !!window.parent.toastr };
+            }
+        }
+        
+        // 方法3：遍历所有textarea
+        const allTextareas = stDoc.querySelectorAll('textarea');
+        for (let ta of allTextareas) {
+            if (!ta.readOnly && !ta.disabled) {
+                console.log('✅ 找到可用的textarea');
+                ta.value = text;
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
+                ta.dispatchEvent(new Event('change', { bubbles: true }));
+                ta.focus();
+                
+                if (window.parent.toastr) {
+                    window.parent.toastr.success('文本已放入输入框！');
+                }
+                
+                return { success: true, usedToastr: !!window.parent.toastr };
+            }
+        }
+        
+        console.log('❌ 在父窗口中未找到可用的输入框');
+        
+        // 方法4：如果以上都失败，尝试在当前窗口查找
+        const localSelectors = [
+            '#send_textarea',
+            '#user-input',
+            '#message-input',
+            'textarea:not([readonly]):not([disabled])'
+        ];
+        
+        for (let selector of localSelectors) {
+            textarea = document.querySelector(selector);
+            if (textarea && textarea.tagName === 'TEXTAREA') {
+                console.log(`✅ 在当前窗口找到输入框 (${selector})`);
+                textarea.value = text;
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                textarea.focus();
+                
+                if (window.parent.toastr) {
+                    window.parent.toastr.success('文本已放入输入框！');
+                }
+                
+                return { success: true, usedToastr: !!window.parent.toastr };
+            }
+        }
+        
+        console.log('❌ 所有方法都失败，使用剪贴板备用方案');
+        copyToClipboard(text);
+        return { success: false };
+        
+    } catch (error) {
+        console.error('填充输入框时出错:', error);
+        
+        // 跨域错误处理
+        if (error.name === 'SecurityError' || error.message.includes('cross-origin')) {
+            console.log('跨域访问被阻止，使用备用方案');
+            // 尝试postMessage通信
+            try {
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({
+                        type: 'fill_textarea',
+                        text: text
+                    }, '*');
+                    console.log('已发送postMessage请求');
+                }
+            } catch (e) {
+                console.error('postMessage也失败:', e);
+            }
+        }
+        
+        // 最终回退到剪贴板
+        copyToClipboard(text);
+        return { success: false };
     }
-    
-    // 方法4：使用剪贴板
-    console.log('使用剪贴板备用方案');
-    copyToClipboard(text);
-    return false;
 }
     </script>
 </body>
