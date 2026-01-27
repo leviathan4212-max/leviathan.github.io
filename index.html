@@ -5790,7 +5790,62 @@ function selectCharacterForShare(characterKey, characterName) {
     closeModal('share-report-modal');
     currentShareReport = null;
 }
+        // 生成沉浸感文本
+function generateImmersionText(fullTitle, characterName, pronoun, report) {
+    const { title, content } = report;
+    
+    // 多种行动描述模板，增加多样性
+    const actionTemplates = [
+        // 模板1：召唤讨论
+        `我让侍从把${fullTitle}叫到书房，准备和${pronome}讨论今天的晨报内容。\n\n我指着桌上的晨报说："今天有件有意思的事情，你看这条【${title}】。${content}"\n\n我问${pronome}："你对这件事有什么看法？"`,
         
+        // 模板2：偶遇分享
+        `我在大厅遇到${fullTitle}，想起今早看到的晨报，便招手让${pronome}过来。\n\n"刚看到一条有意思的消息，"我展开晨报，"你看这个【${title}】。${content}"\n\n"你觉得这意味着什么？"我问${pronome}。`,
+        
+        // 模板3：正式召见
+        `我派人传唤${fullTitle}前来议事。等${pronome}到了，我递过手中的晨报。\n\n"看看这个，"我指着其中一条，"【${title}】。${content}"\n\n"我想听听你的见解。"我对${pronome}说。`,
+        
+        // 模板4：轻松闲聊
+        `午间休息时，我看到${fullTitle}，便走过去和${pronome}闲聊。\n\n"今天晨报上有条消息挺有意思，"我拿出晨报，"你看这个【${title}】。${content}"\n\n"你觉得呢？"我问道。`,
+        
+        // 模板5：紧急商议
+        `我匆匆找到${fullTitle}，面色严肃地说："有件重要的事情需要商议。"\n\n我展开晨报："你看这条【${title}】。${content}"\n\n"情况紧急，我需要你的意见。"我对${pronome}说。`
+    ];
+    
+    // 根据角色身份选择更合适的模板
+    let selectedTemplate;
+    
+    if (fullTitle.includes('大人') || fullTitle.includes('官员')) {
+        // 对官员使用正式模板
+        selectedTemplate = actionTemplates[2]; // 正式召见
+    } else if (fullTitle.includes('铁匠') || fullTitle.includes('工匠')) {
+        // 对工匠使用轻松模板
+        selectedTemplate = actionTemplates[3]; // 轻松闲聊
+    } else if (fullTitle.includes('战士') || fullTitle.includes('守卫')) {
+        // 对战士使用紧急模板
+        selectedTemplate = actionTemplates[4]; // 紧急商议
+    } else {
+        // 随机选择其他模板，增加变化
+        const randomIndex = Math.floor(Math.random() * 3); // 0,1,2
+        selectedTemplate = actionTemplates[randomIndex];
+    }
+    
+    // 如果晨报内容太长，适当截断
+    let displayContent = content;
+    if (content.length > 300) {
+        displayContent = content.substring(0, 300) + '...';
+    }
+    
+    // 替换内容
+    const finalText = selectedTemplate
+        .replace('${title}', title)
+        .replace('${content}', displayContent)
+        .replace('${fullTitle}', fullTitle)
+        .replace('${characterName}', characterName)
+        .replace('${pronoun}', pronoun);
+    
+    return finalText;
+}
 // 复制到剪贴板
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
