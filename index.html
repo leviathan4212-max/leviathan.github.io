@@ -5626,13 +5626,13 @@ function openMorningReportModal() {
                 const category = key;
                 
                 // 根据key显示不同的分类名称
-                let categoryName = '未分类';
-                switch(key) {
-                    case '王国风闻': categoryName = '王国风闻'; break;
-                    case '领地纪事': categoryName = '领地纪事'; break;
-                    case '人物轶录': categoryName = '人物轶录'; break;
-                    case '异事杂谈': categoryName = '异事杂谈'; break;
-                }
+let categoryName = '📰 今日要闻';
+switch(key) {
+    case '王国风闻': categoryName = '👑 王国风闻'; break;
+    case '领地纪事': categoryName = '🏰 领地纪事'; break;
+    case '人物轶录': categoryName = '👥 人物轶录'; break;
+    case '异事杂谈': categoryName = '✨ 异事杂谈'; break;
+}
                 
                 html += `
                     <div class="morning-report-card">
@@ -5746,10 +5746,32 @@ function openShareCharacterModal() {
 function selectCharacterForShare(characterKey, characterName) {
     if (!currentShareReport) return;
     
-    // 生成分享文本 - 格式更自然
-    const shareText = `领主大人将今日的晨报分享给我：\n\n【${currentShareReport.title}】\n\n${currentShareReport.content}\n\n${characterName}，你对这些消息有什么看法？`;
+    // 获取角色的身份信息，用于称呼
+    const character = territoryData.角色?.[characterKey];
+    const identity = character?.角色概览?.身份 || '';
+    const gender = character?.角色概览?.性别 || '';
     
-    console.log('正在分享给', characterName);
+    // 根据性别选择合适的称呼代词
+    let pronoun = '他';
+    let title = '';
+    
+    if (gender === '女') pronoun = '她';
+    if (gender === '男') pronoun = '他';
+    
+    // 根据身份设置不同的称呼
+    if (identity.includes('铁匠')) title = '铁匠';
+    else if (identity.includes('官员') || identity.includes('管理者')) title = '大人';
+    else if (identity.includes('商人')) title = '老板';
+    else if (identity.includes('战士') || identity.includes('守卫')) title = '战士';
+    else title = '';
+    
+    // 构建更自然的称呼
+    const fullTitle = title ? `${characterName}${title}` : characterName;
+    
+    // 生成更自然、有沉浸感的分享文本
+    const shareText = generateImmersionText(fullTitle, characterName, pronoun, currentShareReport);
+    
+    console.log('正在分享给', characterName, '，生成文本:', shareText);
     
     // 尝试放入输入框
     const result = sendToSillyTavern(shareText);
@@ -5758,32 +5780,71 @@ function selectCharacterForShare(characterKey, characterName) {
     if (result.success) {
         // 如果成功，但没有使用toastr，则使用alert
         if (!result.usedToastr) {
-            alert(`✅ 晨报已放入输入框！\n\n分享对象：${characterName}\n\n请查看输入框中的内容，可以编辑后发送。`);
+            alert(`✅ 消息已放入输入框！\n\n分享对象：${fullTitle}\n\n请查看输入框中的内容，可以编辑后发送。`);
         }
     } else {
-        alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${characterName}。`);
+        alert(`✅ 分享文本已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴给${fullTitle}。`);
     }
     
     // 关闭模态框
     closeModal('share-report-modal');
     currentShareReport = null;
 }
+        // 生成沉浸感文本
+function generateImmersionText(fullTitle, characterName, pronoun, report) {
+    const { title, content } = report;
+    
+    // 多种行动描述模板，增加多样性
+    const actionTemplates = [
+        // 模板1：召唤讨论
+        `我让侍从把${fullTitle}叫到书房，准备和${pronome}讨论今天的晨报内容。\n\n我指着桌上的晨报说："今天有件有意思的事情，你看这条【${title}】。${content}"\n\n我问${pronome}："你对这件事有什么看法？"`,
         
-// 复制到剪贴板
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('分享文本已复制到剪贴板！\n\n' + text);
-    }).catch(err => {
-        console.error('复制失败:', err);
-        // 创建临时元素进行复制
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert('分享文本已复制到剪贴板！');
-    });
+        // 模板2：偶遇分享
+        `我在大厅遇到${fullTitle}，想起今早看到的晨报，便招手让${pronome}过来。\n\n"刚看到一条有意思的消息，"我展开晨报，"你看这个【${title}】。${content}"\n\n"你觉得这意味着什么？"我问${pronome}。`,
+        
+        // 模板3：正式召见
+        `我派人传唤${fullTitle}前来议事。等${pronome}到了，我递过手中的晨报。\n\n"看看这个，"我指着其中一条，"【${title}】。${content}"\n\n"我想听听你的见解。"我对${pronome}说。`,
+        
+        // 模板4：轻松闲聊
+        `午间休息时，我看到${fullTitle}，便走过去和${pronome}闲聊。\n\n"今天晨报上有条消息挺有意思，"我拿出晨报，"你看这个【${title}】。${content}"\n\n"你觉得呢？"我问道。`,
+        
+        // 模板5：紧急商议
+        `我匆匆找到${fullTitle}，面色严肃地说："有件重要的事情需要商议。"\n\n我展开晨报："你看这条【${title}】。${content}"\n\n"情况紧急，我需要你的意见。"我对${pronome}说。`
+    ];
+    
+    // 根据角色身份选择更合适的模板
+    let selectedTemplate;
+    
+    if (fullTitle.includes('大人') || fullTitle.includes('官员')) {
+        // 对官员使用正式模板
+        selectedTemplate = actionTemplates[2]; // 正式召见
+    } else if (fullTitle.includes('铁匠') || fullTitle.includes('工匠')) {
+        // 对工匠使用轻松模板
+        selectedTemplate = actionTemplates[3]; // 轻松闲聊
+    } else if (fullTitle.includes('战士') || fullTitle.includes('守卫')) {
+        // 对战士使用紧急模板
+        selectedTemplate = actionTemplates[4]; // 紧急商议
+    } else {
+        // 随机选择其他模板，增加变化
+        const randomIndex = Math.floor(Math.random() * 3); // 0,1,2
+        selectedTemplate = actionTemplates[randomIndex];
+    }
+    
+    // 如果晨报内容太长，适当截断
+    let displayContent = content;
+    if (content.length > 300) {
+        displayContent = content.substring(0, 300) + '...';
+    }
+    
+    // 替换内容
+    const finalText = selectedTemplate
+        .replace('${title}', title)
+        .replace('${content}', displayContent)
+        .replace('${fullTitle}', fullTitle)
+        .replace('${characterName}', characterName)
+        .replace('${pronoun}', pronoun);
+    
+    return finalText;
 }
 
 // 发送文本到Silly Tavern输入框 - 改进版（借鉴地图插件方法）
@@ -5808,10 +5869,10 @@ function sendToSillyTavern(text) {
             // 聚焦到输入框
             textarea.focus();
             
-            // 显示成功消息（使用toastr，如果存在的话）
-            if (window.parent.toastr) {
-                window.parent.toastr.success('文本已放入输入框！');
-            }
+// 显示成功消息（使用toastr，如果存在的话）
+if (window.parent.toastr) {
+    window.parent.toastr.success('文本已放入输入框！');
+}
             
             return { success: true, usedToastr: !!window.parent.toastr };
         }
