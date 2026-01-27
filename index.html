@@ -5797,19 +5797,19 @@ function generateImmersionText(fullTitle, characterName, pronoun, report) {
     // 多种行动描述模板，增加多样性
     const actionTemplates = [
         // 模板1：召唤讨论
-        `我让侍从把${fullTitle}叫到书房，准备和${pronome}讨论今天的晨报内容。\n\n我指着桌上的晨报说："今天有件有意思的事情，你看这条【${title}】。${content}"\n\n我问${pronome}："你对这件事有什么看法？"`,
+        `我让侍从把${fullTitle}叫到书房，准备和${pronoun}讨论今天的晨报内容。\n\n我指着桌上的晨报说："今天有件有意思的事情，你看这条【${title}】。${content}"\n\n我问${pronoun}："你对这件事有什么看法？"`,
         
         // 模板2：偶遇分享
-        `我在大厅遇到${fullTitle}，想起今早看到的晨报，便招手让${pronome}过来。\n\n"刚看到一条有意思的消息，"我展开晨报，"你看这个【${title}】。${content}"\n\n"你觉得这意味着什么？"我问${pronome}。`,
+        `我在大厅遇到${fullTitle}，想起今早看到的晨报，便招手让${pronoun}过来。\n\n"刚看到一条有意思的消息，"我展开晨报，"你看这个【${title}】。${content}"\n\n"你觉得这意味着什么？"我问${pronoun}。`,
         
         // 模板3：正式召见
-        `我派人传唤${fullTitle}前来议事。等${pronome}到了，我递过手中的晨报。\n\n"看看这个，"我指着其中一条，"【${title}】。${content}"\n\n"我想听听你的见解。"我对${pronome}说。`,
+        `我派人传唤${fullTitle}前来议事。等${pronoun}到了，我递过手中的晨报。\n\n"看看这个，"我指着其中一条，"【${title}】。${content}"\n\n"我想听听你的见解。"我对${pronoun}说。`,
         
         // 模板4：轻松闲聊
-        `午间休息时，我看到${fullTitle}，便走过去和${pronome}闲聊。\n\n"今天晨报上有条消息挺有意思，"我拿出晨报，"你看这个【${title}】。${content}"\n\n"你觉得呢？"我问道。`,
+        `午间休息时，我看到${fullTitle}，便走过去和${pronoun}闲聊。\n\n"今天晨报上有条消息挺有意思，"我拿出晨报，"你看这个【${title}】。${content}"\n\n"你觉得呢？"我问道。`,
         
         // 模板5：紧急商议
-        `我匆匆找到${fullTitle}，面色严肃地说："有件重要的事情需要商议。"\n\n我展开晨报："你看这条【${title}】。${content}"\n\n"情况紧急，我需要你的意见。"我对${pronome}说。`
+        `我匆匆找到${fullTitle}，面色严肃地说："有件重要的事情需要商议。"\n\n我展开晨报："你看这条【${title}】。${content}"\n\n"情况紧急，我需要你的意见。"我对${pronoun}说。`
     ];
     
     // 根据角色身份选择更合适的模板
