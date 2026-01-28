@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>权力之路 - 领主创建系统</title>
     <style>
-        /* 完全重置样式以适应Silly Tavern */
+        /* 原有所有CSS样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +22,6 @@
             overflow-x: hidden !important;
         }
         
-        /* 中世纪风格CSS变量 */
         :root {
             --color-parchment: #f4ecd8;
             --color-parchment-dark: #e6d9b8;
@@ -39,17 +38,12 @@
             --color-stone-dark: #4a5564;
             --color-blood: #8b0000;
             --color-blood-dark: #660000;
-            
-            /* 阴影 */
             --shadow-heavy: 0 4px 8px rgba(0, 0, 0, 0.4);
             --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.2);
-            
-            /* 边框 */
             --border-metal: 2px ridge var(--metal-light);
             --border-wood: 3px solid var(--color-wood);
         }
         
-        /* 主容器 */
         .medieval-container {
             width: 100% !important;
             max-width: 100% !important;
@@ -64,7 +58,6 @@
             flex-direction: column;
         }
         
-        /* 标题栏 */
         .title-bar {
             background: linear-gradient(to bottom, var(--color-velvet), var(--color-velvet-light));
             color: var(--color-gold);
@@ -86,7 +79,6 @@
             margin-top: 5px;
         }
         
-        /* 步骤指示器 */
         .steps-container {
             display: flex;
             background: var(--color-stone);
@@ -125,7 +117,6 @@
             clip-path: polygon(50% 100%, 0 0, 100% 0);
         }
         
-        /* 内容容器 */
         .content-container {
             flex: 1;
             padding: 15px;
@@ -148,7 +139,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* 启动界面 */
         .start-screen {
             text-align: center;
             padding: 20px 15px;
@@ -188,7 +178,6 @@
             margin-bottom: 8px;
         }
         
-        /* 按钮样式 */
         .btn {
             padding: 12px 20px;
             border: none;
@@ -233,7 +222,6 @@
             min-width: 100px;
         }
         
-        /* 导航按钮容器 */
         .nav-buttons {
             display: flex;
             justify-content: space-between;
@@ -243,7 +231,6 @@
             gap: 10px;
         }
         
-        /* 表单样式 */
         .form-section {
             margin-bottom: 20px;
         }
@@ -304,7 +291,6 @@
             flex: 1;
         }
         
-        /* 标签页 */
         .tab-nav {
             display: flex;
             border-bottom: 2px solid var(--color-wood);
@@ -347,7 +333,6 @@
             display: block;
         }
         
-        /* 预设选项 */
         .preset-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -400,7 +385,6 @@
             color: var(--color-stone);
         }
         
-        /* 领地预设卡片 */
         .territory-grid {
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         }
@@ -436,7 +420,6 @@
             margin-top: 8px;
         }
         
-        /* 自定义设置 */
         .custom-settings {
             background: var(--color-parchment-dark);
             padding: 15px;
@@ -445,7 +428,6 @@
             margin-top: 15px;
         }
         
-        /* 难度选择 */
         .difficulty-selector {
             display: flex;
             gap: 10px;
@@ -491,7 +473,6 @@
             border-left: 3px solid var(--color-wood);
         }
         
-        /* 确认界面 */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -540,7 +521,6 @@
             margin-top: 20px;
         }
         
-        /* 完成消息区域 */
         .completion-message {
             background: var(--color-parchment-dark);
             border: 2px solid var(--color-wood);
@@ -576,7 +556,6 @@
             margin-top: 15px;
         }
         
-        /* 世界预览 */
         .world-preview {
             margin-top: 20px;
             padding-top: 15px;
@@ -586,7 +565,6 @@
             max-width: 100%;
         }
         
-        /* 文本区域提示 */
         .textarea-hint {
             font-size: clamp(0.7rem, 1.5vw, 0.8rem);
             color: var(--color-stone);
@@ -594,7 +572,10 @@
             font-style: italic;
         }
         
-        /* 响应式设计 */
+        .custom-background-group {
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .medieval-container {
                 border-width: 10px;
@@ -664,7 +645,6 @@
             }
         }
     </style>
-    <!-- 中世纪风格字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -698,7 +678,7 @@
                         <p>现在，建立你的领地，书写你的传奇。</p>
                     </div>
                     
-                    <button id="btn-start-adventure" class="btn btn-main" onclick="startAdventure()">
+                    <button id="btn-start-adventure" class="btn btn-main">
                         🏰 开始冒险
                     </button>
                     
@@ -713,8 +693,8 @@
             <div class="step-content" id="step-1">
                 <div class="character-creation">
                     <div class="tab-nav">
-                        <button class="tab-btn active" data-tab="basic" onclick="switchTab('basic')">基本信息</button>
-                        <button class="tab-btn" data-tab="details" onclick="switchTab('details')">详细信息</button>
+                        <button class="tab-btn active" data-tab="basic">基本信息</button>
+                        <button class="tab-btn" data-tab="details">详细信息</button>
                     </div>
                     
                     <!-- 基本信息标签 -->
@@ -860,7 +840,7 @@
                                         </div>
                                     </label>
                                 </div>
-                                <div class="form-group custom-background-group" style="display: none;">
+                                <div class="form-group custom-background-group">
                                     <label for="custom-background">自定义背景故事：</label>
                                     <textarea id="custom-background" rows="3" placeholder="写下你的独特背景故事..."></textarea>
                                 </div>
@@ -1170,14 +1150,14 @@
                         <p>点击下方按钮生成游戏开始消息。将此消息发送给AI以开始游戏：</p>
                         <textarea id="final-message" readonly></textarea>
                         <div class="message-actions">
-                            <button id="btn-copy-message" class="btn btn-secondary" onclick="copyMessage()">📋 复制消息</button>
-                            <button id="btn-send-message" class="btn btn-main" onclick="sendMessage()">🚀 发送并开始游戏</button>
+                            <button id="btn-copy-message" class="btn btn-secondary">📋 复制消息</button>
+                            <button id="btn-send-message" class="btn btn-main">🚀 发送并开始游戏</button>
                         </div>
                     </div>
                     
                     <div class="confirmation-actions">
-                        <button id="btn-edit-character" class="btn btn-secondary" onclick="editCharacter()">编辑领主</button>
-                        <button id="btn-edit-territory" class="btn btn-secondary" onclick="editTerritory()">编辑领地</button>
+                        <button id="btn-edit-character" class="btn btn-secondary">编辑领主</button>
+                        <button id="btn-edit-territory" class="btn btn-secondary">编辑领地</button>
                     </div>
                 </div>
             </div>
@@ -1186,17 +1166,109 @@
         <!-- 导航按钮 -->
         <div class="nav-buttons">
             <div>
-                <button id="btn-prev" class="btn btn-secondary btn-nav" style="display:none;" onclick="goToPreviousStep()">← 上一步</button>
+                <button id="btn-prev" class="btn btn-secondary btn-nav" style="display:none;">← 上一步</button>
             </div>
             <div>
-                <button id="btn-next" class="btn btn-main btn-nav" style="display:none;" onclick="goToNextStep()">下一步 →</button>
-                <button id="btn-complete" class="btn btn-main btn-nav" style="display:none;" onclick="completeCreation()">踏上权力之路</button>
+                <button id="btn-next" class="btn btn-main btn-nav" style="display:none;">下一步 →</button>
+                <button id="btn-complete" class="btn btn-main btn-nav" style="display:none;">踏上权力之路</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ==================== 全局配置和映射 ====================
+        // ==================== 关键修改：Silly Tavern适配函数 ====================
+        
+        // 调整iframe高度以适应内容
+        function adjustIframeHeight() {
+            setTimeout(() => {
+                const height = document.documentElement.scrollHeight;
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({
+                        type: 'resize_iframe',
+                        height: height + 'px'
+                    }, '*');
+                }
+            }, 100);
+        }
+        
+        // 发送文本到Silly Tavern输入框
+        function sendToSillyTavern(text) {
+            console.log('正在填充输入框，内容长度:', text.length);
+            
+            try {
+                const stDoc = window.parent.document;
+                let textarea = stDoc.getElementById('send_textarea');
+                
+                if (textarea && textarea.tagName === 'TEXTAREA') {
+                    console.log('✅ 找到输入框 (send_textarea)');
+                    textarea.value = text;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                    textarea.focus();
+                    
+                    if (window.parent.toastr) {
+                        window.parent.toastr.success('消息已放入输入框！');
+                    }
+                    
+                    return true;
+                }
+                
+                const backupSelectors = [
+                    '#user-input',
+                    '#message-input',
+                    '.chat-input textarea',
+                    '.input-area textarea',
+                    'textarea[placeholder*="发送"]',
+                    'textarea[placeholder*="Send"]',
+                    'textarea[placeholder*="消息"]',
+                    'textarea[placeholder*="Message"]'
+                ];
+                
+                for (let selector of backupSelectors) {
+                    textarea = stDoc.querySelector(selector);
+                    if (textarea && textarea.tagName === 'TEXTAREA') {
+                        console.log(`✅ 找到输入框 (${selector})`);
+                        textarea.value = text;
+                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                        textarea.focus();
+                        
+                        if (window.parent.toastr) {
+                            window.parent.toastr.success('消息已放入输入框！');
+                        }
+                        
+                        return true;
+                    }
+                }
+                
+                console.log('❌ 未找到输入框，使用剪贴板备用方案');
+                copyToClipboard(text);
+                return false;
+                
+            } catch (error) {
+                console.error('填充输入框时出错:', error);
+                copyToClipboard(text);
+                return false;
+            }
+        }
+        
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('消息已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴此消息。');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('消息已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴此消息。');
+            });
+        }
+        
+        // ==================== 核心功能函数 ====================
         
         // 全局数据对象
         const creationData = {
@@ -1224,7 +1296,7 @@
             }
         };
 
-        // 全局映射定义
+        // 全局映射定义 - 确保在函数之前定义
         const raceNames = {
             human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人',
             halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'
@@ -1271,111 +1343,13 @@
             easy: '简单', normal: '普通', hard: '困难'
         };
 
-        const backgroundPresets = {
-            noble: '我出身于一个没落的贵族家庭，虽然家族荣光不再，但我仍保留着贵族的血统和教育。',
-            mercenary: '我曾是一名佣兵首领，在无数战场上摸爬滚打，凭借战功获得了这片领地。',
-            apprentice: '我曾是法师塔的学徒，掌握着基础的魔法知识，现在要用智慧统治这片土地。',
-            merchant: '我来自一个商人家庭，凭借精明的头脑和商业手段，最终获得了这片领地。',
-            knight: '我曾是一名虔诚的教会骑士，因战功而被封赏这片领地，将继续恪守骑士精神。',
-            exile: '我是一名流亡王子，背负着血海深仇，这片领地是我复国的起点。',
-            custom: ''
-        };
-
-        // 领地预设数据
-        const territoryPresets = {
-            rich_plain: {
-                name: '富饶平原领',
-                nation: 'aesland',
-                terrain: 'inland_plain',
-                startingResources: {
-                    gold: 1500,
-                    population: 1000,
-                    food: 800,
-                    wood: 300,
-                    stone: 200
-                },
-                description: '肥沃的平原地区，适合农业发展',
-                traits: ['agriculture_boost', 'population_growth']
-            },
-            border_fortress: {
-                name: '边境要塞领',
-                nation: 'steel_law',
-                terrain: 'hills',
-                startingResources: {
-                    gold: 1200,
-                    population: 800,
-                    food: 500,
-                    wood: 200,
-                    stone: 400
-                },
-                description: '战略要地，易守难攻',
-                traits: ['defense_boost', 'military_training']
-            },
-            coastal_trade: {
-                name: '沿海贸易领',
-                nation: 'blue_league',
-                terrain: 'coastal_plain',
-                startingResources: {
-                    gold: 1800,
-                    population: 900,
-                    food: 600,
-                    wood: 400,
-                    stone: 150
-                },
-                description: '港口城市，贸易繁荣',
-                traits: ['trade_boost', 'naval_power']
-            },
-            mountain_resource: {
-                name: '山林资源领',
-                nation: 'deeprock',
-                terrain: 'mountains',
-                startingResources: {
-                    gold: 1000,
-                    population: 700,
-                    food: 400,
-                    wood: 600,
-                    stone: 500
-                },
-                description: '森林茂密，矿产丰富',
-                traits: ['resource_abundant', 'mining_boost']
-            },
-            river_valley: {
-                name: '河谷农业领',
-                nation: 'aesland',
-                terrain: 'river_valley',
-                startingResources: {
-                    gold: 1300,
-                    population: 950,
-                    food: 1000,
-                    wood: 250,
-                    stone: 180
-                },
-                description: '河流灌溉，渔农兼作',
-                traits: ['farming_boost', 'fishing_boost']
-            }
-        };
-
-        // 难度资源乘数
-        const difficultyMultipliers = {
-            easy: 1.5,
-            normal: 1.0,
-            hard: 0.5
-        };
-
-        // 当前步骤
-        let currentStep = 0;
-        const totalSteps = 4;
-
-        // ==================== 核心功能函数 ====================
-        
         // 从本地存储加载数据
         function loadFromLocalStorage() {
             try {
                 const savedData = localStorage.getItem('power_path_creation_data');
                 if (savedData) {
                     const parsedData = JSON.parse(savedData);
-                    Object.assign(creationData.character, parsedData.character || {});
-                    Object.assign(creationData.territory, parsedData.territory || {});
+                    Object.assign(creationData, parsedData);
                     console.log('从本地存储加载数据:', creationData);
                 }
             } catch (e) {
@@ -1423,15 +1397,6 @@
             if (territoryPresetRadio) {
                 creationData.territory.preset = territoryPresetRadio.value;
                 creationData.territory.isCustom = territoryPresetRadio.value === 'custom';
-                
-                // 如果不是自定义，从预设获取国家和地形
-                if (!creationData.territory.isCustom) {
-                    const preset = territoryPresets[creationData.territory.preset];
-                    if (preset) {
-                        creationData.territory.nation = preset.nation;
-                        creationData.territory.terrain = preset.terrain;
-                    }
-                }
             }
             
             // 如果是自定义，从表单获取
@@ -1511,7 +1476,92 @@
             }
         }
 
-        // 步骤导航
+        // 领地预设数据
+        const territoryPresets = {
+            rich_plain: {
+                name: '富饶平原领',
+                nation: 'aesland',
+                terrain: 'inland_plain',
+                startingResources: {
+                    gold: 1500,
+                    population: 1000,
+                    food: 800,
+                    wood: 300,
+                    stone: 200
+                },
+                description: '肥沃的平原地区，适合农业发展'
+            },
+            border_fortress: {
+                name: '边境要塞领',
+                nation: 'steel_law',
+                terrain: 'hills',
+                startingResources: {
+                    gold: 1200,
+                    population: 800,
+                    food: 500,
+                    wood: 200,
+                    stone: 400
+                },
+                description: '战略要地，易守难攻'
+            },
+            coastal_trade: {
+                name: '沿海贸易领',
+                nation: 'blue_league',
+                terrain: 'coastal_plain',
+                startingResources: {
+                    gold: 1800,
+                    population: 900,
+                    food: 600,
+                    wood: 400,
+                    stone: 150
+                },
+                description: '港口城市，贸易繁荣'
+            },
+            mountain_resource: {
+                name: '山林资源领',
+                nation: 'deeprock',
+                terrain: 'mountains',
+                startingResources: {
+                    gold: 1000,
+                    population: 700,
+                    food: 400,
+                    wood: 600,
+                    stone: 500
+                },
+                description: '森林茂密，矿产丰富'
+            },
+            river_valley: {
+                name: '河谷农业领',
+                nation: 'aesland',
+                terrain: 'river_valley',
+                startingResources: {
+                    gold: 1300,
+                    population: 950,
+                    food: 1000,
+                    wood: 250,
+                    stone: 180
+                },
+                description: '河流灌溉，渔农兼作'
+            }
+        };
+
+        // 难度资源乘数
+        const difficultyMultipliers = {
+            easy: 1.5,
+            normal: 1.0,
+            hard: 0.5
+        };
+
+        // 当前步骤
+        let currentStep = 0;
+        const totalSteps = 4;
+
+        // 核心函数
+        function startAdventure() {
+            console.log('开始冒险按钮被点击！');
+            goToStep(1);
+        }
+
         function goToStep(step) {
             console.log('切换到步骤', step);
             
@@ -1636,6 +1686,7 @@
 
         function updateConfirmationPreview() {
             const char = creationData.character;
+            const terr = creationData.territory;
             
             document.getElementById('sum-char-name').textContent = char.name || '未命名';
             document.getElementById('sum-char-basic').textContent = 
@@ -1647,7 +1698,7 @@
             if (char.background === 'custom' && char.customBackground) {
                 backgroundText = char.customBackground;
             } else if (char.background !== 'custom') {
-                const backgroundDisplayNames = {
+                const backgroundPresets = {
                     noble: '落魄贵族：家族没落，但血统高贵',
                     mercenary: '佣兵首领：战场经验丰富，有忠诚部下',
                     apprentice: '法师学徒：掌握基础魔法，知识渊博',
@@ -1655,12 +1706,9 @@
                     knight: '教会骑士：信仰虔诚，恪守骑士精神',
                     exile: '流亡王子：身负血海深仇，渴望复国'
                 };
-                backgroundText = backgroundDisplayNames[char.background] || char.background;
+                backgroundText = backgroundPresets[char.background] || char.background;
             }
             document.getElementById('sum-char-background').textContent = backgroundText;
-            
-            // 更新领地信息预览
-            const terr = creationData.territory;
             
             document.getElementById('sum-terr-name').textContent = terr.name || '未命名领地';
             
@@ -1732,6 +1780,14 @@
             if (char.background === 'custom' && char.customBackground) {
                 backgroundText = char.customBackground;
             } else if (char.background !== 'custom') {
+                const backgroundPresets = {
+                    noble: '我出身于一个没落的贵族家庭，虽然家族荣光不再，但我仍保留着贵族的血统和教育。',
+                    mercenary: '我曾是一名佣兵首领，在无数战场上摸爬滚打，凭借战功获得了这片领地。',
+                    apprentice: '我曾是法师塔的学徒，掌握着基础的魔法知识，现在要用智慧统治这片土地。',
+                    merchant: '我来自一个商人家庭，凭借精明的头脑和商业手段，最终获得了这片领地。',
+                    knight: '我曾是一名虔诚的教会骑士，因战功而被封赏这片领地，将继续恪守骑士精神。',
+                    exile: '我是一名流亡王子，背负着血海深仇，这片领地是我复国的起点。'
+                };
                 backgroundText = backgroundPresets[char.background] || '';
             }
             
@@ -1746,24 +1802,6 @@
             // 获取国家和种族构成数据
             const nationCode = terr.isCustom ? terr.nation : (territoryPresets[terr.preset]?.nation || 'aesland');
             const nationName = nationNames[nationCode] || nationCode;
-            
-            // 根据国家确定主要种族构成比例
-            const raceDistribution = {
-                aesland: { human: 0.85, elf: 0.05, dwarf: 0.05, halfling: 0.03, other: 0.02 },
-                blue_league: { human: 0.60, elf: 0.15, dwarf: 0.10, halfling: 0.05, beastkin: 0.05, other: 0.05 },
-                steel_law: { human: 0.70, orc: 0.15, dwarf: 0.08, other: 0.07 },
-                eternal_song: { elf: 0.95, human: 0.05 },
-                deeprock: { dwarf: 0.90, human: 0.08, other: 0.02 },
-                savage_claw: { orc: 0.80, beastkin: 0.15, human: 0.05 },
-                sand_shadow: { beastkin: 0.85, human: 0.10, other: 0.05 },
-                abyssal: { other: 1.00 }, // 海族
-                cloud: { other: 1.00 }, // 天空种族
-                salterra: { human: 0.60, elf: 0.20, dwarf: 0.10, other: 0.10 },
-                independent: { human: 0.50, elf: 0.15, dwarf: 0.15, beastkin: 0.10, other: 0.10 }
-            };
-            
-            const distribution = raceDistribution[nationCode] || raceDistribution.aesland;
-            const totalPop = parseInt(population);
             
             // 构建最终消息
             let message = "【系统：领主创建完成 - 权力之路】\n\n";
@@ -1868,6 +1906,23 @@
             message += `  { "op": "replace", "path": "/Territory/经济/财政/库存金币", "value": ${gold} },\n`;
             
             // 添加种族构成
+            const raceDistribution = {
+                aesland: { human: 0.85, elf: 0.05, dwarf: 0.05, halfling: 0.03, other: 0.02 },
+                blue_league: { human: 0.60, elf: 0.15, dwarf: 0.10, halfling: 0.05, beastkin: 0.05, other: 0.05 },
+                steel_law: { human: 0.70, orc: 0.15, dwarf: 0.08, other: 0.07 },
+                eternal_song: { elf: 0.95, human: 0.05 },
+                deeprock: { dwarf: 0.90, human: 0.08, other: 0.02 },
+                savage_claw: { orc: 0.80, beastkin: 0.15, human: 0.05 },
+                sand_shadow: { beastkin: 0.85, human: 0.10, other: 0.05 },
+                abyssal: { other: 1.00 },
+                cloud: { other: 1.00 },
+                salterra: { human: 0.60, elf: 0.20, dwarf: 0.10, other: 0.10 },
+                independent: { human: 0.50, elf: 0.15, dwarf: 0.15, beastkin: 0.10, other: 0.10 }
+            };
+            
+            const distribution = raceDistribution[nationCode] || raceDistribution.aesland;
+            const totalPop = parseInt(population);
+            
             Object.entries(distribution).forEach(([race, ratio], index) => {
                 const raceCount = Math.round(totalPop * ratio);
                 const raceName = raceNames[race] || race;
@@ -1926,13 +1981,6 @@
             document.getElementById('final-message').value = message;
         }
 
-        // ==================== UI交互函数 ====================
-        
-        function startAdventure() {
-            console.log('开始冒险按钮被点击！');
-            goToStep(1);
-        }
-
         function completeCreation() {
             goToStep(3);
         }
@@ -1973,9 +2021,72 @@
             // 添加active类
             document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
             document.querySelector(`.tab-content[data-tab="${tabId}"]`).classList.add('active');
+            
+            // 调整iframe高度
+            adjustIframeHeight();
         }
 
-        // ==================== 事件监听器初始化 ====================
+        function selectTerritoryPreset(element) {
+            const radio = element.querySelector('input[type="radio"]');
+            if (!radio) return;
+            
+            // 确保单选按钮被选中
+            radio.checked = true;
+            
+            // 获取自定义设置区域
+            const customSettings = document.getElementById('custom-territory-settings');
+            
+            console.log('选择领地预设:', radio.value, '是自定义:', radio.value === 'custom');
+            
+            // 处理自定义领地
+            if (radio.value === 'custom') {
+                customSettings.style.display = 'block';
+                creationData.territory.isCustom = true;
+            } else {
+                customSettings.style.display = 'none';
+                creationData.territory.isCustom = false;
+                
+                // 从data属性获取国家和地形
+                const nation = radio.getAttribute('data-nation');
+                const terrain = radio.getAttribute('data-terrain');
+                
+                console.log('预设属性:', {nation, terrain});
+                
+                if (nation) {
+                    creationData.territory.nation = nation;
+                    // 更新国家选择器的显示值
+                    const nationSelect = document.getElementById('territory-nation');
+                    if (nationSelect) {
+                        nationSelect.value = nation;
+                    }
+                }
+                
+                if (terrain) {
+                    creationData.territory.terrain = terrain;
+                    // 更新地形选择
+                    const terrainRadio = document.querySelector(`input[name="terrain"][value="${terrain}"]`);
+                    if (terrainRadio) {
+                        terrainRadio.checked = true;
+                    }
+                }
+            }
+            
+            // 更新数据
+            creationData.territory.preset = radio.value;
+            
+            // 更新预览
+            updateConfirmationPreview();
+            
+            // 保存到本地存储
+            saveToLocalStorage();
+            
+            // 调整iframe高度
+            setTimeout(() => {
+                adjustIframeHeight();
+            }, 100);
+        }
+
+        // ==================== 初始化函数 ====================
         
         // 初始化数据收集
         function initDataCollection() {
@@ -2094,6 +2205,7 @@
                     
                     updateConfirmationPreview();
                     saveToLocalStorage();
+                    adjustIframeHeight();
                 });
             });
             
@@ -2121,103 +2233,7 @@
             });
         }
 
-        // ==================== Silly Tavern适配函数 ====================
-        
-        // 调整iframe高度以适应内容
-        function adjustIframeHeight() {
-            setTimeout(() => {
-                const height = document.documentElement.scrollHeight;
-                if (window.parent && window.parent.postMessage) {
-                    window.parent.postMessage({
-                        type: 'resize_iframe',
-                        height: height + 'px'
-                    }, '*');
-                }
-            }, 100);
-        }
-        
-        // 发送文本到Silly Tavern输入框
-        function sendToSillyTavern(text) {
-            console.log('正在填充输入框，内容长度:', text.length);
-            
-            try {
-                // 方法1：直接操作父窗口的textarea
-                const stDoc = window.parent.document;
-                let textarea = stDoc.getElementById('send_textarea');
-                
-                if (textarea && textarea.tagName === 'TEXTAREA') {
-                    console.log('✅ 找到输入框 (send_textarea)');
-                    textarea.value = text;
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                    textarea.dispatchEvent(new Event('change', { bubbles: true }));
-                    textarea.focus();
-                    
-                    // 使用toastr显示成功消息
-                    if (window.parent.toastr) {
-                        window.parent.toastr.success('消息已放入输入框！');
-                    }
-                    
-                    return true;
-                }
-                
-                // 方法2：备用选择器
-                const backupSelectors = [
-                    '#user-input',
-                    '#message-input',
-                    '.chat-input textarea',
-                    '.input-area textarea',
-                    'textarea[placeholder*="发送"]',
-                    'textarea[placeholder*="Send"]',
-                    'textarea[placeholder*="消息"]',
-                    'textarea[placeholder*="Message"]'
-                ];
-                
-                for (let selector of backupSelectors) {
-                    textarea = stDoc.querySelector(selector);
-                    if (textarea && textarea.tagName === 'TEXTAREA') {
-                        console.log(`✅ 找到输入框 (${selector})`);
-                        textarea.value = text;
-                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                        textarea.dispatchEvent(new Event('change', { bubbles: true }));
-                        textarea.focus();
-                        
-                        if (window.parent.toastr) {
-                            window.parent.toastr.success('消息已放入输入框！');
-                        }
-                        
-                        return true;
-                    }
-                }
-                
-                console.log('❌ 未找到输入框，使用剪贴板备用方案');
-                copyToClipboard(text);
-                return false;
-                
-            } catch (error) {
-                console.error('填充输入框时出错:', error);
-                copyToClipboard(text);
-                return false;
-            }
-        }
-        
-        // 复制到剪贴板
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('消息已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴此消息。');
-            }).catch(err => {
-                console.error('复制失败:', err);
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('消息已复制到剪贴板！\n\n请在Silly Tavern的输入框中粘贴此消息。');
-            });
-        }
-
-        // ==================== 页面初始化 ====================
-        
+        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM加载完成，开始初始化领主创建系统...');
             
@@ -2230,8 +2246,48 @@
             // 初始化数据收集
             initDataCollection();
             
+            // 绑定按钮事件
+            document.getElementById('btn-start-adventure').addEventListener('click', startAdventure);
+            document.getElementById('btn-prev').addEventListener('click', goToPreviousStep);
+            document.getElementById('btn-next').addEventListener('click', goToNextStep);
+            document.getElementById('btn-complete').addEventListener('click', completeCreation);
+            document.getElementById('btn-copy-message').addEventListener('click', copyMessage);
+            document.getElementById('btn-send-message').addEventListener('click', sendMessage);
+            document.getElementById('btn-edit-character').addEventListener('click', editCharacter);
+            document.getElementById('btn-edit-territory').addEventListener('click', editTerritory);
+            
+            // 绑定标签页切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    switchTab(this.getAttribute('data-tab'));
+                });
+            });
+            
             // 调整iframe高度
             adjustIframeHeight();
+            
+            // 检查是否选择了自定义领地，确保显示正确的设置区域
+            setTimeout(() => {
+                const selectedPreset = document.querySelector('input[name="territory-preset"]:checked');
+                const customSettings = document.getElementById('custom-territory-settings');
+                
+                if (selectedPreset && selectedPreset.value === 'custom') {
+                    customSettings.style.display = 'block';
+                } else {
+                    customSettings.style.display = 'none';
+                }
+                
+                // 检查是否选择了自定义背景
+                const selectedBackground = document.querySelector('input[name="background"]:checked');
+                const customBackgroundGroup = document.querySelector('.custom-background-group');
+                if (selectedBackground && selectedBackground.value === 'custom') {
+                    customBackgroundGroup.style.display = 'block';
+                } else {
+                    customBackgroundGroup.style.display = 'none';
+                }
+                
+                adjustIframeHeight();
+            }, 100);
             
             // 初始化默认值
             updateConfirmationPreview();
@@ -2243,7 +2299,7 @@
         window.addEventListener('load', adjustIframeHeight);
         window.addEventListener('resize', adjustIframeHeight);
         
-        // 监听来自父窗口的消息（如果有）
+        // 监听来自父窗口的消息
         window.addEventListener('message', function(event) {
             if (event.data && event.data.type === 'refresh_iframe') {
                 adjustIframeHeight();
