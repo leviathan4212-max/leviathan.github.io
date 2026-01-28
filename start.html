@@ -852,6 +852,13 @@
                                             <h4>👑 流亡王子</h4>
                                             <p>身负血海深仇，渴望复国</p>
                                         </div>
+                                        <label class="preset-option">
+    <input type="radio" name="background" value="custom">
+    <div class="preset-card">
+        <h4>✏️ 自定义</h4>
+        <p>写下你自己的背景故事</p>
+    </div>
+</label>
                                     </label>
                                 </div>
                                 <div class="form-group">
@@ -1352,14 +1359,23 @@
             window.creationData.character.appearance = document.getElementById('char-appearance').value;
             window.creationData.character.personality = document.getElementById('char-personality').value;
             
-            // 更新背景故事
-            const backgroundRadio = document.querySelector('input[name="background"]:checked');
-            if (backgroundRadio) {
-                window.creationData.character.background = backgroundRadio.value;
-                if (backgroundRadio.value === 'custom') {
-                    window.creationData.character.customBackground = document.getElementById('custom-background').value;
-                }
-            }
+// 更新背景故事
+const backgroundRadio = document.querySelector('input[name="background"]:checked');
+if (backgroundRadio) {
+    window.creationData.character.background = backgroundRadio.value;
+    if (backgroundRadio.value === 'custom') {
+        window.creationData.character.customBackground = document.getElementById('custom-background').value;
+    }
+}
+            
+// 更新自定义文本区域
+document.getElementById('custom-background').value = window.creationData.character.customBackground || '';
+
+// 如果当前选中是预设，但自定义文本区域有内容，强制切换到自定义
+if (window.creationData.character.background !== 'custom' && window.creationData.character.customBackground) {
+    window.creationData.character.background = 'custom';
+    document.querySelector('input[name="background"][value="custom"]').checked = true;
+}
             
             // 更新领地数据
             window.creationData.territory.name = document.getElementById('territory-name').value;
@@ -2181,12 +2197,11 @@ document.querySelectorAll('input[name="background"]').forEach(radio => {
         window.creationData.character.background = this.value;
         const customTextarea = document.getElementById('custom-background');
         
-        // 如果选择自定义，清空预设的背景（如果有）
         if (this.value === 'custom') {
+            // 如果是自定义，使用文本区域的内容
             window.creationData.character.customBackground = customTextarea.value;
-            // 不需要手动清空其他，radio按钮会自动处理
         } else {
-            // 如果选择预设，清空自定义文本区域
+            // 如果是预设，清空自定义文本区域和customBackground
             customTextarea.value = '';
             window.creationData.character.customBackground = '';
         }
@@ -2205,12 +2220,12 @@ document.getElementById('custom-background').addEventListener('input', function(
     if (text !== '') {
         window.creationData.character.background = 'custom';
         document.querySelector('input[name="background"][value="custom"]').checked = true;
-        
-        // 取消其他预设的选中
-        document.querySelectorAll('input[name="background"]').forEach(radio => {
-            if (radio.value !== 'custom') radio.checked = false;
-        });
     }
+    
+    window.updateConfirmationPreview();
+    saveToLocalStorage();
+});
+        }
     
     window.updateConfirmationPreview();
     saveToLocalStorage();
