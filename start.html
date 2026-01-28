@@ -1006,32 +1006,75 @@
                                 </select>
                             </div>
                             
-                            <div class="form-group">
-                                <label>领地地形</label>
-                                <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
-                                    <label class="preset-option">
-                                        <input type="radio" name="terrain" value="coastal_plain" checked>
-                                        <div class="preset-card">
-                                            <div style="font-size: 1.5rem;">🏖️</div>
-                                            <span>沿海平原</span>
-                                        </div>
-                                    </label>
-                                    <label class="preset-option">
-                                        <input type="radio" name="terrain" value="inland_plain">
-                                        <div class="preset-card">
-                                            <div style="font-size: 1.5rem;">🌾</div>
-                                            <span>内陆平原</span>
-                                        </div>
-                                    </label>
-                                    <label class="preset-option">
-                                        <input type="radio" name="terrain" value="river_valley">
-                                        <div class="preset-card">
-                                            <div style="font-size: 1.5rem;">🏞️</div>
-                                            <span>河谷地带</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
+   <!-- 找到自定义设置中的地形选择部分，大约在第630行附近，修改为： -->
+<div class="form-group">
+    <label>领地地形</label>
+    <div class="preset-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="coastal_plain">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🏖️</div>
+                <span>沿海平原</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="inland_plain">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🌾</div>
+                <span>内陆平原</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="river_valley">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🏞️</div>
+                <span>河谷地带</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="hills">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">⛰️</div>
+                <span>丘陵地区</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="mountains">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🏔️</div>
+                <span>山区</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="forest">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🌲</div>
+                <span>森林地区</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="swamp">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🐊</div>
+                <span>沼泽湿地</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="desert">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">🏜️</div>
+                <span>沙漠边缘</span>
+            </div>
+        </label>
+        <label class="preset-option">
+            <input type="radio" name="terrain" value="tundra">
+            <div class="preset-card">
+                <div style="font-size: 1.5rem;">❄️</div>
+                <span>冻土苔原</span>
+            </div>
+        </label>
+    </div>
+</div>
                             
                             <div class="form-group">
                                 <label>难度设置</label>
@@ -1366,11 +1409,18 @@
             document.getElementById('char-appearance').value = window.creationData.character.appearance;
             document.getElementById('char-personality').value = window.creationData.character.personality;
             
-            // 更新背景故事
-            document.querySelector(`input[name="background"][value="${window.creationData.character.background}"]`).checked = true;
-            if (window.creationData.character.background === 'custom') {
-                document.getElementById('custom-background').value = window.creationData.character.customBackground;
-            }
+  // 在 updateUIFromData 函数中，修改背景故事部分：
+
+// 更新背景故事
+const backgroundRadio = document.querySelector(`input[name="background"][value="${window.creationData.character.background}"]`);
+if (backgroundRadio) {
+    backgroundRadio.checked = true;
+}
+
+// 如果背景是自定义，更新自定义文本
+if (window.creationData.character.background === 'custom') {
+    document.getElementById('custom-background').value = window.creationData.character.customBackground || '';
+}
             
             // 更新领地UI
             document.getElementById('territory-name').value = window.creationData.territory.name;
@@ -1617,22 +1667,24 @@ window.classNames = window.classNames || {warrior: '战士', mage: '法师', pal
     `${window.raceNames[char.race] || char.race} | ${window.genderNames[char.gender] || char.gender} | ${char.age}岁 | ${char.height}cm | ${char.weight}kg`;
           document.getElementById('sum-char-class').textContent = `职业：${window.classNames[char.class] || char.class}`;
             
-            // 背景故事
-            let backgroundText = '无背景故事';
-            if (char.background === 'custom' && char.customBackground) {
-                backgroundText = char.customBackground;
-            } else if (char.background !== 'custom') {
-                const backgroundPresets = {
-                    noble: '落魄贵族：家族没落，但血统高贵',
-                    mercenary: '佣兵首领：战场经验丰富，有忠诚部下',
-                    apprentice: '法师学徒：掌握基础魔法，知识渊博',
-                    merchant: '商人之子：商业头脑灵活，擅长经营',
-                    knight: '教会骑士：信仰虔诚，恪守骑士精神',
-                    exile: '流亡王子：身负血海深仇，渴望复国'
-                };
-                backgroundText = backgroundPresets[char.background] || char.background;
-            }
-            document.getElementById('sum-char-background').textContent = backgroundText;
+ // 在 updateConfirmationPreview 函数中，修改背景故事显示部分：
+
+// 背景故事
+let backgroundText = '无背景故事';
+if (char.background === 'custom' && char.customBackground) {
+    backgroundText = char.customBackground;
+} else if (char.background !== 'custom') {
+    const backgroundPresets = {
+        noble: '落魄贵族：家族没落，但血统高贵',
+        mercenary: '佣兵首领：战场经验丰富，有忠诚部下',
+        apprentice: '法师学徒：掌握基础魔法，知识渊博',
+        merchant: '商人之子：商业头脑灵活，擅长经营',
+        knight: '教会骑士：信仰虔诚，恪守骑士精神',
+        exile: '流亡王子：身负血海深仇，渴望复国'
+    };
+    backgroundText = backgroundPresets[char.background] || char.background;
+}
+document.getElementById('sum-char-background').textContent = backgroundText;
             
             // 更新领地信息预览
             const terr = window.creationData.territory;
@@ -1778,21 +1830,23 @@ window.classNames = window.classNames || {warrior: '战士', mage: '法师', pal
                 easy: '简单', normal: '普通', hard: '困难'
             };
             
-            // 获取背景故事文本
-            let backgroundText = '';
-            if (char.background === 'custom' && char.customBackground) {
-                backgroundText = char.customBackground;
-            } else if (char.background !== 'custom') {
-                const backgroundPresets = {
-                    noble: '我出身于一个没落的贵族家庭，虽然家族荣光不再，但我仍保留着贵族的血统和教育。',
-                    mercenary: '我曾是一名佣兵首领，在无数战场上摸爬滚打，凭借战功获得了这片领地。',
-                    apprentice: '我曾是法师塔的学徒，掌握着基础的魔法知识，现在要用智慧统治这片土地。',
-                    merchant: '我来自一个商人家庭，凭借精明的头脑和商业手段，最终获得了这片领地。',
-                    knight: '我曾是一名虔诚的教会骑士，因战功而被封赏这片领地，将继续恪守骑士精神。',
-                    exile: '我是一名流亡王子，背负着血海深仇，这片领地是我复国的起点。'
-                };
-                backgroundText = backgroundPresets[char.background] || '';
-            }
+// 在 generateFinalMessage 函数中，修改背景故事获取部分：
+
+// 获取背景故事文本
+let backgroundText = '';
+if (char.background === 'custom' && char.customBackground) {
+    backgroundText = char.customBackground;
+} else if (char.background !== 'custom') {
+    const backgroundPresets = {
+        noble: '我出身于一个没落的贵族家庭，虽然家族荣光不再，但我仍保留着贵族的血统和教育。',
+        mercenary: '我曾是一名佣兵首领，在无数战场上摸爬滚打，凭借战功获得了这片领地。',
+        apprentice: '我曾是法师塔的学徒，掌握着基础的魔法知识，现在要用智慧统治这片土地。',
+        merchant: '我来自一个商人家庭，凭借精明的头脑和商业手段，最终获得了这片领地。',
+        knight: '我曾是一名虔诚的教会骑士，因战功而被封赏这片领地，将继续恪守骑士精神。',
+        exile: '我是一名流亡王子，背负着血海深仇，这片领地是我复国的起点。'
+    };
+    backgroundText = backgroundPresets[char.background] || '';
+}
             
             // 获取起始资源
             window.updateStartingStats();
@@ -1806,20 +1860,6 @@ window.classNames = window.classNames || {warrior: '战士', mage: '法师', pal
             const nationCode = terr.isCustom ? terr.nation : (window.territoryPresets[terr.preset]?.nation || 'aesland');
             const nationName = nationNames[nationCode] || nationCode;
             
-            // 根据国家确定主要种族构成比例
-            const raceDistribution = {
-                aesland: { human: 0.85, elf: 0.05, dwarf: 0.05, halfling: 0.03, other: 0.02 },
-                blue_league: { human: 0.60, elf: 0.15, dwarf: 0.10, halfling: 0.05, beastkin: 0.05, other: 0.05 },
-                steel_law: { human: 0.70, orc: 0.15, dwarf: 0.08, other: 0.07 },
-                eternal_song: { elf: 0.95, human: 0.05 },
-                deeprock: { dwarf: 0.90, human: 0.08, other: 0.02 },
-                savage_claw: { orc: 0.80, beastkin: 0.15, human: 0.05 },
-                sand_shadow: { beastkin: 0.85, human: 0.10, other: 0.05 },
-                abyssal: { other: 1.00 }, // 海族
-                cloud: { other: 1.00 }, // 天空种族
-                salterra: { human: 0.60, elf: 0.20, dwarf: 0.10, other: 0.10 },
-                independent: { human: 0.50, elf: 0.15, dwarf: 0.15, beastkin: 0.10, other: 0.10 }
-            };
             
             const distribution = raceDistribution[nationCode] || raceDistribution.aesland;
             const totalPop = parseInt(population);
@@ -1926,21 +1966,7 @@ window.classNames = window.classNames || {warrior: '战士', mage: '法师', pal
             message += `  { "op": "replace", "path": "/Territory/人口/总人口", "value": ${population} },\n`;
             message += `  { "op": "replace", "path": "/Territory/经济/财政/库存金币", "value": ${gold} },\n`;
             
-// 添加种族构成
-Object.entries(distribution).forEach(([race, ratio], index) => {
-    const raceCount = Math.round(totalPop * ratio);
-    const chineseRaceName = window.raceNames[race] || race;  // 获取中文种族名
-    message += `  { "op": "insert", "path": "/Territory/人口/种族构成/${chineseRaceName}", "value": {\n`;
-    message += `    "数量": ${raceCount},\n`;
-    message += `    "地位": "${race === 'human' || race === char.race ? '主导' : '平等'}",\n`;
-    message += `    "特殊能力": "",\n`;
-    message += `    "忠诚度": {\n`;
-    message += `      "数值": 50,\n`;
-    message += `      "状态": "顺从"\n`;
-    message += `    }\n`;
-    message += `  } }${index < Object.entries(distribution).length - 1 ? ',' : ''}\n`;
-});
-            
+
             // 添加仓库资源
             message += `  { "op": "insert", "path": "/Territory/仓库/粮食", "value": { "id": "food", "名称": "粮食", "类别": "食品", "当前储量": ${food}, "单位": "担", "安全储量": 200, "市场价格": 1.5, "描述": "基础粮食供应" } },\n`;
             message += `  { "op": "insert", "path": "/Territory/仓库/木材", "value": { "id": "wood", "名称": "木材", "类别": "建材", "当前储量": ${wood}, "单位": "方", "安全储量": 100, "市场价格": 2.0, "描述": "建筑和燃料用木材" } },\n`;
@@ -2150,58 +2176,51 @@ window.selectTerritoryPreset = function(element) {
                 saveToLocalStorage();
             });
             
-            // 背景故事收集
-            document.querySelectorAll('input[name="background"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    window.creationData.character.background = this.value;
-                    if (this.value === 'custom') {
-                        window.creationData.character.customBackground = document.getElementById('custom-background').value;
-                    }
-                    window.updateConfirmationPreview();
-                    saveToLocalStorage();
-                });
+// 在 initDataCollection 函数中，找到背景故事收集部分，修改为：
+
+// 背景故事收集
+document.querySelectorAll('input[name="background"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        window.creationData.character.background = this.value;
+        const customTextarea = document.getElementById('custom-background');
+        
+        // 如果选择自定义，清空预设的背景（如果有）
+        if (this.value === 'custom') {
+            window.creationData.character.customBackground = customTextarea.value;
+            // 清空其他预设背景的选中状态
+            document.querySelectorAll('input[name="background"]').forEach(r => {
+                if (r !== this) r.checked = false;
             });
-            
-            document.getElementById('custom-background').addEventListener('input', function() {
-                window.creationData.character.customBackground = this.value;
-                if (this.value.trim() !== '') {
-                    window.creationData.character.background = 'custom';
-                    document.querySelector('input[name="background"][value="custom"]').checked = true;
-                }
-                window.updateConfirmationPreview();
-                saveToLocalStorage();
-            });
-            
-            // 领地数据收集
-            document.getElementById('territory-name').addEventListener('input', function() {
-                window.creationData.territory.name = this.value;
-                window.updateConfirmationPreview();
-                saveToLocalStorage();
-            });
-            
-  
-            
-            // 自定义设置的变更监听
-            document.getElementById('territory-nation').addEventListener('change', function() {
-                window.creationData.territory.nation = this.value;
-                window.updateConfirmationPreview();
-                saveToLocalStorage();
-            });
-            
-            document.querySelectorAll('input[name="terrain"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    window.creationData.territory.terrain = this.value;
-                    window.updateConfirmationPreview();
-                    saveToLocalStorage();
-                });
-            });
-            
-            document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    window.creationData.territory.difficulty = this.value;
-                    window.updateConfirmationPreview();
-                    saveToLocalStorage();
-                });
+        } else {
+            // 如果选择预设，清空自定义文本区域
+            customTextarea.value = '';
+            window.creationData.character.customBackground = '';
+        }
+        
+        window.updateConfirmationPreview();
+        saveToLocalStorage();
+    });
+});
+
+// 自定义背景输入监听
+document.getElementById('custom-background').addEventListener('input', function() {
+    const text = this.value.trim();
+    window.creationData.character.customBackground = text;
+    
+    // 如果输入了内容，自动选中自定义选项
+    if (text !== '') {
+        window.creationData.character.background = 'custom';
+        document.querySelector('input[name="background"][value="custom"]').checked = true;
+        
+        // 取消其他预设的选中
+        document.querySelectorAll('input[name="background"]').forEach(radio => {
+            if (radio.value !== 'custom') radio.checked = false;
+        });
+    }
+    
+    window.updateConfirmationPreview();
+    saveToLocalStorage();
+});
             });
         }
 
