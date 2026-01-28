@@ -1895,6 +1895,7 @@ if (char.background === 'custom' && char.customBackground) {
             message += `作为新晋领主，我深知前方的道路充满挑战，但权力与荣耀也正在远方等待。\n\n`;
             
             message += "【系统指令：请回忆以上背景，并推进剧情。现在，开始你的统治吧。】\n\n";
+            message += "<introdaction>\n\n";
             message += "=== 角色设定详情 ===\n\n";
             
             // 角色信息
@@ -2019,6 +2020,7 @@ if (char.background === 'custom' && char.customBackground) {
             message += `5. 以开放性问题结束，推动剧情发展\n`;
             message += `6. 遵循variables_update_format，在回复的末尾输出变量更新\n`;
             message += `7. 变量未初始化，按照variable_initialization执行变量初始化\n`;
+            message += `</introdaction>\n`;
             // 将消息显示在文本区域
             document.getElementById('final-message').value = message;
         };
