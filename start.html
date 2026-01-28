@@ -1607,26 +1607,15 @@
 
         window.updateConfirmationPreview = function() {
             const char = window.creationData.character;
-            const raceNames = {
-                human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人',
-                halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'
-            };
-            
-            const genderNames = {
-                male: '男性', female: '女性', other: '其他'
-            };
-            
-            const classNames = {
-                warrior: '战士', mage: '法师', paladin: '圣武士',
-                ranger: '游侠', barbarian: '野蛮人', rogue: '游荡者',
-                cleric: '牧师', druid: '德鲁伊', bard: '吟游诗人',
-                monk: '武僧', warlock: '契术师'
-            };
+// 确保映射对象存在，如果不存在就创建
+window.raceNames = window.raceNames || {human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人', halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'};
+window.genderNames = window.genderNames || {male: '男性', female: '女性', other: '其他'};
+window.classNames = window.classNames || {warrior: '战士', mage: '法师', paladin: '圣武士', ranger: '游侠', barbarian: '野蛮人', rogue: '游荡者', cleric: '牧师', druid: '德鲁伊', bard: '吟游诗人', monk: '武僧', warlock: '契术师'};
             
             document.getElementById('sum-char-name').textContent = char.name || '未命名';
-            document.getElementById('sum-char-basic').textContent = 
-                `${raceNames[char.race] || char.race} | ${genderNames[char.gender] || char.gender} | ${char.age}岁 | ${char.height}cm | ${char.weight}kg`;
-            document.getElementById('sum-char-class').textContent = `职业：${classNames[char.class] || char.class}`;
+           document.getElementById('sum-char-basic').textContent = 
+    `${window.raceNames[char.race] || char.race} | ${window.genderNames[char.gender] || char.gender} | ${char.age}岁 | ${char.height}cm | ${char.weight}kg`;
+          document.getElementById('sum-char-class').textContent = `职业：${window.classNames[char.class] || char.class}`;
             
             // 背景故事
             let backgroundText = '无背景故事';
