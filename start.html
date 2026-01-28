@@ -1926,13 +1926,13 @@ window.classNames = window.classNames || {warrior: '战士', mage: '法师', pal
             message += `  { "op": "replace", "path": "/Territory/人口/总人口", "value": ${population} },\n`;
             message += `  { "op": "replace", "path": "/Territory/经济/财政/库存金币", "value": ${gold} },\n`;
             
-  // 添加种族构成 - 使用中文种族名称作为键
+// 添加种族构成
 Object.entries(distribution).forEach(([race, ratio], index) => {
     const raceCount = Math.round(totalPop * ratio);
     const chineseRaceName = window.raceNames[race] || race;  // 获取中文种族名
     message += `  { "op": "insert", "path": "/Territory/人口/种族构成/${chineseRaceName}", "value": {\n`;
     message += `    "数量": ${raceCount},\n`;
-    message += `    "地位": "${race === 'human' || race === window.raceNames[char.race] ? '主导' : '平等'}",\n`;
+    message += `    "地位": "${race === 'human' || race === char.race ? '主导' : '平等'}",\n`;
     message += `    "特殊能力": "",\n`;
     message += `    "忠诚度": {\n`;
     message += `      "数值": 50,\n`;
