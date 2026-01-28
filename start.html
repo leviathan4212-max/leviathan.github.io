@@ -1270,7 +1270,52 @@
                 isCustom: false
             }
         };
+         // 全局映射定义
+window.raceNames = {
+    human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人',
+    halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'
+};
 
+window.genderNames = {
+    male: '男性', female: '女性', other: '其他'
+};
+
+window.classNames = {
+    warrior: '战士', mage: '法师', paladin: '圣武士',
+    ranger: '游侠', barbarian: '野蛮人', rogue: '游荡者',
+    cleric: '牧师', druid: '德鲁伊', bard: '吟游诗人',
+    monk: '武僧', warlock: '契术师'
+};
+
+window.nationNames = {
+    aesland: '艾瑟兰王国',
+    blue_league: '蔚蓝同盟',
+    steel_law: '钢铁律法帝国',
+    eternal_song: '永歌森林',
+    deeprock: '深岩帝国',
+    savage_claw: '苍茫之爪',
+    sand_shadow: '砂影联盟',
+    abyssal: '海渊帝国',
+    cloud: '云巅遗民',
+    salterra: '萨尔特拉',
+    independent: '独立城邦'
+};
+
+window.terrainNames = {
+    coastal_plain: '沿海平原',
+    inland_plain: '内陆平原',
+    river_valley: '河谷地带',
+    hills: '丘陵地区',
+    mountains: '山区',
+    forest: '森林地区',
+    swamp: '沼泽湿地',
+    desert: '沙漠边缘',
+    tundra: '冻土苔原'
+};
+
+window.difficultyNames = {
+    easy: '简单', normal: '普通', hard: '困难'
+};
         // 从本地存储加载数据
         function loadFromLocalStorage() {
             try {
@@ -1607,21 +1652,12 @@
 
         window.updateConfirmationPreview = function() {
             const char = window.creationData.character;
-            const raceNames = {
-                human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人',
-                halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'
-            };
-            
-            const genderNames = {
-                male: '男性', female: '女性', other: '其他'
-            };
-            
-            const classNames = {
-                warrior: '战士', mage: '法师', paladin: '圣武士',
-                ranger: '游侠', barbarian: '野蛮人', rogue: '游荡者',
-                cleric: '牧师', druid: '德鲁伊', bard: '吟游诗人',
-                monk: '武僧', warlock: '契术师'
-            };
+           const raceNames = window.raceNames;
+    const genderNames = window.genderNames;
+    const classNames = window.classNames;
+    const nationNames = window.nationNames;
+    const terrainNames = window.terrainNames;
+    const difficultyNames = window.difficultyNames;
             
             document.getElementById('sum-char-name').textContent = char.name || '未命名';
             document.getElementById('sum-char-basic').textContent = 
@@ -1743,51 +1779,12 @@
             const terr = window.creationData.territory;
             
             // 获取显示名称
-            const raceNames = {
-                human: '人类', elf: '精灵', dwarf: '矮人', orc: '兽人',
-                halfling: '半身人', gnome: '侏儒', beastkin: '亚人', other: '特殊存在'
-            };
-            
-            const genderNames = {
-                male: '男性', female: '女性', other: '其他'
-            };
-            
-            const classNames = {
-                warrior: '战士', mage: '法师', paladin: '圣武士',
-                ranger: '游侠', barbarian: '野蛮人', rogue: '游荡者',
-                cleric: '牧师', druid: '德鲁伊', bard: '吟游诗人',
-                monk: '武僧', warlock: '契术师'
-            };
-            
-            const nationNames = {
-                aesland: '艾瑟兰王国',
-                blue_league: '蔚蓝同盟',
-                steel_law: '钢铁律法帝国',
-                eternal_song: '永歌森林',
-                deeprock: '深岩帝国',
-                savage_claw: '苍茫之爪',
-                sand_shadow: '砂影联盟',
-                abyssal: '海渊帝国',
-                cloud: '云巅遗民',
-                salterra: '萨尔特拉',
-                independent: '独立城邦'
-            };
-            
-            const terrainNames = {
-                coastal_plain: '沿海平原',
-                inland_plain: '内陆平原',
-                river_valley: '河谷地带',
-                hills: '丘陵地区',
-                mountains: '山区',
-                forest: '森林地区',
-                swamp: '沼泽湿地',
-                desert: '沙漠边缘',
-                tundra: '冻土苔原'
-            };
-            
-            const difficultyNames = {
-                easy: '简单', normal: '普通', hard: '困难'
-            };
+            const raceNames = window.raceNames;
+    const genderNames = window.genderNames;
+    const classNames = window.classNames;
+    const nationNames = window.nationNames;
+    const terrainNames = window.terrainNames;
+    const difficultyNames = window.difficultyNames;
             
             // 获取背景故事文本
             let backgroundText = '';
@@ -1990,6 +1987,7 @@
             message += `4. 询问领主的第一项决策\n`;
             message += `5. 以开放性问题结束，推动剧情发展\n`;
             message += `6. 遵循variables_update_format，在回复的末尾输出变量更新\n`;
+            message += `7. 变量未初始化，按照variable_initialization执行变量初始化\n`;
             // 将消息显示在文本区域
             document.getElementById('final-message').value = message;
         };
