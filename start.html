@@ -2184,10 +2184,7 @@ document.querySelectorAll('input[name="background"]').forEach(radio => {
         // 如果选择自定义，清空预设的背景（如果有）
         if (this.value === 'custom') {
             window.creationData.character.customBackground = customTextarea.value;
-            // 清空其他预设背景的选中状态
-            document.querySelectorAll('input[name="background"]').forEach(r => {
-                if (r !== this) r.checked = false;
-            });
+            // 不需要手动清空其他，radio按钮会自动处理
         } else {
             // 如果选择预设，清空自定义文本区域
             customTextarea.value = '';
